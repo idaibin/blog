@@ -1,0 +1,19 @@
+/**
+ * @param {number[]} A
+ * @return {number}
+ */
+var minIncrementForUnique = function(A) {
+    let move = 0;
+    A = A.sort((a, b) => a - b);
+    for (let i = 1; i < A.length; i++) {
+        if (A[i] <= A[i - 1]) {
+            let n = A[i - 1] + 1 - A[i];
+            A[i] += n;
+            move += n;
+        }
+    }
+    return move;
+};
+
+const move = minIncrementForUnique([3, 2, 1, 2, 1, 7]);
+console.log('move', move);

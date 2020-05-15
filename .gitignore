@@ -1,0 +1,5 @@
+# node.js 的模块存储目录
+node_modules
+
+# 部署文件
+docs/.vuepress/dist/
