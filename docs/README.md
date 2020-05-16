@@ -1,10 +1,10 @@
-<!-- ---
+---
 home: true
-# heroImage: /hero.png
-heroText: 代斌的个人博客
-tagline: 程序员成长之路
-actionText: 快速上手 →
-# actionLink: /zh/guide/
+heroImage: /app.png
+heroText: 终身学习践行者
+tagline: 文档, 博客
+# actionText: 进入笔记 →
+# actionLink: /guide/
 features:
     # - title: 简洁至上
     #   details: 以 Markdown 为中心的项目结构，以最少的配置帮助你专注于写作。
@@ -13,12 +13,10 @@ features:
     # - title: 高性能
     #   details: VuePress 为每个页面预渲染生成静态的 HTML，同时在页面被加载的时候，将作为 SPA 运行。
 footer: MIT Licensed | Copyright © 2020-present Dai Bin
---- -->
+---
 
-# Hello VuePress
+# Hello
 
-## Add Function
-
-```js
-const add = (x, y) => x + y;
-```
+::: tip
+记录一些随笔
+:::

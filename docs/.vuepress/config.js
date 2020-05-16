@@ -1,42 +1,53 @@
+const headConfig = require('./config/head.js');
+const navConfig = require('./config/nav.js');
+const pluginConfig = require('./config/plugin.js');
+const getConfig = require('vuepress-bar');
+const barConfig = getConfig(`${__dirname}/..`, {
+    // addReadMeToFirstGroup: false,
+    // stripNumbers: false,
+});
+
+function convertPath(array, replaceStr) {
+    const paths = [];
+    array
+        .filter((child) => child !== '')
+        .forEach((child) => {
+            if (child.children) {
+                paths.push(...convertPath(child.children, replaceStr));
+            } else {
+                paths.push(child.replace(replaceStr, ''));
+            }
+        });
+    return paths;
+}
+const sidebar = {};
+barConfig.sidebar.forEach((item) => {
+    const title = item.title.toLowerCase();
+    sidebar[`/${title}/`] = convertPath(item.children, `${title}/`);
+});
+
 module.exports = {
-    base: '/blog/',
-    // dest:"./dist",    // 设置打包路径
-    description: '编程、算法', // 描述
-    keywords: '代斌的博客', // 关键字
     title: '代斌',
     description: 'Just playing around',
+    head: headConfig,
+    plugins: pluginConfig,
+    // base: '/blog/',
+    // dest:"./dist",    // 设置打包路径
+    // description: '编程、算法', // 描述
+    // keywords: '代斌的博客', // 关键字
     themeConfig: {
-        lastUpdated: 'Last Updated',
-        // displayAllHeaders: true,
-        nav: [
-            { text: 'Home', link: '/' },
-            { text: 'Leetcode', link: '/leetcode/' },
-            { text: 'Tools', link: '/tools/' },
-        ],
-        // sidebar: {
-        //     '/leetcode/': ['', '24', '42', '136', '202', '344', '914'],
-        // },
+        lastUpdated: '上次更新',
+        repo: 'daibin91/blog',
+        editLinks: true,
+        editLinkText: '编辑文档！',
+        docsDir: 'docs',
+        displayAllHeaders: true,
+        nav: navConfig,
+        sidebar,
     },
     markdown: {
         lineNumbers: true,
         extractHeaders: ['h2', 'h3', 'h4', 'h5'],
         toc: { includeLevel: [2, 3, 4, 5] },
     },
-    plugins: [
-        '@vuepress/plugin-google-analytics',
-        '@vuepress/plugin-back-to-top',
-        '@vuepress/active-header-links',
-        'vuepress-plugin-smooth-scroll',
-        'vuepress-plugin-typescript',
-        'vuepress-types',
-        ['vuepress-plugin-auto-sidebar', {}],
-        [
-            'vuepress-plugin-clean-urls',
-            {
-                normalSuffix: '',
-                indexSuffix: '/',
-                notFoundPath: '/404.html',
-            },
-        ],
-    ],
 };
