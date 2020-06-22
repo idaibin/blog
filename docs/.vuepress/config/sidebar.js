@@ -1,7 +1,7 @@
 const getConfig = require('vuepress-bar');
 const barConfig = getConfig(`${__dirname}/..`, {
-    // addReadMeToFirstGroup: false,
-    // stripNumbers: false,
+    addReadMeToFirstGroup: false,
+    stripNumbers: false,
 });
 
 function convertPath(array, replaceStr) {

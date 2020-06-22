@@ -3,3 +3,6 @@ node_modules
 
 # 部署文件
 docs/.vuepress/dist/
+
+# vscode配置
+.vscode/
