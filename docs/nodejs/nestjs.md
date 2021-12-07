@@ -48,7 +48,7 @@ export class UserController {
 //  admin访问就是    xxx/user/admin
 ```
 
-### 方法参数装饰器
+### [路由参数装饰器](https://docs.nestjs.cn/7/customdecorators?id=自定义路由参数装饰器)
 
 | 装饰器名称                 | 描述                                   |
 | -------------------------- | -------------------------------------- |
@@ -60,6 +60,7 @@ export class UserController {
 | `@Body(param?: string)`    | 对应`Express`的`req.body`              |
 | `@Query(param?: string)`   | 对应`Express`的`req.query`             |
 | `@Headers(param?: string)` | 对应`Express`的`req.headers`           |
+| `@Ip()`                    | `req.ip`                               |
 
 ### 方法装饰器
 
