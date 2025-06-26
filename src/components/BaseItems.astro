@@ -1,6 +1,7 @@
 ---
 import { type CollectionEntry } from 'astro:content';
 import FormattedDate from './FormattedDate.astro';
+import { getCurrentLanguage } from '../consts';
 
 export interface Props {
   posts: CollectionEntry<'rustzenAdmin' | 'blog'>[];
@@ -8,7 +9,47 @@ export interface Props {
 }
 
 const { posts, path } = Astro.props;
+const currentLang = getCurrentLanguage(Astro.url);
+const prefix = currentLang === 'en' ? `en/${path}` : path;
+
+// // 生成文章链接的函数
+// const getPostLink = (post: any, path: string, currentLang: string) => {
+//   const slug = post.id.replace(/\.(zh|en)$/, ''); // 移除语言后缀
+//   if (currentLang === 'en') {
+//     return `/en/${path}/${slug}/`;
+//   }
+//   return `/${path}/${slug}/`;
+// };
 ---
+
+<ul class="posts-grid">
+  {
+    posts.map((post) => (
+      <li class="post-card">
+        <a href={`/${prefix}/${post.id}/`} class="post-link">
+          <div class="post-header">
+            <h3 class="post-title">{post.data.title}</h3>
+            {'pubDate' in post.data && post.data.pubDate && (
+              <p class="post-date">
+                <FormattedDate date={post.data.pubDate} />
+              </p>
+            )}
+          </div>
+
+          <p class="post-description">{post.data.description}</p>
+
+          {post.data.tags && (
+            <div class="post-tags">
+              {post.data.tags.split(',').map((tag) => (
+                <span class="tag">#{tag.trim()}</span>
+              ))}
+            </div>
+          )}
+        </a>
+      </li>
+    ))
+  }
+</ul>
 
 <style>
   .posts-grid {
@@ -100,10 +141,9 @@ const { posts, path } = Astro.props;
     margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.5top;
   }
-
-  .post-date::before {
+  1.post-date::before {
     content: '📅';
     font-size: 0.75rem;
   }
@@ -182,32 +222,3 @@ const { posts, path } = Astro.props;
     }
   }
 </style>
-
-<ul class="posts-grid">
-  {
-    posts.map((post) => (
-      <li class="post-card">
-        <a href={`/${path}/${post.id}/`} class="post-link">
-          <div class="post-header">
-            <h3 class="post-title">{post.data.title}</h3>
-            {'pubDate' in post.data && post.data.pubDate && (
-              <p class="post-date">
-                <FormattedDate date={post.data.pubDate} />
-              </p>
-            )}
-          </div>
-
-          <p class="post-description">{post.data.description}</p>
-
-          {post.data.tags && (
-            <div class="post-tags">
-              {post.data.tags.split(',').map((tag) => (
-                <span class="tag">#{tag.trim()}</span>
-              ))}
-            </div>
-          )}
-        </a>
-      </li>
-    ))
-  }
-</ul>

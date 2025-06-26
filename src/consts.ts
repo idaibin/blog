@@ -9,24 +9,26 @@ export const SITE_DESCRIPTION =
 export type BlogPost = CollectionEntry<'blog'>;
 export type RustzenAdminPost = CollectionEntry<'rustzenAdmin'>;
 
-const currentLanguage = 'zh';
 export const getPosts = async (
   collection: 'blog' | 'rustzenAdmin',
-  limit: number = 10,
+  language: string = 'zh',
+  limit: number = 100,
 ): Promise<(BlogPost | RustzenAdminPost)[]> => {
   const posts = (await getCollection(collection))
-    .filter((post) => post.filePath?.endsWith(`${currentLanguage}.md`))
+    .filter((post) => post.filePath?.endsWith(`${language}.md`))
     .sort(
       (a, b) =>
         new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime(),
     );
 
-  // 按发布日期排序
-  return posts
-    .filter((post) => post.filePath?.endsWith(`${currentLanguage}.md`))
-    .sort(
-      (a, b) =>
-        new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime(),
-    )
-    .slice(0, limit);
+  return posts.slice(0, limit);
 };
+
+// 获取当前语言
+export function getCurrentLanguage(url: URL): string {
+  const pathname = url.pathname;
+  if (pathname.startsWith('/en')) {
+    return 'en';
+  }
+  return 'zh';
+}

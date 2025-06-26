@@ -1,0 +1,60 @@
+---
+const currentLocale = Astro.currentLocale || 'zh';
+const currentPath = Astro.url.pathname;
+
+// 移除语言前缀的路径
+const basePath = currentPath.replace(/^\/(zh|en)/, '') || '/';
+const getLocalizedPath = (locale: string) => {
+  if (locale === 'zh') {
+    return basePath.replace('-en', '-zh'); // 默认语言不加前缀
+  }
+  return `/en${basePath.replace('-zh', '-en')}`;
+};
+---
+
+<div class="language-switcher">
+  <a
+    href={getLocalizedPath('zh')}
+    class:list={['lang-link', { active: currentLocale === 'zh' }]}
+  >
+    中文
+  </a>
+  <span class="separator">|</span>
+  <a
+    href={getLocalizedPath('en')}
+    class:list={['lang-link', { active: currentLocale === 'en' }]}
+  >
+    English
+  </a>
+</div>
+
+<style>
+  .language-switcher {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .lang-link {
+    color: rgb(var(--gray));
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .lang-link:hover {
+    color: rgb(var(--accent));
+    background: rgba(var(--accent), 0.1);
+  }
+
+  .lang-link.active {
+    color: rgb(var(--accent));
+    font-weight: 600;
+  }
+
+  .separator {
+    color: rgb(var(--gray-light));
+  }
+</style>

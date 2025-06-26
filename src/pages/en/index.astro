@@ -1,14 +1,13 @@
 ---
-import BaseItems from '../components/BaseItems.astro';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { getPosts, getCurrentLanguage } from '../consts';
-import { useTranslations } from '../i18n';
+import BaseItems from '../../components/BaseItems.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts } from '../../consts';
+import { useTranslations } from '../../i18n';
 
-const currentLang = getCurrentLanguage(Astro.url);
-const t = useTranslations(currentLang as 'zh' | 'en');
+const t = useTranslations('en');
 
-const blogPosts = await getPosts('blog', currentLang, 2);
-const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
+const blogPosts = await getPosts('blog', 'en', 2);
+const rustzenPosts = await getPosts('rustzenAdmin', 'en', 2);
 ---
 
 <BaseLayout title={t('site.title')} description={t('site.description')}>
@@ -16,17 +15,16 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
     <!-- Hero Section -->
     <section class="hero-section mb-12">
       <h1 class="hero-title">{t('hero.greeting')}</h1>
-      <p class="hero-description">
-        {
-          t('hero.description')
-            .replace('{rust}', '<span class="highlight">Rust</span>')
-            .replace('{react}', '<span class="highlight">React</span>')
-            .replace(
-              '{rustzen}',
-              `<a href="${currentLang === 'en' ? '/en' : ''}/rustzen-admin" class="hero-link">Rustzen Admin</a>`,
-            )
-        }
-      </p>
+      <p
+        class="hero-description"
+        set:html={t('hero.description')
+          .replace('{rust}', '<span class="highlight">Rust</span>')
+          .replace('{react}', '<span class="highlight">React</span>')
+          .replace(
+            '{rustzen}',
+            '<a href="/en/rustzen-admin" class="hero-link">Rustzen Admin</a>',
+          )}
+      />
       <div class="hero-stats">
         <div class="stat-item">
           <span class="stat-number"
@@ -45,7 +43,7 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
       </div>
     </section>
 
-    <!-- Rustzen Admin 相关文章 -->
+    <!-- Rustzen Admin Articles -->
     {
       rustzenPosts.length > 0 && (
         <section class="mb-12">
@@ -55,7 +53,7 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
       )
     }
 
-    <!-- 普通博客文章 -->
+    <!-- Blog Articles -->
     {
       blogPosts.length > 0 && (
         <section class="mb-12">
@@ -64,14 +62,6 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
         </section>
       )
     }
-
-    <!-- <h2 class="mt-10 mb-4 font-semibold">🧱 项目展示</h2>
-    👉 <a
-      href="/rustzen-admin"
-      class="text-blue-600 underline hover:no-underline"
-    >
-      Rustzen Admin 项目介绍页面
-    </a> -->
   </main>
 </BaseLayout>
 

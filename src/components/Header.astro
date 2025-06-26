@@ -2,17 +2,35 @@
 import HeaderLink from './HeaderLink.astro';
 import { SITE_TITLE } from '../consts';
 import SocialLinks from './SocialLinks.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { useTranslations } from '../i18n';
+
+const currentLocale = (Astro.currentLocale || 'zh') as 'zh' | 'en';
+const t = useTranslations(currentLocale);
+
+// 根据当前语言生成导航链接
+const getNavLink = (path: string) => {
+  if (currentLocale === 'zh') {
+    return path;
+  }
+  return `/en${path}`;
+};
 ---
 
 <header>
   <nav>
-    <h2><a href="/">{SITE_TITLE}</a></h2>
+    <h2><a href={getNavLink('/')}>{SITE_TITLE}</a></h2>
     <div class="internal-links">
-      <HeaderLink href="/">首页</HeaderLink>
-      <HeaderLink href="/rustzen-admin">Rustzen Admin</HeaderLink>
-      <HeaderLink href="/blog">博客</HeaderLink>
+      <HeaderLink href={getNavLink('/')}>{t('nav.home')}</HeaderLink>
+      <HeaderLink href={getNavLink('/rustzen-admin')}
+        >{t('nav.rustzen')}</HeaderLink
+      >
+      <HeaderLink href={getNavLink('/blog')}>{t('nav.blog')}</HeaderLink>
     </div>
-    <SocialLinks />
+    <div class="nav-right">
+      <LanguageSwitcher />
+      <SocialLinks />
+    </div>
   </nav>
 </header>
 <style>
@@ -47,6 +65,11 @@ import SocialLinks from './SocialLinks.astro';
     text-decoration: none;
     border-bottom-color: var(--accent);
   }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
   .social-links,
   .social-links a {
     display: flex;
@@ -54,6 +77,9 @@ import SocialLinks from './SocialLinks.astro';
   @media (max-width: 720px) {
     .social-links {
       display: none;
+    }
+    .nav-right {
+      gap: 0.5rem;
     }
   }
 </style>

@@ -1,13 +1,12 @@
 ---
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPosts, getCurrentLanguage } from '../../consts';
-import BaseItems from '../../components/BaseItems.astro';
-import { useTranslations } from '../../i18n';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getPosts } from '../../../consts';
+import BaseItems from '../../../components/BaseItems.astro';
+import { useTranslations } from '../../../i18n';
 
-const currentLang = getCurrentLanguage(Astro.url);
-const t = useTranslations(currentLang as 'zh' | 'en');
+const t = useTranslations('en');
 
-const posts = await getPosts('blog', currentLang, 100);
+const posts = await getPosts('blog', 'en', 100);
 ---
 
 <BaseLayout title={t('blog.title')} description={t('blog.description')}>
@@ -57,11 +56,6 @@ const posts = await getPosts('blog', currentLang, 100);
     margin-left: auto;
     margin-right: auto;
     animation: fadeInUp 0.6s ease-out 0.1s both;
-  }
-
-  .highlight {
-    color: rgb(var(--accent));
-    font-weight: 600;
   }
 
   .page-stats {

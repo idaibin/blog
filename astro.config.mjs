@@ -9,7 +9,13 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   site: 'https://idaibin.dev',
   integrations: [mdx(), sitemap()],
-
+  i18n: {
+    defaultLocale: 'zh',
+    locales: ['zh', 'en'],
+    routing: {
+      prefixDefaultLocale: false,
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
   },

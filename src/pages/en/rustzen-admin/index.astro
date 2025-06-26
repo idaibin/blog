@@ -1,13 +1,12 @@
 ---
-import BaseItems from '../../components/BaseItems.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPosts, getCurrentLanguage } from '../../consts';
-import { useTranslations } from '../../i18n';
+import BaseItems from '../../../components/BaseItems.astro';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import { getPosts } from '../../../consts';
+import { useTranslations } from '../../../i18n';
 
-const currentLang = getCurrentLanguage(Astro.url);
-const t = useTranslations(currentLang as 'zh' | 'en');
+const t = useTranslations('en');
 
-const posts = await getPosts('rustzenAdmin', currentLang, 100);
+const posts = await getPosts('rustzenAdmin', 'en', 100);
 ---
 
 <BaseLayout title={t('rustzen.title')} description={t('rustzen.description')}>
