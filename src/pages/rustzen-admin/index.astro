@@ -1,0 +1,38 @@
+---
+import BaseItems from '../../components/BaseItems.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts } from '../../consts';
+
+const posts = await getPosts('rustzenAdmin', 100);
+---
+
+<BaseLayout title="Rustzen Admin" description="Rust + React 管理后台模板项目">
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold">Rustzen Admin 项目介绍</h1>
+    <p class="mt-4 text-gray-700">
+      这是一个用 Rust
+      构建的现代化后台系统模板，具备高性能、模块化、权限完备等特点。
+    </p>
+    <p class="mt-2">
+      🔗 <a
+        href="https://github.com/idaibin/rustzen-admin"
+        class="text-blue-600 hover:underline"
+      >
+        GitHub 项目地址
+      </a>
+    </p>
+
+    <h2 class="mt-6 text-2xl font-semibold">技术栈</h2>
+    <ul class="list-disc pl-6 mt-2 text-gray-700">
+      <li>后端：Rust + Axum + sqlx + JWT + RBAC</li>
+      <li>前端：Vite + React + Zustand + Tailwind</li>
+      <li>部署：Rust 二进制，前后端可分离部署</li>
+    </ul>
+
+    <div class="mb-4">
+      <h2 class="text-xl font-semibold">📚 相关文章</h2>
+    </div>
+
+    <BaseItems posts={posts} path="rustzen-admin" />
+  </main>
+</BaseLayout>

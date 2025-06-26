@@ -1,49 +1,220 @@
 ---
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
+import BaseItems from '../components/BaseItems.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPosts } from '../consts';
+
+const blogPosts = await getPosts('blog', 2);
+const rustzenPosts = await getPosts('rustzenAdmin', 2);
 ---
 
-<!doctype html>
-<html lang="en">
-	<head>
-		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} />
-	</head>
-	<body>
-		<Header />
-		<main>
-			<h1>🧑‍🚀 Hello, Astronaut!</h1>
-			<p>
-				Welcome to the official <a href="https://astro.build/">Astro</a> blog starter template. This
-				template serves as a lightweight, minimally-styled starting point for anyone looking to build
-				a personal website, blog, or portfolio with Astro.
-			</p>
-			<p>
-				This template comes with a few integrations already configured in your
-				<code>astro.config.mjs</code> file. You can customize your setup with
-				<a href="https://astro.build/integrations">Astro Integrations</a> to add tools like Tailwind,
-				React, or Vue to your project.
-			</p>
-			<p>Here are a few ideas on how to get started with the template:</p>
-			<ul>
-				<li>Edit this page in <code>src/pages/index.astro</code></li>
-				<li>Edit the site header items in <code>src/components/Header.astro</code></li>
-				<li>Add your name to the footer in <code>src/components/Footer.astro</code></li>
-				<li>Check out the included blog posts in <code>src/content/blog/</code></li>
-				<li>Customize the blog post page layout in <code>src/layouts/BlogPost.astro</code></li>
-			</ul>
-			<p>
-				Have fun! If you get stuck, remember to
-				<a href="https://docs.astro.build/">read the docs</a>
-				or <a href="https://astro.build/chat">join us on Discord</a> to ask questions.
-			</p>
-			<p>
-				Looking for a blog template with a bit more personality? Check out
-				<a href="https://github.com/Charca/astro-blog-template">astro-blog-template</a>
-				by <a href="https://twitter.com/Charca">Maxi Ferreira</a>.
-			</p>
-		</main>
-		<Footer />
-	</body>
-</html>
+<style>
+  .hero-section {
+    text-align: center;
+    padding: 2rem 0;
+    background: linear-gradient(
+      135deg,
+      rgba(var(--accent), 0.05),
+      rgba(var(--accent-dark), 0.05)
+    );
+    border-radius: 16px;
+    border: 1px solid rgba(var(--accent), 0.1);
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+    background: linear-gradient(
+      135deg,
+      rgb(var(--accent)),
+      rgb(var(--accent-dark))
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .hero-description {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: rgb(var(--gray-dark));
+    margin: 0 0 2rem 0;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+  }
+
+  .highlight {
+    color: rgb(var(--accent));
+    font-weight: 600;
+    position: relative;
+  }
+
+  .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, rgb(var(--accent)), transparent);
+    border-radius: 1px;
+  }
+
+  .hero-link {
+    color: rgb(var(--accent));
+    text-decoration: none;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(var(--accent), 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .hero-link:hover {
+    border-bottom-color: rgb(var(--accent));
+    color: rgb(var(--accent-dark));
+  }
+
+  .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    animation: fadeInUp 0.8s ease-out 0.4s both;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgb(var(--accent));
+    line-height: 1;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 0.875rem;
+    color: rgb(var(--gray));
+    margin-top: 0.25rem;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: rgb(var(--black));
+    margin: 0 0 1.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(var(--accent), 0.3), transparent);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2.5rem;
+    }
+
+    .hero-description {
+      font-size: 1.125rem;
+    }
+
+    .hero-stats {
+      gap: 2rem;
+    }
+
+    .stat-number {
+      font-size: 1.5rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .hero-section {
+      padding: 1.5rem;
+    }
+
+    .hero-stats {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+</style>
+
+<BaseLayout>
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <section class="hero-section mb-12">
+      <h1 class="hero-title">你好, 👋</h1>
+      <p class="hero-description">
+        欢迎来到我的博客，这里记录了我关于 <span class="highlight">Rust</span
+        >、<span class="highlight">React</span>、全栈开发以及
+        <a href="/rustzen-admin" class="hero-link">Rustzen Admin</a>
+        项目的构建与思考。
+      </p>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-number"
+            >{blogPosts.length + rustzenPosts.length}</span
+          >
+          <span class="stat-label">篇文章</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">2</span>
+          <span class="stat-label">个项目</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">∞</span>
+          <span class="stat-label">种可能</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rustzen Admin 相关文章 -->
+    {
+      rustzenPosts.length > 0 && (
+        <section class="mb-12">
+          <h2 class="section-title">🚀 Rustzen Admin 文章</h2>
+          <BaseItems posts={rustzenPosts} path="rustzen-admin" />
+        </section>
+      )
+    }
+
+    <!-- 普通博客文章 -->
+    {
+      blogPosts.length > 0 && (
+        <section class="mb-12">
+          <h2 class="section-title">💡 技术博客</h2>
+          <BaseItems posts={blogPosts} path="blog" />
+        </section>
+      )
+    }
+
+    <!-- <h2 class="mt-10 mb-4 font-semibold">🧱 项目展示</h2>
+    👉 <a
+      href="/rustzen-admin"
+      class="text-blue-600 underline hover:no-underline"
+    >
+      Rustzen Admin 项目介绍页面
+    </a> -->
+  </main>
+</BaseLayout>
