@@ -6,12 +6,25 @@ import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import { Image } from 'astro:assets';
 
-type Props = CollectionEntry<'blog'>['data'];
+type BlogData = CollectionEntry<'blog'>['data'];
+type RustzenData = CollectionEntry<'rustzenAdmin'>['data'];
 
-const { title, description, pubDate, heroImage } = Astro.props;
+interface Props extends BlogData {
+  language?: string;
+  alternateUrl?: string;
+}
+
+const {
+  title,
+  description,
+  pubDate,
+  heroImage,
+  language = 'zh',
+  alternateUrl,
+} = Astro.props;
 ---
 
-<html lang="en">
+<html lang={language}>
   <head>
     <BaseHead title={title} description={description} />
     <style>
@@ -64,6 +77,30 @@ const { title, description, pubDate, heroImage } = Astro.props;
       }
       .last-updated-on {
         font-style: italic;
+      }
+
+      .language-switcher {
+        text-align: center;
+        margin-bottom: 1rem;
+      }
+
+      .language-switcher a {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgb(var(--accent-light));
+        color: rgb(var(--accent));
+        text-decoration: none;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+
+      .language-switcher a:hover {
+        background: rgb(var(--accent));
+        color: white;
+        transform: translateY(-1px);
       }
 
       /* 响应式优化 */
@@ -126,6 +163,16 @@ const { title, description, pubDate, heroImage } = Astro.props;
               <FormattedDate date={pubDate} />
             </div>
             <h1>{title}</h1>
+            {
+              alternateUrl && (
+                <div class="language-switcher">
+                  <a href={alternateUrl}>
+                    <span>🌐</span>
+                    <span>{language === 'zh' ? 'English' : '中文'}</span>
+                  </a>
+                </div>
+              )
+            }
             <hr />
           </div>
           <slot />

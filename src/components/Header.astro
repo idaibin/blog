@@ -11,9 +11,11 @@ const t = useTranslations(currentLocale);
 // 根据当前语言生成导航链接
 const getNavLink = (path: string) => {
   if (currentLocale === 'zh') {
-    return path;
+    if (path === '/') path = '/index';
+    return `${path}-zh`;
   }
-  return `/en${path}`;
+  if (path === '/index-') path = '/';
+  return path.replace('-en', '');
 };
 ---
 

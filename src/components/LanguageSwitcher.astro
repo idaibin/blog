@@ -1,14 +1,15 @@
 ---
-const currentLocale = Astro.currentLocale || 'zh';
+const currentLocale = Astro.currentLocale || 'en';
 const currentPath = Astro.url.pathname;
 
 // 移除语言前缀的路径
-const basePath = currentPath.replace(/^\/(zh|en)/, '') || '/';
 const getLocalizedPath = (locale: string) => {
   if (locale === 'zh') {
-    return basePath.replace('-en', '-zh'); // 默认语言不加前缀
+    if (currentPath === '/') return '/index-zh';
+    return `${currentPath}-zh`;
   }
-  return `/en${basePath.replace('-zh', '-en')}`;
+  if (currentPath === '/index-zh') return '/';
+  return currentPath.replace('-zh', ''); // 默认语言不加前缀
 };
 ---
 

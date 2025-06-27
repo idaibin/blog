@@ -1,22 +1,40 @@
 ---
-import { type CollectionEntry, getCollection } from 'astro:content';
+import { type CollectionEntry } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
 import { render } from 'astro:content';
-import { getPosts } from '../../consts';
+import { getPosts, getPostBaseSlug, getAlternateUrl } from '../../consts';
 
 export async function getStaticPaths() {
-  const posts = await getPosts('rustzenAdmin', 'zh');
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: post,
-  }));
-}
-type Props = CollectionEntry<'rustzenAdmin'>;
+  const zhPosts = await getPosts('rustzenAdmin', 'zh');
+  const enPosts = await getPosts('rustzenAdmin', 'en');
 
-const post = Astro.props;
+  return [
+    // 中文路由（默认，无后缀）
+    ...zhPosts.map((post) => ({
+      params: { slug: getPostBaseSlug(post.filePath || '') },
+      props: { post, language: 'zh' },
+    })),
+    // 英文路由（-en 后缀）
+    ...enPosts.map((post) => ({
+      params: { slug: `${getPostBaseSlug(post.filePath || '')}-en` },
+      props: { post, language: 'en' },
+    })),
+  ];
+}
+
+type Props = {
+  post: CollectionEntry<'rustzenAdmin'>;
+  language: string;
+};
+
+const { post, language } = Astro.props;
 const { Content } = await render(post);
+
+// 生成语言切换链接
+const currentSlug = Astro.params.slug as string;
+const alternateUrl = getAlternateUrl(currentSlug, '/rustzen-admin');
 ---
 
-<BlogPost {...post.data}>
+<BlogPost {...post.data} language={language} alternateUrl={alternateUrl}>
   <Content />
 </BlogPost>
