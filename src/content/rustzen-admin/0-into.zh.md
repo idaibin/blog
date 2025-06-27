@@ -1,9 +1,9 @@
 ---
-title: 'rustzen-admin：Rust + React 管理后台模板'
-description: '使用 Rust 作为后端、React 作为前端的开源管理后台模板，提供用户认证、权限管理、CRUD 操作等基础功能'
-pubDate: '2025-06-22'
-heroImage: https://dev-to-uploads.s3.amazonaws.com/uploads/articles/q2cq0nzh8mzh5zi62zgj.png
-tags: 'rust, react, webdev, programming'
+title: "rustzen-admin：Rust + React 管理后台模板"
+description: "使用 Rust 作为后端、React 作为前端的开源管理后台模板，提供用户认证、权限管理、CRUD 操作等基础功能"
+pubDate: "2025-06-22"
+heroImage: ../../assets/blog/into.png
+tags: "rust, react, webdev, programming"
 ---
 
 开发管理后台时，经常需要重复实现相同的功能模式：用户认证、权限管理、CRUD 操作等基础功能。**rustzen-admin** 是一个开源模板，使用 Rust 作为后端、React 作为前端，提供这些基础功能的完整实现。

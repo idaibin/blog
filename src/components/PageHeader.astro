@@ -1,0 +1,129 @@
+---
+import SocialLinks from "./SocialLinks.astro";
+import LanguageSwitcher from "./LanguageSwitcher.astro";
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+const currentLang = (Astro.currentLocale || "en") as "zh" | "en";
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "/");
+const prefix = currentLang === "zh" ? "/zh" : "";
+
+// Generate navigation links based on current language
+const getNavLink = (path: string) => {
+  return getRelativeLocaleUrl(currentLang, path);
+};
+
+const navInfo = {
+  en: {
+    title: "idaibin.dev",
+    home: "Home",
+    rustzen: "Rustzen Admin",
+    blog: "Blog",
+  },
+  zh: {
+    title: "idaibin.dev",
+    home: "首页",
+    rustzen: "Rustzen Admin",
+    blog: "博客",
+  },
+}[currentLang];
+
+const navList = [
+  {
+    name: navInfo.home,
+    href: getNavLink("/"),
+    isActive: pathname === `${prefix}/`,
+  },
+  {
+    name: navInfo.rustzen,
+    href: getNavLink("/rustzen-admin"),
+    isActive: pathname.startsWith(`${prefix}/rustzen-admin`),
+  },
+  {
+    name: navInfo.blog,
+    href: getNavLink("/blog"),
+    isActive: pathname.startsWith(`${prefix}/blog`),
+  },
+];
+---
+
+<header>
+  <nav>
+    <h2><a href={getNavLink("/")}>{navInfo.title}</a></h2>
+    <div class="internal-links">
+      {
+        navList.map((item) => (
+          <a
+            href={item.href}
+            class:list={["nav-link", { active: item.isActive }]}
+          >
+            {item.name}
+          </a>
+        ))
+      }
+    </div>
+    <div class="nav-right">
+      <LanguageSwitcher />
+      <SocialLinks />
+    </div>
+  </nav>
+</header>
+<style>
+  header {
+    margin: 0;
+    padding: 0 1em;
+    background: white;
+    box-shadow: 0 2px 8px rgba(var(--black), 5%);
+  }
+  h2 {
+    margin: 0;
+    font-size: 1em;
+  }
+
+  h2 a,
+  h2 a.active {
+    text-decoration: none;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    align-items: center;
+  }
+  nav a {
+    padding: 1em 0.5em;
+    color: var(--black);
+    border-bottom: 4px solid transparent;
+    text-decoration: none;
+  }
+  nav a.active {
+    text-decoration: none;
+    border-bottom-color: var(--accent);
+  }
+  .internal-links {
+    display: flex;
+    align-items: center;
+  }
+  .internal-links :global(a) {
+    min-width: fit-content;
+  }
+  .internal-links :global(a.active) {
+    text-decoration: underline;
+  }
+  .nav-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .social-links,
+  .social-links a {
+    display: flex;
+  }
+  @media (max-width: 720px) {
+    .social-links {
+      display: none;
+    }
+    .nav-right {
+      gap: 0.5rem;
+    }
+  }
+</style>

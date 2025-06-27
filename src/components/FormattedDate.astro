@@ -1,25 +1,23 @@
 ---
-import { getCurrentLanguage } from '../consts';
-
 interface Props {
   date: Date;
 }
 
 const { date } = Astro.props;
-const currentLang = getCurrentLanguage(Astro.url);
+const currentLang = Astro.currentLocale || "en";
 
 const getLocaleDateString = (date: Date, lang: string) => {
-  if (lang === 'en') {
-    return date.toLocaleDateString('en-us', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+  if (lang === "en") {
+    return date.toLocaleDateString("en-us", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   } else {
-    return date.toLocaleDateString('zh-cn', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return date.toLocaleDateString("zh-cn", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   }
 };

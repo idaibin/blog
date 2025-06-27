@@ -1,67 +1,25 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import { Image } from 'astro:assets';
+import BaseHead from "@/components/BaseHead.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import PageFooter from "@/components/PageFooter.astro";
+import FormattedDate from "@/components/FormattedDate.astro";
+import { Image } from "astro:assets";
 
-type BlogData = CollectionEntry<'blog'>['data'];
-type RustzenData = CollectionEntry<'rustzenAdmin'>['data'];
-
-interface Props extends BlogData {
-  language?: string;
-  alternateUrl?: string;
-}
-
-const {
-  title,
-  description,
-  pubDate,
-  heroImage,
-  language = 'zh',
-  alternateUrl,
-} = Astro.props;
+const { title, description, pubDate, heroImage } = Astro.props;
 ---
 
-<html lang={language}>
+<html lang={Astro.currentLocale || "en"}>
   <head>
     <BaseHead title={title} description={description} />
     <style>
       main {
-        width: calc(100% - 2em);
-        max-width: 100%;
-        margin: 0;
-      }
-
-      .hero-image {
-        width: 100%;
-        max-width: 800px;
-        height: 300px;
-        margin: 0 auto 2rem auto;
-        overflow: hidden;
-        border-radius: 12px;
-        box-shadow: var(--box-shadow);
-        position: relative;
-      }
-      .hero-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
-        display: block;
-        transition: transform 0.3s ease;
-      }
-      .hero-image:hover img {
-        transform: scale(1.05);
-      }
-      .prose {
-        width: 720px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         max-width: calc(100% - 2em);
-        margin: auto;
-        padding: 1em;
         color: rgb(var(--gray-dark));
       }
+
       .title {
         margin-bottom: 1em;
         padding: 1em 0;
@@ -103,82 +61,47 @@ const {
         transform: translateY(-1px);
       }
 
-      /* 响应式优化 */
-      @media (max-width: 768px) {
-        .hero-image {
-          height: 200px;
-          margin-bottom: 1.5rem;
-          border-radius: 8px;
-        }
-
-        .prose {
-          padding: 0.5em;
-        }
-
-        .title {
-          padding: 0.5em 0;
-        }
-
-        .title h1 {
-          font-size: 1.8rem;
-          line-height: 1.2;
-        }
+      :where([data-astro-image]) {
+        object-fit: var(--fit);
+        object-position: var(--pos);
       }
-
-      @media (max-width: 480px) {
-        .hero-image {
-          height: 160px;
-          border-radius: 6px;
-        }
-
-        .title h1 {
-          font-size: 1.5rem;
-        }
+      :where([data-astro-image="full-width"]) {
+        width: 100%;
+      }
+      :where([data-astro-image="constrained"]) {
+        max-width: 100%;
       }
     </style>
   </head>
 
   <body>
-    <Header />
+    <PageHeader />
     <main>
+      {
+        heroImage && (
+          <Image
+            width={800}
+            height={300}
+            loading="eager"
+            quality={100}
+            format="webp"
+            fit="cover"
+            src={heroImage}
+            alt={title}
+          />
+        )
+      }
       <article>
-        {
-          heroImage && (
-            <div class="hero-image">
-              <Image
-                width={800}
-                height={300}
-                src={heroImage}
-                alt={title}
-                loading="eager"
-                format="webp"
-                quality={85}
-              />
-            </div>
-          )
-        }
-        <div class="prose">
-          <div class="title">
-            <div class="date">
-              <FormattedDate date={pubDate} />
-            </div>
-            <h1>{title}</h1>
-            {
-              alternateUrl && (
-                <div class="language-switcher">
-                  <a href={alternateUrl}>
-                    <span>🌐</span>
-                    <span>{language === 'zh' ? 'English' : '中文'}</span>
-                  </a>
-                </div>
-              )
-            }
-            <hr />
+        <div class="title">
+          <div class="date">
+            <FormattedDate date={pubDate} />
           </div>
-          <slot />
+          <h1>{title}</h1>
+          <hr />
         </div>
+        <slot />
       </article>
     </main>
-    <Footer />
+    <PageFooter />
   </body>
 </html>

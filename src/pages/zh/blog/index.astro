@@ -3,29 +3,29 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getPosts } from "@/i18n";
 import BaseItems from "@/components/BaseItems.astro";
 
-const posts = await getPosts("blog", 100);
+const posts = await getPosts("blogZh", 100);
 ---
 
 <BaseLayout
-  title="📝 Tech Blog"
-  description="Sharing articles about Rust, React and modern full-stack development"
+  title="📝 技术博客"
+  description="分享关于 Rust、React 和现代全栈开发的技术文章"
 >
   <main class="max-w-4xl mx-auto px-4 py-8">
     <!-- Page Header -->
     <header class="page-header mb-12">
-      <h1 class="page-title">📝 Tech Blog</h1>
+      <h1 class="page-title">📝 技术博客</h1>
       <p class="page-description">
-        Sharing articles about Rust, React and modern full-stack development
+        分享关于 Rust、React 和现代全栈开发的技术文章
       </p>
       <div class="page-stats">
-        <span class="stat-badge">{posts.length} articles</span>
-        <span class="stat-badge">continuously updating</span>
+        <span class="stat-badge">{posts.length} 篇文章</span>
+        <span class="stat-badge">持续更新中</span>
       </div>
     </header>
 
     <!-- Articles Section -->
     <section class="articles-section">
-      <BaseItems posts={posts} path="/blog" />
+      <BaseItems posts={posts} path="/zh/blog" />
     </section>
   </main>
 </BaseLayout>

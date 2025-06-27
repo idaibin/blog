@@ -1,38 +1,24 @@
 ---
-import { type CollectionEntry } from 'astro:content';
-import FormattedDate from './FormattedDate.astro';
-import { getCurrentLanguage, getPostBaseSlug } from '../consts';
+import { type CollectionEntry } from "astro:content";
+import FormattedDate from "./FormattedDate.astro";
+import type { PostType } from "@/i18n";
 
 export interface Props {
-  posts: CollectionEntry<'rustzenAdmin' | 'blog'>[];
+  posts: CollectionEntry<PostType>[];
   path: string;
 }
 
 const { posts, path } = Astro.props;
-const currentLang = getCurrentLanguage(Astro.url);
-
-// 生成文章链接的函数
-const getPostLink = (
-  post: CollectionEntry<'rustzenAdmin' | 'blog'>,
-  path: string,
-  currentLang: string,
-) => {
-  const baseSlug = getPostBaseSlug(post.filePath || '');
-  if (currentLang === 'en') {
-    return `/${path}/${baseSlug}-en/`;
-  }
-  return `/${path}/${baseSlug}/`;
-};
 ---
 
 <ul class="posts-grid">
   {
     posts.map((post) => (
       <li class="post-card">
-        <a href={getPostLink(post, path, currentLang)} class="post-link">
+        <a href={`${path}/${post.id}`} class="post-link">
           <div class="post-header">
             <h3 class="post-title">{post.data.title}</h3>
-            {'pubDate' in post.data && post.data.pubDate && (
+            {"pubDate" in post.data && post.data.pubDate && (
               <p class="post-date">
                 <FormattedDate date={post.data.pubDate} />
               </p>
@@ -43,7 +29,7 @@ const getPostLink = (
 
           {post.data.tags && (
             <div class="post-tags">
-              {post.data.tags.split(',').map((tag) => (
+              {post.data.tags.split(",").map((tag) => (
                 <span class="tag">#{tag.trim()}</span>
               ))}
             </div>
@@ -94,7 +80,7 @@ const getPostLink = (
   }
 
   .post-card::before {
-    content: '';
+    content: "";
     position: absolute;
     top: 0;
     left: 0;
@@ -148,7 +134,7 @@ const getPostLink = (
   }
 
   .post-date::before {
-    content: '📅';
+    content: "📅";
     font-size: 0.75rem;
   }
 
@@ -197,7 +183,7 @@ const getPostLink = (
   }
 
   .read-more::after {
-    content: '→';
+    content: "→";
     transition: transform 0.2s ease;
   }
 

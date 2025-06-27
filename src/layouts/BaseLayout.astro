@@ -1,12 +1,14 @@
 ---
-import Analytics from '@vercel/analytics/astro';
-import SpeedInsights from '@vercel/speed-insights/astro';
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
 
-import '../styles.css';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import { SITE_TITLE, SITE_DESCRIPTION, getCurrentLanguage } from '../consts';
+import "@/styles.css";
+import BaseHead from "@/components/BaseHead.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import PageFooter from "@/components/PageFooter.astro";
+
+const currentLang = Astro.currentLocale || "en";
+const isZh = currentLang === "zh";
 
 interface Props {
   title?: string;
@@ -14,24 +16,27 @@ interface Props {
   image?: ImageMetadata;
 }
 
-const {
-  title = SITE_TITLE,
-  description = SITE_DESCRIPTION,
-  image,
-} = Astro.props;
+const { title, description, image } = Astro.props;
 
-const currentLang = getCurrentLanguage(Astro.url);
+const defaultTitle = "idaibin.dev";
+const defaultDescription = isZh
+  ? "专注于 Rust、React 和现代全栈开发的技术博客，分享 Rustzen Admin 开源项目的构建经验"
+  : "Tech blog focused on Rust, React and modern full-stack development, sharing Rustzen Admin open source project construction experience";
 ---
 
 <!doctype html>
 <html lang={currentLang}>
   <head>
-    <BaseHead title={title} description={description} image={image} />
+    <BaseHead
+      title={title || defaultTitle}
+      description={description || defaultDescription}
+      image={image}
+    />
   </head>
   <body>
-    <Header />
+    <PageHeader />
     <slot />
-    <Footer />
+    <PageFooter />
     <Analytics />
     <SpeedInsights />
   </body>

@@ -1,9 +1,9 @@
 ---
-title: 'Rust + React Admin Template with Axum, SQLx and Vite – Open Source'
-description: 'A starter template for admin systems built with Rust (Axum) and React, designed for clean architecture and developer productivity.'
-pubDate: '2025-06-22'
-heroImage: https://dev-to-uploads.s3.amazonaws.com/uploads/articles/q2cq0nzh8mzh5zi62zgj.png
-tags: 'rust, react, webdev, programming'
+title: "Rust + React Admin Template with Axum, SQLx and Vite – Open Source"
+description: "A starter template for admin systems built with Rust (Axum) and React, designed for clean architecture and developer productivity."
+pubDate: "2025-06-22"
+heroImage: ../../assets/blog/into.png
+tags: "rust, react, webdev, programming"
 ---
 
 ## Introducing

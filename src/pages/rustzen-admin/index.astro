@@ -1,41 +1,43 @@
 ---
-import BaseItems from '../../components/BaseItems.astro';
-import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPosts, getCurrentLanguage } from '../../consts';
-import { useTranslations } from '../../i18n';
+import BaseItems from "@/components/BaseItems.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPosts } from "@/i18n";
 
-const currentLang = getCurrentLanguage(Astro.url);
-const t = useTranslations(currentLang as 'zh' | 'en');
-
-const posts = await getPosts('rustzenAdmin', currentLang, 100);
+const posts = await getPosts("rustzenAdmin", 100);
 ---
 
-<BaseLayout title={t('rustzen.title')} description={t('rustzen.description')}>
+<BaseLayout
+  title="Rustzen Admin"
+  description="Rust + React admin template project"
+>
   <main class="max-w-4xl mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold">{t('rustzen.intro.title')}</h1>
+    <h1 class="text-3xl font-bold">Rustzen Admin Project Introduction</h1>
     <p class="mt-4 text-gray-700">
-      {t('rustzen.intro.description')}
+      This is a modern admin system template built with Rust, featuring high
+      performance, modularity, and comprehensive permissions.
     </p>
     <p class="mt-2">
       🔗 <a
         href="https://github.com/idaibin/rustzen-admin"
         class="text-blue-600 hover:underline"
       >
-        {t('rustzen.github')}
+        GitHub Repository
       </a>
     </p>
 
-    <h2 class="mt-6 text-2xl font-semibold">{t('rustzen.tech.title')}</h2>
+    <h2 class="mt-6 text-2xl font-semibold">Tech Stack</h2>
     <ul class="list-disc pl-6 mt-2 text-gray-700">
-      <li>{t('rustzen.tech.backend')}</li>
-      <li>{t('rustzen.tech.frontend')}</li>
-      <li>{t('rustzen.tech.deploy')}</li>
+      <li>Backend: Rust + Axum + sqlx + JWT + RBAC</li>
+      <li>Frontend: Vite + React + Zustand + Tailwind</li>
+      <li>
+        Deploy: Rust binary, frontend and backend can be deployed separately
+      </li>
     </ul>
 
     <div class="mb-4">
-      <h2 class="text-xl font-semibold">{t('rustzen.articles.title')}</h2>
+      <h2 class="text-xl font-semibold">📚 Related Articles</h2>
     </div>
 
-    <BaseItems posts={posts} path="rustzen-admin" />
+    <BaseItems posts={posts} path="/rustzen-admin" />
   </main>
 </BaseLayout>

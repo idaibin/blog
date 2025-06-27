@@ -1,46 +1,41 @@
 ---
-import BaseItems from '../components/BaseItems.astro';
-import BaseLayout from '../layouts/BaseLayout.astro';
-import { getPosts, getCurrentLanguage } from '../consts';
-import { useTranslations } from '../i18n';
+import BaseItems from "@/components/BaseItems.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPosts } from "@/i18n";
 
-const currentLang = getCurrentLanguage(Astro.url);
-const t = useTranslations(currentLang as 'zh' | 'en');
-
-const blogPosts = await getPosts('blog', currentLang, 2);
-const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
+const blogPosts = await getPosts("blogZh", 2);
+const rustzenPosts = await getPosts("rustzenAdminZh", 2);
 ---
 
-<BaseLayout title={t('site.title')} description={t('site.description')}>
+<BaseLayout
+  title="idaibin.dev"
+  description="专注于 Rust、React 和现代全栈开发的技术博客，分享 Rustzen Admin 开源项目的构建经验"
+>
   <main class="max-w-4xl mx-auto px-4 py-8">
     <!-- Hero Section -->
     <section class="hero-section mb-12">
-      <h1 class="hero-title">{t('hero.greeting')}</h1>
+      <h1 class="hero-title">你好, 👋</h1>
       <p class="hero-description">
-        {
-          t('hero.description')
-            .replace('{rust}', '<span class="highlight">Rust</span>')
-            .replace('{react}', '<span class="highlight">React</span>')
-            .replace(
-              '{rustzen}',
-              `<a href="${currentLang === 'en' ? '/en' : ''}/rustzen-admin" class="hero-link">Rustzen Admin</a>`,
-            )
-        }
+        欢迎来到我的博客，这里记录了我关于 <span class="highlight">Rust</span
+        >、<span class="highlight">React</span>、全栈开发以及 <a
+          href="/rustzen-admin"
+          class="hero-link">Rustzen Admin</a
+        > 项目的构建与思考。
       </p>
       <div class="hero-stats">
         <div class="stat-item">
           <span class="stat-number"
             >{blogPosts.length + rustzenPosts.length}</span
           >
-          <span class="stat-label">{t('hero.stats.articles')}</span>
+          <span class="stat-label">篇文章</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">2</span>
-          <span class="stat-label">{t('hero.stats.projects')}</span>
+          <span class="stat-label">个项目</span>
         </div>
         <div class="stat-item">
           <span class="stat-number">∞</span>
-          <span class="stat-label">{t('hero.stats.possibilities')}</span>
+          <span class="stat-label">种可能</span>
         </div>
       </div>
     </section>
@@ -49,7 +44,7 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
     {
       rustzenPosts.length > 0 && (
         <section class="mb-12">
-          <h2 class="section-title">{t('section.rustzen.title')}</h2>
+          <h2 class="section-title">🚀 Rustzen Admin 文章</h2>
           <BaseItems posts={rustzenPosts} path="rustzen-admin" />
         </section>
       )
@@ -59,19 +54,11 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
     {
       blogPosts.length > 0 && (
         <section class="mb-12">
-          <h2 class="section-title">{t('section.blog.title')}</h2>
+          <h2 class="section-title">💡 技术博客</h2>
           <BaseItems posts={blogPosts} path="blog" />
         </section>
       )
     }
-
-    <!-- <h2 class="mt-10 mb-4 font-semibold">🧱 项目展示</h2>
-    👉 <a
-      href="/rustzen-admin"
-      class="text-blue-600 underline hover:no-underline"
-    >
-      Rustzen Admin 项目介绍页面
-    </a> -->
   </main>
 </BaseLayout>
 
@@ -121,7 +108,7 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
   }
 
   .hero-description :global(.highlight::after) {
-    content: '';
+    content: "";
     position: absolute;
     bottom: -2px;
     left: 0;
@@ -181,7 +168,7 @@ const rustzenPosts = await getPosts('rustzenAdmin', currentLang, 2);
   }
 
   .section-title::after {
-    content: '';
+    content: "";
     flex: 1;
     height: 1px;
     background: linear-gradient(90deg, rgba(var(--accent), 0.3), transparent);

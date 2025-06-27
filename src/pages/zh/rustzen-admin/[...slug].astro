@@ -5,9 +5,9 @@ import { render } from "astro:content";
 import { getPosts } from "@/i18n";
 
 export async function getStaticPaths() {
-  const posts = await getPosts("rustzenAdmin", 100);
+  const zhPosts = await getPosts("rustzenAdminZh", 100);
 
-  return posts.map((post) => ({
+  return zhPosts.map((post) => ({
     params: { slug: post.id },
     props: { post },
   }));
