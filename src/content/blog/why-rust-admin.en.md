@@ -1,14 +1,127 @@
 ---
-title: 'Why I Choose Rust to Build Full-Stack Admin Systems?'
-pubDate: 'Jul 06 2025'
-description: 'A modern, high-performance, maintainable admin system template - Rustzen Admin'
-tags: 'rust, axum, react, full-stack, admin'
+title: Why I Choose Rust to Build a Full-Stack Admin System
+description: A front-end developer's real experience of learning Rust, from trying Tauri to building a complete admin template using Axum and React.
+pubDate: 2025-06-26
+cover: /posts/why-rust-fullstack/cover.webp
+tags: ["Rust", "Full-Stack", "Admin Panel", "Tauri", "Axum", "React"]
 ---
 
-I have previously built admin systems using Java, Spring Boot, and Nest.js, but there were always two pain points: performance waste & difficult architecture maintenance.
+I'm originally a front-end developer, mainly working with React and TypeScript.  
+Over time, I've also explored Node.js, Next.js, and Bun for building admin dashboards.  
+Recently, I started building a Rust-based full-stack project called [`rustzen-admin`](https://github.com/idaibin/rustzen-admin).
 
-So I started building a Rust full-stack template — `rustzen-admin`, which features:
+This post shares my personal journey as a **front-end dev trying Rust for the first time** — from using Tauri to building a backend API with Axum, and eventually a complete admin system.
 
-- 🌟 Backend: Axum + sqlx + RBAC permissions + JWT
-- 🎨 Frontend: Vite + React + Tailwind + Zustand
-- 🚀 Deployment: Rust binary, easy for private deployment
+---
+
+## 🧠 How It Started: From Vite to Tauri
+
+My Rust journey started passively.
+
+- I noticed Rust was used in performance-critical tools like Vite plugins.
+- Later I discovered [Tauri](https://tauri.app), a lightweight Rust-based framework for desktop apps — a modern alternative to Electron.
+
+When I had to build a small PC tool, Electron felt too heavy. So I gave Tauri a try.  
+The frontend setup was familiar, but once I saw the backend Rust code — I was completely lost.
+
+---
+
+## 🤖 Learning by Doing (with AI)
+
+I didn't sit down and study Rust from scratch.
+
+> ✅ I initialized a Tauri project → got stuck → asked ChatGPT → tweaked code → got stuck again → repeated until it worked.
+
+Initially I just handled some local file storage.  
+Then I decided to persist data with SQLite, introduced [`sqlx`](https://github.com/launchbadge/sqlx), explored async functions, error handling, and eventually modularized the project.
+
+Rust's ownership, type system, and syntax were tough at first.  
+But with real use cases and help from AI, I started to understand the logic and write more idiomatic code.
+
+---
+
+## 🛠️ Why Not Java / Node / Bun?
+
+Before diving into Rust, I took time to evaluate some common backend choices:
+
+| Tech Stack | Pros                                         | Cons                                            |
+| ---------- | -------------------------------------------- | ----------------------------------------------- |
+| Java       | Stable, mature, widely used in companies     | Verbose, slower startup, heavyweight setup      |
+| Node.js    | Huge ecosystem, easy to learn, fast to build | Weak typing, limited performance, heavy runtime |
+| Bun        | Fast startup, lightweight toolchain          | Small community, early-stage ecosystem          |
+| Rust       | 💪 Native performance, safe, easy to deploy  | Steeper learning curve                          |
+
+I don't work on massive enterprise systems. I just wanted a backend that is **reliable, lightweight, and easy to maintain**.
+
+> That's why I chose Rust: **build once, ship a binary, no runtime, no Docker, no surprises.**
+
+---
+
+## 🏗️ rustzen-admin: A Full-Stack Template in Rust + React
+
+To organize my learnings, I started building [`rustzen-admin`](https://github.com/idaibin/rustzen-admin),  
+a clean full-stack admin system powered by Rust and React — ideal for private deployment, lightweight dashboards, or internal tools.
+
+### Tech Stack Overview:
+
+- **Backend**: Rust + [Axum](https://github.com/tokio-rs/axum) + sqlx + RBAC permissions + JWT auth
+- **Frontend**: Vite + React + TailwindCSS + Zustand
+- **Tooling**: dotenv for config, tracing for logs, argon2 for password hashing
+- **Deployment**: Compiles into a single binary — no Docker, no Node runtime needed
+
+---
+
+## ✅ What's Done So Far
+
+Here's what I've implemented so far:
+
+- User registration, login, and JWT-based authentication
+- Role-based permission system with RBAC
+- Clean RESTful API structure and consistent error handling
+- Modular backend architecture with service separation
+- Frontend integration with TailwindUI and Zustand
+
+The project was built completely by myself, learning as I go — using AI and community docs whenever I got stuck.
+
+---
+
+## ✨ Why I'll Continue Using Rust
+
+Rust isn't the easiest language to learn, but the trade-offs are worth it.
+
+What I love most about Rust:
+
+- **Confidence in code**: The type system prevents so many bugs at compile time
+- **Deploy simplicity**: One file, drop it on the server, and you're good to go
+- **Memory safety**: No GC, no leaks, great performance
+- **Cross-platform options**: With Tauri, I can even ship desktop versions of the same backend
+
+As a solo developer, these qualities let me build faster, deploy with ease, and focus more on product logic — not devops or runtime debugging.
+
+---
+
+## 📚 Links
+
+- **[The Rust Book](https://doc.rust-lang.org/book/)** - The official comprehensive guide
+- **[Rust by Example](https://doc.rust-lang.org/rust-by-example/)** - Learn through practical examples
+- **[Rust course](https://course.rs/about-book.html)** – Covers everything you need to know about Rust, from beginner to advanced
+- GitHub Repo: [https://github.com/idaibin/rustzen-admin](https://github.com/idaibin/rustzen-admin)
+- My Blog (English & Chinese): [https://idaibin.dev](https://idaibin.dev)
+
+---
+
+## 🧭 Final Thoughts
+
+I'm not a backend engineer. I'm not a systems programmer.  
+I'm just a front-end developer trying to build a clean, reliable admin system.
+
+Rust didn't make things faster at first — it made me **think**. But in return, it gave me confidence, clarity, and performance.
+
+This post isn't about being an expert — it's about **what it's like to start Rust as a real beginner**.
+
+If you're a front-end dev curious about Rust, start small.  
+Try Tauri. Build a CLI. Wrap a simple API. And maybe, like me, you'll stay.
+
+---
+
+📫 Follow along — I'll be sharing more about Rust + React full-stack development in future posts.

@@ -1,14 +1,127 @@
 ---
-title: '为什么我选择用 Rust 构建全栈管理系统？'
-pubDate: '2025-06-26'
-description: '一套现代化、高性能、可维护的后台系统模板 Rustzen Admin'
-tags: 'rust,  axum, react, full-stack, admin'
+title: 为什么我选择用 Rust 构建全栈后台管理系统？
+description: 从前端转向 Rust 的真实经历，从 Tauri 到 Axum，一步步构建自己的后台管理系统 rustzen-admin。
+pubDate: 2025-06-26
+cover: /posts/why-rust-fullstack/cover.webp
+tags: ["Rust", "全栈开发", "后台管理系统", "Tauri", "Axum", "React"]
 ---
 
-我曾使用 Java、Spring Boot、Nest.js 构建后台系统，但始终存在两个痛点：性能浪费 & 架构维护难。
+我是前端出身，日常主要使用 React、TypeScript，也接触过一些 Node.js、Next.js、Bun 等技术栈。  
+最近，我开始尝试使用 Rust 开发一套全栈后台管理系统，命名为 [`rustzen-admin`](https://github.com/idaibin/rustzen-admin)。
 
-于是我开始构建一个 Rust 全栈模板 —— `rustzen-admin`，它拥有：
+这篇文章是我作为一名前端开发者**初次接触 Rust，从 Tauri 到后端开发，再到构建完整系统的真实过程分享**，也会聊聊为什么我最终选择了 Rust，而不是其他常见方案。
 
-- 🌟 后端：Axum + sqlx + RBAC 权限 + JWT
-- 🎨 前端：Vite + React + Tailwind + Zustand
-- 🚀 部署：Rust 二进制，易于私有部署
+---
+
+## 🧠 契机：从前端工具链到 Tauri
+
+我接触 Rust，其实是被动的：
+
+- 前端工具 Vite 使用了 Rust 编写的一些底层优化插件
+- Tauri 是一个用 Rust 编写的桌面端框架，被称为更轻的 Electron 替代品
+
+当我需要开发一个简单的桌面应用时，觉得 Electron 太重，就尝试了 Tauri。结果是：  
+前端没问题，但一打开后端的 Rust 代码，完全看不懂。
+
+---
+
+## 🤖 全靠 AI 边学边做
+
+我没有系统学 Rust，也没有看完官方文档。我的方式很直接：
+
+> ✅ 用 Tauri 启项目 → 不会就问 AI → 改代码 → 出错 → 再问 AI → 继续推进
+
+刚开始只是写些简单的本地文件存取，后来我开始使用 SQLite，接入 `sqlx`，再学习异步请求、模块拆分、错误处理……
+
+Rust 的所有权、生命周期、类型系统让我一头雾水。但随着实际开发，我慢慢理解了它的逻辑，也逐步重构了项目架构。
+
+---
+
+## 🛠️ 为什么不是 Node / Java / Bun？
+
+我做过一些中后台页面，用过 Node.js，也尝试过 Bun 和 Next.js。虽然开发效率高，但一旦项目大起来，问题也显现了。
+
+在选择 Rust 之前，我认真思考了几种常见后端技术：
+
+| 技术栈  | 优点                          | 缺点                           |
+| ------- | ----------------------------- | ------------------------------ |
+| Java    | 成熟稳定、社区庞大、企业常用  | 配置繁琐、部署复杂、开发成本高 |
+| Node.js | 社区活跃、上手快、生态丰富    | 类型不强、性能瓶颈、依赖庞杂   |
+| Bun     | 启动快、构建快、开发体验好    | 社区小、缺乏验证、生态不完整   |
+| Rust    | 💪 性能强、部署简单、安全性好 | 学习曲线陡峭、初期开发成本稍高 |
+
+我不做大型企业系统，也不想维护 Docker 和一堆服务，更希望一个"可控、稳定、轻量"的架构。
+
+> 所以最终，我选择了 Rust：**编译成单个可执行文件，部署超级轻量，性能直接拉满，关键是开发体验越来越清晰**。
+
+---
+
+## 🏗️ rustzen-admin：基于 Rust + React 的全栈模板
+
+我把自己的实践经验整理成了一个模板项目，命名为 [rustzen-admin](https://github.com/idaibin/rustzen-admin)，核心目标是：
+
+- 对前端友好：目录结构、数据返回结构符合习惯
+- 后端健壮：基于 Axum，结合模块化架构 + 权限系统
+- 部署简洁：Rust 二进制直接部署，无需额外运行环境
+
+### 技术栈简介：
+
+- **后端**：Rust + Axum + sqlx + RBAC 权限控制 + JWT 鉴权
+- **前端**：Vite + React + TailwindCSS + Zustand
+- **工具链**：tracing 日志、argon2 加密、dotenv 配置等
+- **部署方式**：编译为二进制文件，支持私有服务器运行
+
+---
+
+## ✅ 当前功能进展
+
+项目目前已完成的基础功能包括：
+
+- 用户注册 / 登录 / JWT 鉴权
+- 用户管理 / 角色管理 / 权限系统
+- RESTful 接口设计 + 错误统一处理
+- 跨模块接口结构优化、配置抽离
+- 基于前后端分离的管理后台架构
+
+整个项目是我借助 AI，从 0 开始边学边做完成的。过程中也遇到很多坑，但每一个点都转化成了架构的一部分。
+
+---
+
+## ✨ 为什么我愿意继续用 Rust？
+
+Rust 并不是"快速开发"的语言，但它的回报非常值得。
+
+我最直观的感受是：
+
+- **类型安全让我更放心写代码，哪怕是未来维护**
+- **部署方式非常干净，不依赖环境，不怕变动**
+- **性能极好，写普通业务代码也不需要优化**
+- **更适合做多端统一架构：Web 后台、桌面端都能用 Rust 搭建后端**
+
+配合 Tauri，我甚至可以将这套系统转为桌面端发布，真正做到"一套逻辑多端复用"。
+
+---
+
+## 📚 链接
+
+- **[The Rust Book](https://doc.rust-lang.org/book/)** - 官方综合指南
+- **[Rust by Example](https://doc.rust-lang.org/rust-by-example/)** - 通过实际示例学习
+- **[Rust 课程](https://course.rs/about-book.html)** - 涵盖从入门到精通所需的 Rust 知识
+- GitHub Repo： [https://github.com/idaibin/rustzen-admin](https://github.com/idaibin/rustzen-admin)
+- 我的博客（中英文）： [https://idaibin.dev](https://idaibin.dev)
+
+---
+
+## 🧭 写在最后
+
+我不是后端程序员，更不是系统工程师。  
+我只是一个普通前端，想构建一个稳定、清晰、易部署的后台系统。
+
+Rust 一开始确实不容易，但它让我重新认识了"什么叫可维护、可交付的代码"。
+
+这篇文章不是经验之谈，而是**一个 Rust 初学者真实的上手过程**。  
+如果你也有兴趣，不妨试试 Tauri 或简单的 API 项目开始，说不定 Rust 会带给你全新的开发体验。
+
+---
+
+📫 欢迎关注我，后续我也会持续记录 Rust 全栈开发的一些心得与实践。
