@@ -27,13 +27,11 @@ const { posts, path } = Astro.props;
 
           <p class="post-description">{post.data.description}</p>
 
-          {post.data.tags && (
-            <div class="post-tags">
-              {post.data.tags.split(",").map((tag) => (
-                <span class="tag">#{tag.trim()}</span>
-              ))}
-            </div>
-          )}
+          <div class="post-tags">
+            {post.data.tags?.map((tag) => (
+              <span class="tag">#{tag}</span>
+            ))}
+          </div>
         </a>
       </li>
     ))

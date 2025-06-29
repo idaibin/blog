@@ -6,7 +6,7 @@ const baseSchema = (image: any) => ({
   description: z.string(),
   pubDate: z.coerce.date(),
   heroImage: image().optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string()),
 });
 
 const blog = defineCollection({
