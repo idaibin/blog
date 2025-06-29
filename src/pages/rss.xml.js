@@ -3,6 +3,7 @@ import { getCollection } from "astro:content";
 
 export async function GET(context) {
   const posts = await getCollection("blog");
+  const rustzenPosts = await getCollection("rustzenAdmin");
   const currentLocale = context.currentLocale || "en";
   const isZh = currentLocale === "zh";
 
@@ -15,9 +16,15 @@ export async function GET(context) {
     title: siteTitle,
     description: siteDescription,
     site: context.site,
-    items: posts.map((post) => ({
-      ...post.data,
-      link: `/blog/${post.id}/`,
-    })),
+    items: [
+      ...posts.map((post) => ({
+        ...post.data,
+        link: `/blog/${post.id}/`,
+      })),
+      ...rustzenPosts.map((post) => ({
+        ...post.data,
+        link: `/rustzen-admin/${post.id}/`,
+      })),
+    ],
   });
 }
