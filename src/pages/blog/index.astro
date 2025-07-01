@@ -1,9 +1,9 @@
 ---
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getPosts } from "@/i18n";
-import BaseItems from "@/components/BaseItems.astro";
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPosts } from '@/utils';
+import BaseItems from '@/components/BaseItems.astro';
 
-const posts = await getPosts("blog", 100);
+const posts = await getPosts('blog', 100);
 ---
 
 <BaseLayout

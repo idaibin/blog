@@ -1,9 +1,9 @@
 ---
-import BaseItems from "@/components/BaseItems.astro";
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getPosts } from "@/i18n";
+import BaseItems from '@/components/BaseItems.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPosts } from '@/utils';
 
-const posts = await getPosts("rustzenAdminZh", 100);
+const posts = await getPosts('rustzenAdminZh', 100);
 ---
 
 <BaseLayout title="Rustzen Admin" description="Rust + React 管理后台模板项目">

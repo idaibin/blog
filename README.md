@@ -1,29 +1,27 @@
-# Astro Starter Kit: Blog
+# idaibin.dev Blog
 
-```sh
-pnpm create astro@latest -- --template blog
-```
+A tech blog focused on Rust, React, and modern full-stack development.
+Sharing practical experience from building the open-source [Rustzen Admin](https://github.com/idaibin/rustzen-admin) project.
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/withastro/astro/tree/latest/examples/blog)
-[![Open with CodeSandbox](https://assets.codesandbox.io/github/button-edit-lime.svg)](https://codesandbox.io/p/sandbox/github/withastro/astro/tree/latest/examples/blog)
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/withastro/astro?devcontainer_path=.devcontainer/blog/devcontainer.json)
+## Features
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+- ✅ Multi-language content (English & Chinese)
+- ✅ Focus on Rust, React, and full-stack engineering
+- ✅ Rustzen Admin project articles and tutorials
+- ✅ Modern Astro + MDX + Tailwind stack
+- ✅ Article counting utility
+- ✅ RSS Feed, SEO, and sitemap support
 
-![blog](https://github.com/withastro/astro/assets/2244813/ff10799f-a816-4703-b967-c78997e8323d)
+## Rustzen Admin Project
 
-Features:
+**Rustzen Admin** is a modern admin system template built with Rust (Axum, SQLx) and React (Vite, Zustand, Tailwind).
+It features high performance, modularity, and comprehensive RBAC permissions.
 
-- ✅ Minimal styling (make it your own!)
-- ✅ 100/100 Lighthouse performance
-- ✅ SEO-friendly with canonical URLs and OpenGraph data
-- ✅ Sitemap support
-- ✅ RSS Feed support
-- ✅ Markdown & MDX support
+- Backend: Rust + Axum + SQLx + JWT + RBAC
+- Frontend: Vite + React + Zustand + Tailwind
+- Deploy: Rust binary, frontend and backend can be deployed separately
 
 ## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
 
 ```text
 ├── public/
@@ -38,21 +36,47 @@ Inside of your Astro project, you'll see the following folders and files:
 └── tsconfig.json
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+## 📚 Content Collections
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+This blog supports multi-language content collections:
 
-The `src/content/` directory contains "collections" of related Markdown and MDX documents. Use `getCollection()` to retrieve posts from `src/content/blog/`, and type-check your frontmatter using an optional schema. See [Astro's Content Collections docs](https://docs.astro.build/en/guides/content-collections/) to learn more.
+- `blog` (English articles)
+- `blogZh` (Chinese articles)
+- `rustzenAdmin` (English Rustzen Admin articles)
+- `rustzenAdminZh` (Chinese Rustzen Admin articles)
 
-Any static assets, like images, can be placed in the `public/` directory.
+### Counting Articles
+
+To get the total number of articles in a collection:
+
+```ts
+import { getCollection } from 'astro:content';
+const allBlogPosts = await getCollection('blog');
+const blogCount = allBlogPosts.length;
+```
+
+For all articles (multi-collection):
+
+```ts
+const totalArticles =
+  (await getCollection('blog')).length +
+  (await getCollection('blogZh')).length +
+  (await getCollection('rustzenAdmin')).length +
+  (await getCollection('rustzenAdminZh')).length;
+```
+
+> **Note:**
+>
+> - Collection names in `getCollection` must match those in `content.config.ts`.
+> - For a large number of articles, consider file counting or build-time caching for better performance.
 
 ## 🧞 Commands
 
 All commands are run from the root of the project, from a terminal:
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `pnpm install`             | Installs dependencies                            |
+| Command                | Action                                           |
+| :--------------------- | :----------------------------------------------- |
+| `pnpm install`         | Installs dependencies                            |
 | `pnpm dev`             | Starts local dev server at `localhost:4321`      |
 | `pnpm build`           | Build your production site to `./dist/`          |
 | `pnpm preview`         | Preview your build locally, before deploying     |
@@ -61,7 +85,7 @@ All commands are run from the root of the project, from a terminal:
 
 ## 👀 Want to learn more?
 
-Check out [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Check out [Astro documentation](https://docs.astro.build) or join the [Astro Discord](https://astro.build/chat).
 
 ## Credit
 

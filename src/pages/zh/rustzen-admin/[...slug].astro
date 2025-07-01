@@ -1,11 +1,11 @@
 ---
-import { type CollectionEntry } from "astro:content";
-import BlogPost from "@/layouts/BlogPost.astro";
-import { render } from "astro:content";
-import { getPosts } from "@/i18n";
+import { type CollectionEntry } from 'astro:content';
+import BlogPost from '@/layouts/BlogPost.astro';
+import { render } from 'astro:content';
+import { getPosts } from '@/utils';
 
 export async function getStaticPaths() {
-  const zhPosts = await getPosts("rustzenAdminZh", 100);
+  const zhPosts = await getPosts('rustzenAdminZh', 100);
 
   return zhPosts.map((post) => ({
     params: { slug: post.id },
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 }
 
 type Props = {
-  post: CollectionEntry<"rustzenAdmin">;
+  post: CollectionEntry<'rustzenAdmin'>;
   language: string;
 };
 

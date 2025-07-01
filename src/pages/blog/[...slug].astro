@@ -1,11 +1,11 @@
 ---
-import { type CollectionEntry } from "astro:content";
-import BlogPost from "@/layouts/BlogPost.astro";
-import { render } from "astro:content";
-import { getPosts } from "@/i18n";
+import { type CollectionEntry } from 'astro:content';
+import BlogPost from '@/layouts/BlogPost.astro';
+import { render } from 'astro:content';
+import { getPosts } from '@/utils';
 
 export async function getStaticPaths() {
-  const enPosts = await getPosts("blog", 100);
+  const enPosts = await getPosts('blog', 100);
 
   return enPosts.map((post) => ({
     params: { slug: post.id },
@@ -14,7 +14,7 @@ export async function getStaticPaths() {
 }
 
 type Props = {
-  post: CollectionEntry<"blog">;
+  post: CollectionEntry<'blog'>;
   language: string;
 };
 

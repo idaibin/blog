@@ -1,10 +1,12 @@
 ---
-import BaseItems from "@/components/BaseItems.astro";
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getPosts } from "@/i18n";
+import BaseItems from '@/components/BaseItems.astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { getPostCount, getPosts } from '@/utils';
 
-const blogPosts = await getPosts("blog", 2);
-const rustzenPosts = await getPosts("rustzenAdmin", 2);
+const blogPosts = await getPosts('blog', 2);
+const rustzenPosts = await getPosts('rustzenAdmin', 2);
+const blogCount = await getPostCount('blog');
+const rustzenCount = await getPostCount('rustzenAdmin');
 ---
 
 <BaseLayout
@@ -25,9 +27,7 @@ const rustzenPosts = await getPosts("rustzenAdmin", 2);
       </p>
       <div class="hero-stats">
         <div class="stat-item">
-          <span class="stat-number"
-            >{blogPosts.length + rustzenPosts.length}</span
-          >
+          <span class="stat-number">{blogCount + rustzenCount}</span>
           <span class="stat-label">articles</span>
         </div>
         <div class="stat-item">
@@ -109,7 +109,7 @@ const rustzenPosts = await getPosts("rustzenAdmin", 2);
   }
 
   .hero-description :global(.highlight::after) {
-    content: "";
+    content: '';
     position: absolute;
     bottom: -2px;
     left: 0;
@@ -169,7 +169,7 @@ const rustzenPosts = await getPosts("rustzenAdmin", 2);
   }
 
   .section-title::after {
-    content: "";
+    content: '';
     flex: 1;
     height: 1px;
     background: linear-gradient(90deg, rgba(var(--accent), 0.3), transparent);
