@@ -1,11 +1,11 @@
 ---
-import SocialLinks from "./SocialLinks.astro";
-import LanguageSwitcher from "./LanguageSwitcher.astro";
-import { getRelativeLocaleUrl } from "astro:i18n";
+import SocialLinks from './SocialLinks.astro';
+import LanguageSwitcher from './LanguageSwitcher.astro';
+import { getRelativeLocaleUrl } from 'astro:i18n';
 
-const currentLang = (Astro.currentLocale || "en") as "zh" | "en";
-const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, "/");
-const prefix = currentLang === "zh" ? "/zh" : "";
+const currentLang = (Astro.currentLocale || 'en') as 'zh' | 'en';
+const pathname = Astro.url.pathname.replace(import.meta.env.BASE_URL, '/');
+const prefix = currentLang === 'zh' ? '/zh' : '';
 
 // Generate navigation links based on current language
 const getNavLink = (path: string) => {
@@ -14,33 +14,33 @@ const getNavLink = (path: string) => {
 
 const navInfo = {
   en: {
-    title: "idaibin.dev",
-    home: "Home",
-    rustzen: "Rustzen Admin",
-    blog: "Blog",
+    title: 'idaibin.dev',
+    home: 'Home',
+    rustzen: 'Rustzen Admin',
+    blog: 'Blog',
   },
   zh: {
-    title: "idaibin.dev",
-    home: "首页",
-    rustzen: "Rustzen Admin",
-    blog: "博客",
+    title: 'idaibin.dev',
+    home: '首页',
+    rustzen: 'Rustzen Admin',
+    blog: '博客',
   },
 }[currentLang];
 
 const navList = [
   {
     name: navInfo.home,
-    href: getNavLink("/"),
+    href: getNavLink('/'),
     isActive: pathname === `${prefix}/`,
   },
   {
     name: navInfo.rustzen,
-    href: getNavLink("/rustzen-admin"),
+    href: getNavLink('/rustzen-admin'),
     isActive: pathname.startsWith(`${prefix}/rustzen-admin`),
   },
   {
     name: navInfo.blog,
-    href: getNavLink("/blog"),
+    href: getNavLink('/blog'),
     isActive: pathname.startsWith(`${prefix}/blog`),
   },
 ];
@@ -48,13 +48,13 @@ const navList = [
 
 <header>
   <nav>
-    <h2><a href={getNavLink("/")}>{navInfo.title}</a></h2>
+    <h2><a href={getNavLink('/')}>{navInfo.title}</a></h2>
     <div class="internal-links">
       {
         navList.map((item) => (
           <a
             href={item.href}
-            class:list={["nav-link", { active: item.isActive }]}
+            class:list={['nav-link', { active: item.isActive }]}
           >
             {item.name}
           </a>
@@ -88,6 +88,7 @@ const navList = [
     align-items: center;
     justify-content: space-between;
     align-items: center;
+    line-height: 1;
   }
   nav a {
     padding: 1em 0.5em;
