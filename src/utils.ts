@@ -17,9 +17,6 @@ export const getPosts = async (
       (a, b) =>
         new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime(),
     );
-  posts.forEach((post) => {
-    console.log('post.id', post.id);
-  });
   return posts.slice(0, limit);
 };
 

@@ -3,8 +3,8 @@ import BaseItems from '@/components/BaseItems.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPostCount, getPosts } from '@/utils';
 
-const blogPosts = await getPosts('blog', 2);
-const rustzenPosts = await getPosts('rustzenAdmin', 2);
+const blogPosts = await getPosts('blog', 10);
+const rustzenPosts = await getPosts('rustzenAdmin', 10);
 const blogCount = await getPostCount('blog');
 const rustzenCount = await getPostCount('rustzenAdmin');
 ---

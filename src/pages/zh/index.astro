@@ -3,8 +3,8 @@ import BaseItems from '@/components/BaseItems.astro';
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { getPostCount, getPosts } from '@/utils';
 
-const blogPosts = await getPosts('blogZh', 2);
-const rustzenPosts = await getPosts('rustzenAdminZh', 2);
+const blogPosts = await getPosts('blogZh', 10);
+const rustzenPosts = await getPosts('rustzenAdminZh', 10);
 const blogCount = await getPostCount('blogZh');
 const rustzenCount = await getPostCount('rustzenAdminZh');
 ---
@@ -40,22 +40,22 @@ const rustzenCount = await getPostCount('rustzenAdminZh');
       </div>
     </section>
 
-    <!-- Rustzen Admin 相关文章 -->
-    {
-      rustzenPosts.length > 0 && (
-        <section class="mb-12">
-          <h2 class="section-title">🚀 Rustzen Admin 文章</h2>
-          <BaseItems posts={rustzenPosts} path="rustzen-admin" />
-        </section>
-      )
-    }
-
     <!-- 普通博客文章 -->
     {
       blogPosts.length > 0 && (
         <section class="mb-12">
           <h2 class="section-title">💡 技术博客</h2>
           <BaseItems posts={blogPosts} path="blog" />
+        </section>
+      )
+    }
+
+    <!-- Rustzen Admin 相关文章 -->
+    {
+      rustzenPosts.length > 0 && (
+        <section class="mb-12">
+          <h2 class="section-title">🚀 Rustzen Admin 文章</h2>
+          <BaseItems posts={rustzenPosts} path="rustzen-admin" />
         </section>
       )
     }
