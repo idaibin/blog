@@ -1,110 +1,19 @@
 ---
-import BaseHead from '@/components/BaseHead.astro';
-import PageHeader from '@/components/PageHeader.astro';
-import PageFooter from '@/components/PageFooter.astro';
-import FormattedDate from '@/components/FormattedDate.astro';
-import { Image } from 'astro:assets';
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
+import BaseHead from "@/components/BaseHead.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import PageFooter from "@/components/PageFooter.astro";
+import FormattedDate from "@/components/FormattedDate.astro";
+import { Image } from "astro:assets";
 
 const { title, description, pubDate, heroImage } = Astro.props;
 ---
 
-<html lang={Astro.currentLocale || 'en'}>
+<html lang={Astro.currentLocale || "en"}>
   <head>
     <BaseHead title={title} description={description} />
-    <style>
-      main {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        max-width: calc(100% - 2em);
-        color: rgb(var(--gray-dark));
-      }
-      article {
-        width: 100%;
-      }
-      .title {
-        margin-bottom: 1em;
-        padding: 1em 0;
-        text-align: center;
-        line-height: 1;
-      }
-      .title h1 {
-        margin: 0 0 0.5em 0;
-      }
-      .date {
-        margin-bottom: 0.5em;
-        color: rgb(var(--gray));
-      }
-      .last-updated-on {
-        font-style: italic;
-      }
-
-      .language-switcher {
-        text-align: center;
-        margin-bottom: 1rem;
-      }
-
-      .language-switcher a {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem 1rem;
-        background: rgb(var(--accent-light));
-        color: rgb(var(--accent));
-        text-decoration: none;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        transition: all 0.2s ease;
-      }
-
-      .language-switcher a:hover {
-        background: rgb(var(--accent));
-        color: white;
-        transform: translateY(-1px);
-      }
-
-      :where([data-astro-image]) {
-        object-fit: var(--fit);
-        object-position: var(--pos);
-      }
-      :where([data-astro-image='full-width']) {
-        width: 100%;
-      }
-      :where([data-astro-image='constrained']) {
-        max-width: 100%;
-      }
-
-      /* Add styles for back-to-top button */
-      #back-to-top {
-        position: fixed;
-        right: 2em;
-        bottom: 2em;
-        z-index: 100;
-        background: rgb(var(--accent-light));
-        color: var(--gray-dark);
-        border: none;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        padding: 10px;
-        font-size: 1.5em;
-        cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        transition: background 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow:
-          0 6px 16px 0 rgba(0, 0, 0, 0.08),
-          0 3px 6px -4px rgba(0, 0, 0, 0.12),
-          0 9px 28px 8px rgba(0, 0, 0, 0.05);
-      }
-      #back-to-top:hover {
-        background: rgba(0, 0, 0, 0.06);
-      }
-    </style>
   </head>
-
   <body>
     <PageHeader />
     <main>
@@ -134,6 +43,8 @@ const { title, description, pubDate, heroImage } = Astro.props;
       </article>
     </main>
     <PageFooter />
+    <Analytics />
+    <SpeedInsights />
     <button id="back-to-top" aria-label="Back to top" style="display:none;">
       <svg
         viewBox="64 64 896 896"
@@ -150,22 +61,114 @@ const { title, description, pubDate, heroImage } = Astro.props;
       </svg>
     </button>
     <script>
-      window.addEventListener('scroll', function () {
-        const btn = document.getElementById('back-to-top');
+      window.addEventListener("scroll", function () {
+        const btn = document.getElementById("back-to-top");
         if (btn) {
           if (window.scrollY > 200) {
-            btn.style.display = 'flex';
+            btn.style.display = "flex";
           } else {
-            btn.style.display = 'none';
+            btn.style.display = "none";
           }
         }
       });
-      const backToTopBtn = document.getElementById('back-to-top');
+      const backToTopBtn = document.getElementById("back-to-top");
       if (backToTopBtn) {
         backToTopBtn.onclick = function () {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: "smooth" });
         };
       }
     </script>
   </body>
 </html>
+<style>
+  main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: calc(100% - 2em);
+    color: rgb(var(--gray-dark));
+  }
+  article {
+    width: 100%;
+  }
+  .title {
+    margin-bottom: 1em;
+    padding: 1em 0;
+    text-align: center;
+    line-height: 1;
+  }
+  .title h1 {
+    margin: 0 0 0.5em 0;
+  }
+  .date {
+    margin-bottom: 0.5em;
+    color: rgb(var(--gray));
+  }
+  .last-updated-on {
+    font-style: italic;
+  }
+
+  .language-switcher {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+
+  .language-switcher a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: rgb(var(--accent-light));
+    color: rgb(var(--accent));
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .language-switcher a:hover {
+    background: rgb(var(--accent));
+    color: white;
+    transform: translateY(-1px);
+  }
+
+  :where([data-astro-image]) {
+    object-fit: var(--fit);
+    object-position: var(--pos);
+  }
+  :where([data-astro-image="full-width"]) {
+    width: 100%;
+  }
+  :where([data-astro-image="constrained"]) {
+    max-width: 100%;
+  }
+
+  /* Add styles for back-to-top button */
+  #back-to-top {
+    position: fixed;
+    right: 2em;
+    bottom: 2em;
+    z-index: 100;
+    background: rgb(var(--accent-light));
+    color: var(--gray-dark);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 10px;
+    font-size: 1.5em;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+      0 6px 16px 0 rgba(0, 0, 0, 0.08),
+      0 3px 6px -4px rgba(0, 0, 0, 0.12),
+      0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  }
+  #back-to-top:hover {
+    background: rgba(0, 0, 0, 0.06);
+  }
+</style>

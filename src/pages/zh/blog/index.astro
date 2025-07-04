@@ -1,9 +1,9 @@
 ---
-import BaseLayout from '@/layouts/BaseLayout.astro';
-import { getPosts } from '@/utils';
-import BaseItems from '@/components/BaseItems.astro';
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPosts } from "@/utils";
+import BaseItems from "@/components/BaseItems.astro";
 
-const posts = await getPosts('blogZh', 100);
+const posts = await getPosts("blogZh", 100);
 ---
 
 <BaseLayout
@@ -29,83 +29,3 @@ const posts = await getPosts('blogZh', 100);
     </section>
   </main>
 </BaseLayout>
-
-<style>
-  .page-header {
-    text-align: center;
-    padding: 2rem 0;
-    border-bottom: 1px solid rgba(var(--accent), 0.1);
-    margin-bottom: 3rem;
-  }
-
-  .page-title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0 0 1rem 0;
-    color: rgb(var(--black));
-    animation: fadeInUp 0.6s ease-out;
-  }
-
-  .page-description {
-    font-size: 1.125rem;
-    line-height: 1.6;
-    color: rgb(var(--gray-dark));
-    margin: 0 0 1.5rem 0;
-    max-width: 500px;
-    margin-left: auto;
-    margin-right: auto;
-    animation: fadeInUp 0.6s ease-out 0.1s both;
-  }
-
-  .highlight {
-    color: rgb(var(--accent));
-    font-weight: 600;
-  }
-
-  .page-stats {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    animation: fadeInUp 0.6s ease-out 0.2s both;
-  }
-
-  .stat-badge {
-    background: rgba(var(--accent), 0.1);
-    color: rgb(var(--accent));
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    border: 1px solid rgba(var(--accent), 0.2);
-  }
-
-  .articles-section {
-    animation: fadeInUp 0.6s ease-out 0.3s both;
-  }
-
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 768px) {
-    .page-title {
-      font-size: 2rem;
-    }
-
-    .page-description {
-      font-size: 1rem;
-    }
-
-    .page-stats {
-      flex-direction: column;
-      align-items: center;
-    }
-  }
-</style>
