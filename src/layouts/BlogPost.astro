@@ -16,7 +16,7 @@ const { title, description, pubDate, heroImage } = Astro.props;
   </head>
   <body>
     <PageHeader />
-    <main>
+    <main class="prose">
       {
         heroImage && (
           <Image
@@ -92,8 +92,7 @@ const { title, description, pubDate, heroImage } = Astro.props;
     width: 100%;
   }
   .title {
-    margin-bottom: 1em;
-    padding: 1em 0;
+    padding-top: 1em;
     text-align: center;
     line-height: 1;
   }
