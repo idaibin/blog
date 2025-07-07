@@ -1,0 +1,443 @@
+---
+title: 'Rustzen Minimalist Architecture Design Guide: From Chaos to Clarity in Backend Evolution Practice'
+description: 'As a frontend developer transitioning into Rust backend development, I embarked on a journey to design a clean, maintainable system—balancing performance and clarity. This article shares the philosophy and architectural principles behind Rustzen, from Tauri to Axum, and how minimalism became a powerful development guide.'
+pubDate: '2025-07-07'
+tags:
+  [
+    'Rust',
+    'Axum',
+    'SQLx',
+    'Architecture Design',
+    'Full-Stack Development',
+    'Rustzen',
+  ]
+author: 'idaibin'
+---
+
+## I. What is Rustzen? Why this naming?
+
+> **Rustzen** is the name I chose for this project, meaning "Rust + Zen":
+> Rust brings performance and safety, Zen represents minimalism and order.
+
+This is not just a combination of technology stacks, but my way of thinking about development experience:
+
+- Use **minimal structure** to express **clearest intent**
+- Use **simplest path** to build **sustainable systems**
+
+Minimalism is not "doing less", but "just right". Every evolution of Rustzen is a question about "appropriate design + clear boundaries".
+
+> I started from Tauri + SQLite, gradually moved to Axum + SQLx, and continuously refined the current structure through evolution.
+> The starting point of this structure is a response to the following problems:
+
+- Early **handler layer structure was loose**, unclear responsibilities, routes and logic stacked, leading to maintenance difficulties;
+- Lack of clear data transmission specifications, **logic duplication, increased testing costs**;
+- In AI collaboration, due to unclear code structure, **generated content was redundant and difficult to combine and reuse**.
+
+The emergence of Rustzen is a response to these problems—not pursuing complex frameworks, but seeking "just right" in structure.
+
+---
+
+## II. Why adopt a three-layer architecture?
+
+Why design it this way?
+
+> Clear structure is the foundation of maintainability. Three-layer separation allows each layer to focus only on its own responsibilities, reducing cognitive load.
+
+| Layer     | Responsibility Description                                                        | Core Features                                |
+| --------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
+| `router`  | Route definition, permission binding, HTTP processing, intuitive functional entry | **Router + Handler merged**                  |
+| `service` | Aggregate business logic, focus on behavior, encapsulate processing flow          | Pure business logic, no framework dependency |
+| `repo`    | Database access, encapsulate SQL queries                                          | First-line error handling                    |
+
+**Directory Example:**
+
+```txt
+features/
+└── system/
+    ├── mod.rs           // Module declaration
+    ├── user/
+    │   ├── mod.rs
+    │   ├── router.rs    // Routes + handlers
+    │   ├── service.rs   // Business logic
+    │   ├── repo.rs      // Data access
+    │   ├── entity.rs    // Database entities
+    │   ├── dto.rs       // Request data transfer objects
+    │   └── vo.rs        // Response view objects
+    ├── role/
+    └── menu/
+```
+
+---
+
+## III. Why split data models into entity/dto/vo?
+
+Why design it this way?
+
+> entity/dto/vo separation avoids field redundancy and data leakage, facilitating evolution and collaboration.
+
+| Module   | Description                                                        | Examples                        |
+| -------- | ------------------------------------------------------------------ | ------------------------------- |
+| `entity` | Maps database structure, used for SQLx queries                     | `UserWithRolesEntity`           |
+| `dto`    | Receives frontend input parameters, field validation               | `CreateUserDto`, `UserQueryDto` |
+| `vo`     | Returns fields needed for frontend display, secure desensitization | `UserListVo`, `UserDetailVo`    |
+
+- Use `impl From<Entity> for VO` to implement data conversion
+- Clear module responsibilities, facilitating AI and multi-person collaboration understanding and calling
+
+---
+
+## IV. Authentication and Permission System: JWT + Middleware Loop
+
+Why design it this way?
+
+> Permission security is the core of backend systems. Declarative permissions + caching mechanism achieve both security and performance, clear structure also facilitates AI collaboration.
+
+### 4.1 Middleware Architecture
+
+#### Core Middleware Components
+
+- ✅ **JWT Validation Middleware**: Extract user information, verify token validity
+- ✅ **Permission Verification Middleware**: Permission control based on `PermissionsCheck`
+
+#### Middleware Implementation Example
+
+```rust
+// JWT middleware
+pub async fn auth_middleware(
+    mut request: Request,
+    next: Next,
+) -> Result<Response, AppError> {
+    // Extract token
+    let token = extract_token_from_header(&request)?;
+    // Verify token
+    let user_id = verify_jwt_token(&token)?;
+    // Inject user information into request context
+    request.extensions_mut().insert(CurrentUser { id: user_id });
+    // Continue to next middleware
+    Ok(next.run(request).await)
+}
+
+// Permission middleware
+pub async fn permission_middleware(
+    request: Request,
+    next: Next,
+    permissions: PermissionsCheck,
+) -> Result<Response, AppError> {
+    // Get user information from request context
+    let current_user = request.extensions().get::<CurrentUser>()
+        .ok_or(ServiceError::InvalidToken)?;
+    // Check permissions
+    let has_permission = PermissionService::check_permissions(
+        current_user.id,
+        &permissions,
+    ).await?;
+    // If insufficient permissions, return error
+    if !has_permission {
+        return Err(ServiceError::PermissionDenied.into());
+    }
+    // Continue to next middleware
+    Ok(next.run(request).await)
+}
+```
+
+#### Declarative Permission Usage Example
+
+```rust
+.route_with_permission(
+    "/",
+    get(get_user_list),
+    PermissionsCheck::Any(vec!["system:*", "system:user:*", "system:user:list"]),
+)
+```
+
+---
+
+### 4.2 Permission Caching and Renewal Mechanism
+
+Why design it this way?
+
+> Permission caching reduces database pressure, renewal mechanism ensures active user experience, automatic expiration cleanup enhances security.
+
+- ✅ **Local Memory Cache**: Reduces database queries
+- ✅ **Automatic Cache Expiration Cleanup**: 1-hour expiration, forces user re-authentication
+- ✅ **Permission Renewal Mechanism**: Automatically renews 1 hour each time user info interface is accessed
+- ✅ **User Status Changes**: Cache immediately cleared when user is disabled or kicked offline
+- ⚙️ **Future Extensions**: refresh token and online session management
+
+#### Permission Cache Implementation Example
+
+```rust
+// Permission cache manager
+pub struct PermissionCacheManager {
+    cache: Arc<RwLock<HashMap<i64, UserPermissionCache>>>,
+}
+
+impl PermissionService {
+    pub async fn check_permissions(
+        user_id: i64,
+        permissions_check: &PermissionsCheck,
+    ) -> Result<bool, ServiceError> {
+        // Check if cache exists
+        if let Some(cache) = PERMISSION_CACHE.get(user_id) {
+            // Check if cache is expired
+            if cache.is_expired() {
+                PERMISSION_CACHE.remove(user_id);
+                return Err(ServiceError::InvalidToken);
+            }
+            // Check permissions
+            let has_permission = permissions_check.check(&cache.permissions);
+            return Ok(has_permission);
+        }
+        Err(ServiceError::InvalidToken)
+    }
+}
+
+// Permission cache renewal - implemented in AuthService
+impl AuthService {
+    // Get user login information
+    #[tracing::instrument(name = "get_login_info", skip(pool))]
+    pub async fn get_login_info(
+        pool: &PgPool,
+        user_id: i64,
+    ) -> Result<UserInfoResponse, ServiceError> {
+        // ...omitted...
+        // Refresh user permission cache
+        Self::refresh_user_permissions_cache(user_id, user.is_super_admin, permissions).await?;
+        Ok(user_info)
+    }
+
+    pub async fn refresh_user_permissions_cache(
+        user_id: i64,
+        is_super_admin: bool,
+        permissions: Vec<String>,
+    ) -> Result<(), ServiceError> {
+        if is_super_admin {
+            // Super admin permission cache
+            PermissionService::cache_user_permissions(user_id, vec!["*".to_string()]);
+            return Ok(());
+        }
+        // Cache user permissions
+        PermissionService::cache_user_permissions(user_id, permissions.clone());
+        Ok(())
+    }
+}
+```
+
+---
+
+### 4.3 Permission Granularity and Declaration
+
+- **Permission Granularity**: Current project's permission granularity is sufficiently fine-grained
+- **Permission Codes**: Such as `system:user:list`, `system:user:create`, etc.
+- **Wildcard Support**: `system:*` supports module general permissions
+
+**Note**: The current project doesn't need more fine-grained permission control, current granularity meets business requirements.
+
+---
+
+### 4.4 Performance Optimization Strategies
+
+- **Connection Pool Management**: Configurable connection limits and timeout settings
+- **Prepared Statements**: Automatically handled through SQLx
+- **Efficient Pagination**: Use offset/limit for pagination queries
+- **Index Optimization**: Build indexes for commonly queried fields
+
+---
+
+## V. Error Handling and Unified Response
+
+Why design it this way?
+
+> Unified error types and response structures improve frontend-backend collaboration efficiency, facilitating AI automatic generation of API documentation and test cases.
+
+- ServiceError + AppResult unified error handling
+- ApiResponse unified response format
+
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum ServiceError {
+    #[error("User is disabled")]
+    UserIsDisabled,
+    #[error("Username already exists")]
+    UsernameConflict,
+    #[error("Database query failed")]
+    DatabaseQueryFailed,
+    #[error("{0} not found")]
+    NotFound(String),
+    #[error("Insufficient permissions")]
+    PermissionDenied,
+    #[error("Invalid or expired token")]
+    InvalidToken,
+    // ... more business error types
+}
+```
+
+### Error Conversion Mechanism
+
+```rust
+impl From<ServiceError> for AppError {
+    fn from(err: ServiceError) -> Self {
+        let (status, code, message) = match err {
+            ServiceError::NotFound(resource) => (
+                StatusCode::NOT_FOUND,
+                10001,
+                format!("{} not found", resource),
+            ),
+            ServiceError::UsernameConflict => (
+                StatusCode::CONFLICT,
+                10201,
+                "Username already exists".to_string(),
+            ),
+            ServiceError::DatabaseQueryFailed => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                20001,
+                "Service temporarily unavailable, please try again later".to_string(),
+            ),
+            ServiceError::InvalidToken => (
+                StatusCode::UNAUTHORIZED,
+                30000,
+                "Invalid or expired token, please login again".to_string(),
+            ),
+            // ... complete error mapping
+        };
+        AppError((status, code, message))
+    }
+}
+```
+
+- All processing logic uniformly returns `AppResult<T>`, `AppResult` has built-in `Json<ApiResponse<T>>`, simplifying return types
+- Interface layer directly `.await?` destructures errors, no redundant processing needed
+- Error response structure is unified:
+
+## VI. Response Format: Two Schemes Unified Processing
+
+### Scheme One: Simple Response Format
+
+```rust
+// Single object or non-paginated response
+ApiResponse::success(data)
+
+// Response JSON:
+{
+  "code": 0,
+  "message": "Success",
+  "data": {
+    "id": 1,
+    "username": "admin"
+  }
+}
+```
+
+### Scheme Two: Standard Pagination Format
+
+```rust
+// Paginated list interface
+ApiResponse::page(data, total)
+
+// Response JSON:
+{
+  "code": 0,
+  "message": "Success",
+  "data": [...],
+  "total": 100
+}
+```
+
+Rustzen is not deliberately catering to AI, but **clear code written for humans** happens to make AI collaboration better:
+
+```rust
+// In router.rs
+pub async fn get_user_list(...) -> AppResult<Vec<UserListVo>> {
+    let (users, total) = UserService::get_user_list(&pool, query).await?;
+    Ok(ApiResponse::page(users, total))  // Pagination format
+}
+
+pub async fn get_user_by_id(...) -> AppResult<UserDetailVo> {
+    let user = UserService::get_user_by_id(&pool, id).await?;
+    Ok(ApiResponse::success(user))  // Simple format
+}
+```
+
+## VII. Database Migration Strategy: Zen-Style Numbering System
+
+| Type                    | Example Number      | Description                                        |
+| ----------------------- | ------------------- | -------------------------------------------------- |
+| Table Structure         | `100100` ~ `100500` | Users, roles, menus, etc. basic tables             |
+| Foreign Keys / Triggers | `100800`, `100900`  | Table constraints, log archiving                   |
+| Views                   | `1070xx`            | Aggregate views, such as user permissions          |
+| Functions               | `1080xx`            | Query encapsulation, login, permission calculation |
+| Data Seeds              | `1090xx`            | Initialize users, menus, dictionary data, etc.     |
+
+- ✅ Modular, traceable, excellent AI maintainability
+- ⚠️ **Many files**, consider merging files when reaching milestones later
+- Each file contains a single entity (view, function, or seed), conforming to Zen style
+
+## VIII. Module Dependency Relationship Management
+
+### Clear Module Boundaries
+
+```rust
+// In system/mod.rs
+pub fn system_routes() -> Router<PgPool> {
+    Router::new()
+        .nest("/users", user_routes())
+        .nest("/menus", menu_routes())
+        .nest("/roles", role_routes())
+        .nest("/dicts", dict_routes())
+        .nest("/logs", log_routes())
+}
+```
+
+> Facing complexity, we choose clarity;
+> Facing redundancy, we choose necessity;
+> Facing chaos, we choose Zen.
+
+**Rustzen is not a framework, but a way of thinking.**
+I hope it's written not just for the current me, but also for those of you who are also on the road in the future.
+
+## IX. AI-Assisted Programming: The More Zen the Structure, the Higher the Efficiency
+
+- Clear structure allows AI to automatically generate modules (router/dto/service)
+- Unified naming, clear logic, facilitating prompt generation and batch refactoring
+- Clear module responsibilities, reducing error and rewrite costs
+- **Log content consistent with function names**, facilitating AI understanding and debugging
+
+## X. Conclusion: Rust + Zen, Minimalism is Not Less, But Just Right
+
+Rustzen is an architectural exploration from chaos to order.
+
+Minimalism is not "doing less", but **precise design, just right**; it provides a clearer foundation for AI collaboration, team cooperation, and future expansion.
+
+### Architecture Advantages Summary
+
+- ✅ **Simplicity**: Three-layer architecture reduces cognitive load
+- ✅ **AI-Friendly**: Clear separation of concerns, facilitating AI assistance
+- ✅ **Type Safety**: Strong type system, compile-time guarantees
+- ✅ **High Performance**: Caching reduces database load, permission renewal mechanism
+- ✅ **Maintainability**: Single responsibility principle, clear error handling
+- ✅ **Security**: Perfect cache expiration mechanism, forced re-authentication
+
+---
+
+## Future Improvement Directions
+
+- 🔄 **Token Mechanism**: Implement refresh token support
+- 🔄 **Complete Feature Modules**: After initial release, complete feature modules based on feedback
+- 🔄 **Monitoring Metrics**: Add performance monitoring and metric collection
+- 🔄 **Cache Optimization**: Consider Redis distributed caching for production environment
+- 🔄 **Documentation Improvement**: More comprehensive API documentation, facilitating AI analysis
+- 🔄 **Log Optimization**: Optimize log format, facilitating AI analysis
+
+---
+
+## XI. Closing Message: A Growing Project, Welcome Resonance
+
+Rustzen is the crystallization of my practice from frontend to backend exploration. It's not an endpoint, but a path to order and clarity.
+
+May every developer find their own balance and direction in the pursuit of "just right".
+
+**Welcome feedback and co-creation, let Rustzen become more developers' choice of "just right"!**
+
+---
+
+- 📦 Project Source Code：[https://github.com/idaibin/rustzen-admin](https://github.com/idaibin/rustzen-admin)

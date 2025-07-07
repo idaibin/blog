@@ -1,16 +1,16 @@
 ---
-import Analytics from "@vercel/analytics/astro";
-import SpeedInsights from "@vercel/speed-insights/astro";
-import BaseHead from "@/components/BaseHead.astro";
-import PageHeader from "@/components/PageHeader.astro";
-import PageFooter from "@/components/PageFooter.astro";
-import FormattedDate from "@/components/FormattedDate.astro";
-import { Image } from "astro:assets";
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
+import BaseHead from '@/components/BaseHead.astro';
+import PageHeader from '@/components/PageHeader.astro';
+import PageFooter from '@/components/PageFooter.astro';
+import FormattedDate from '@/components/FormattedDate.astro';
+import { Image } from 'astro:assets';
 
 const { title, description, pubDate, heroImage } = Astro.props;
 ---
 
-<html lang={Astro.currentLocale || "en"}>
+<html lang={Astro.currentLocale || 'en'}>
   <head>
     <BaseHead title={title} description={description} />
   </head>
@@ -61,20 +61,20 @@ const { title, description, pubDate, heroImage } = Astro.props;
       </svg>
     </button>
     <script>
-      window.addEventListener("scroll", function () {
-        const btn = document.getElementById("back-to-top");
+      window.addEventListener('scroll', function () {
+        const btn = document.getElementById('back-to-top');
         if (btn) {
           if (window.scrollY > 200) {
-            btn.style.display = "flex";
+            btn.style.display = 'flex';
           } else {
-            btn.style.display = "none";
+            btn.style.display = 'none';
           }
         }
       });
-      const backToTopBtn = document.getElementById("back-to-top");
+      const backToTopBtn = document.getElementById('back-to-top');
       if (backToTopBtn) {
         backToTopBtn.onclick = function () {
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         };
       }
     </script>
@@ -136,10 +136,10 @@ const { title, description, pubDate, heroImage } = Astro.props;
     object-fit: var(--fit);
     object-position: var(--pos);
   }
-  :where([data-astro-image="full-width"]) {
+  :where([data-astro-image='full-width']) {
     width: 100%;
   }
-  :where([data-astro-image="constrained"]) {
+  :where([data-astro-image='constrained']) {
     max-width: 100%;
   }
 

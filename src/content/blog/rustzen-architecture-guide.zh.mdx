@@ -1,0 +1,435 @@
+---
+title: 'Rustzen 极简架构设计指南：从混乱到清晰的后端演进实践'
+description: '从前端开发者转向 Rust 后端，这是一场关于结构、清晰与极简的探索。从 Tauri 到 Axum，从堆叠混乱到三层架构，这篇文章系统梳理了我在构建 rustzen 项目中的核心理念与实践路径，也是一份给未来自己的开发笔记。'
+pubDate: '2025-07-07'
+tags: ['Rust', 'Axum', 'SQLx', 'Backend', '架构设计', '全栈开发', 'Rustzen']
+author: 'idaibin'
+---
+
+## 一、Rustzen 是什么？为什么这样命名？
+
+> **Rustzen** 是我为这个项目取的名字，寓意 “Rust + Zen”：
+> Rust 带来性能与安全，Zen 代表极简与秩序。
+
+这不仅是一种技术栈的组合，更是我对开发体验的思考方式：
+
+- 用**最少的结构**表达**最清晰的意图**
+- 用**最简的路径**构建**可持续的系统**
+
+极简不是“少做”，而是“恰到好处”。Rustzen 的每一次演进，都是对“合适的设计+清晰的边界”的追问。
+
+> 我是从 Tauri + SQLite 起步，逐步转向 Axum + SQLx，在不断演化中逐步打磨出当前这套结构。
+> 而这套结构的出发点，正是面对如下问题的回应：
+
+- 早期 **handler 层结构松散**、职责不明，路由与逻辑堆叠，导致维护困难；
+- 缺乏明确的数据传输规范，**逻辑重复、测试成本上升**；
+- 在 AI 协作中，由于代码结构不清晰，**生成内容冗余、不易组合重用**。
+
+Rustzen 的出现，是对这些问题的回应——不是追求复杂的框架，而是寻找“结构上的刚刚好”。
+
+---
+
+## 二、为什么采用三层架构？
+
+为什么这样设计？
+
+> 结构清晰是可维护性的基础，三层分离让每一层只关注自己的职责，降低认知负担。
+
+| 层级      | 职责说明                                    | 核心特点                    |
+| --------- | ------------------------------------------- | --------------------------- |
+| `router`  | 路由定义、权限绑定、HTTP 处理，功能入口直观 | **Router + Handler 已合并** |
+| `service` | 聚合业务逻辑，聚焦行为、封装处理流程        | 纯业务逻辑，无框架依赖      |
+| `repo`    | 数据库访问，封装 SQL 查询                   | 第一现场错误处理            |
+
+**目录示例：**
+
+```txt
+features/
+└── system/
+    ├── mod.rs           // 模块声明
+    ├── user/
+    │   ├── mod.rs
+    │   ├── router.rs    // 路由 + 处理器
+    │   ├── service.rs   // 业务逻辑
+    │   ├── repo.rs      // 数据访问
+    │   ├── entity.rs    // 数据库实体
+    │   ├── dto.rs       // 请求数据传输对象
+    │   └── vo.rs        // 响应视图对象
+    ├── role/
+    └── menu/
+```
+
+---
+
+## 三、数据模型为何拆分 entity/dto/vo？
+
+为什么这样设计？
+
+> entity/dto/vo 分离，避免字段冗余和数据泄漏，便于演进和协作。
+
+| 模块     | 说明                           | 示例                            |
+| -------- | ------------------------------ | ------------------------------- |
+| `entity` | 映射数据库结构，用于 SQLx 查询 | `UserWithRolesEntity`           |
+| `dto`    | 接收前端入参，字段校验         | `CreateUserDto`, `UserQueryDto` |
+| `vo`     | 返回前端展示所需字段，安全脱敏 | `UserListVo`, `UserDetailVo`    |
+
+- 使用 `impl From<Entity> for VO` 实现数据转换
+- 模块职责清晰，便于 AI 与多人协作理解与调用
+
+---
+
+## 四、认证与权限系统：JWT + 中间件闭环
+
+为什么这样设计？
+
+> 权限安全是后台系统的核心。声明式权限+缓存机制让安全与性能兼得，结构清晰也便于 AI 协作。
+
+### 4.1 中间件架构
+
+#### 核心中间件组件
+
+- ✅ **JWT 校验中间件**：提取用户信息，验证 token 有效性
+- ✅ **权限验证中间件**：基于 `PermissionsCheck` 进行权限控制
+
+#### 中间件实现示例
+
+```rust
+// JWT 中间件
+pub async fn auth_middleware(
+    mut request: Request,
+    next: Next,
+) -> Result<Response, AppError> {
+    // 提取 token
+    let token = extract_token_from_header(&request)?;
+    // 验证 token
+    let user_id = verify_jwt_token(&token)?;
+    // 注入用户信息到请求上下文
+    request.extensions_mut().insert(CurrentUser { id: user_id });
+    // 继续执行下一个中间件
+    Ok(next.run(request).await)
+}
+
+// 权限中间件
+pub async fn permission_middleware(
+    request: Request,
+    next: Next,
+    permissions: PermissionsCheck,
+) -> Result<Response, AppError> {
+    // 从请求上下文中获取用户信息
+    let current_user = request.extensions().get::<CurrentUser>()
+        .ok_or(ServiceError::InvalidToken)?;
+    // 检查权限
+    let has_permission = PermissionService::check_permissions(
+        current_user.id,
+        &permissions,
+    ).await?;
+    // 如果权限不足，返回错误
+    if !has_permission {
+        return Err(ServiceError::PermissionDenied.into());
+    }
+    // 继续执行下一个中间件
+    Ok(next.run(request).await)
+}
+```
+
+#### 权限声明式用法示例
+
+```rust
+.route_with_permission(
+    "/",
+    get(get_user_list),
+    PermissionsCheck::Any(vec!["system:*", "system:user:*", "system:user:list"]),
+)
+```
+
+---
+
+### 4.2 权限缓存与续期机制
+
+为什么这样设计？
+
+> 权限缓存减少数据库压力，续期机制保证活跃用户体验，过期自动清理提升安全性。
+
+- ✅ **本地内存缓存**：减少数据库查询
+- ✅ **缓存过期自动清理**：1 小时过期，强制用户重新认证
+- ✅ **权限续期机制**：每次访问用户信息接口自动续期 1 小时
+- ✅ **用户状态变更**：被禁用或踢下线时缓存立即清空
+- ⚙️ **后续扩展**：refresh token 与在线会话管理
+
+#### 权限缓存实现示例
+
+```rust
+// 权限缓存管理器
+pub struct PermissionCacheManager {
+    cache: Arc<RwLock<HashMap<i64, UserPermissionCache>>>,
+}
+
+impl PermissionService {
+    pub async fn check_permissions(
+        user_id: i64,
+        permissions_check: &PermissionsCheck,
+    ) -> Result<bool, ServiceError> {
+        // 检查缓存是否存在
+        if let Some(cache) = PERMISSION_CACHE.get(user_id) {
+            // 检查缓存是否过期
+            if cache.is_expired() {
+                PERMISSION_CACHE.remove(user_id);
+                return Err(ServiceError::InvalidToken);
+            }
+            // 检查权限
+            let has_permission = permissions_check.check(&cache.permissions);
+            return Ok(has_permission);
+        }
+        Err(ServiceError::InvalidToken)
+    }
+}
+
+// 权限缓存续期 - 在 AuthService 中实现
+impl AuthService {
+    // 获取用户登录信息
+    #[tracing::instrument(name = "get_login_info", skip(pool))]
+    pub async fn get_login_info(
+        pool: &PgPool,
+        user_id: i64,
+    ) -> Result<UserInfoResponse, ServiceError> {
+        // ...省略...
+        // 刷新用户权限缓存
+        Self::refresh_user_permissions_cache(user_id, user.is_super_admin, permissions).await?;
+        Ok(user_info)
+    }
+
+    pub async fn refresh_user_permissions_cache(
+        user_id: i64,
+        is_super_admin: bool,
+        permissions: Vec<String>,
+    ) -> Result<(), ServiceError> {
+        if is_super_admin {
+            // 超级管理员权限缓存
+            PermissionService::cache_user_permissions(user_id, vec!["*".to_string()]);
+            return Ok(());
+        }
+        // 缓存用户权限
+        PermissionService::cache_user_permissions(user_id, permissions.clone());
+        Ok(())
+    }
+}
+```
+
+---
+
+### 4.3 权限粒度与声明
+
+- **权限粒度**：当前项目的权限粒度已经足够精细
+- **权限代码**：如 `system:user:list`, `system:user:create` 等
+- **通配符支持**：`system:*` 支持模块通用权限
+
+**注意**：目前项目不需要更精细的权限控制，当前粒度已满足业务需求。
+
+---
+
+### 4.4 性能优化策略
+
+- **连接池管理**：可配置的连接限制和超时设置
+- **预编译语句**：通过 SQLx 自动处理
+- **高效分页**：使用 offset/limit 进行分页查询
+- **索引优化**：为常用查询字段建立索引
+
+---
+
+## 五、错误处理与统一响应
+
+为什么这样设计？
+
+> 统一的错误类型和响应结构，提升前后端协作效率，便于 AI 自动生成接口文档和测试用例。
+
+- ServiceError + AppResult 统一错误处理
+- ApiResponse 统一响应格式
+
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum ServiceError {
+    #[error("用户被禁用")]
+    UserIsDisabled,
+    #[error("用户名已存在")]
+    UsernameConflict,
+    #[error("数据库查询失败")]
+    DatabaseQueryFailed,
+    #[error("{0} 未找到")]
+    NotFound(String),
+    #[error("权限不足")]
+    PermissionDenied,
+    #[error("无效或过期的令牌")]
+    InvalidToken,
+    // ... 更多业务错误类型
+}
+```
+
+### 错误转换机制
+
+```rust
+impl From<ServiceError> for AppError {
+    fn from(err: ServiceError) -> Self {
+        let (status, code, message) = match err {
+            ServiceError::NotFound(resource) => (
+                StatusCode::NOT_FOUND,
+                10001,
+                format!("{} 未找到", resource),
+            ),
+            ServiceError::UsernameConflict => (
+                StatusCode::CONFLICT,
+                10201,
+                "用户名已存在".to_string(),
+            ),
+            ServiceError::DatabaseQueryFailed => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                20001,
+                "服务暂时不可用，请稍后重试".to_string(),
+            ),
+            ServiceError::InvalidToken => (
+                StatusCode::UNAUTHORIZED,
+                30000,
+                "无效或过期的令牌，请重新登录".to_string(),
+            ),
+            // ... 完整的错误映射
+        };
+        AppError((status, code, message))
+    }
+}
+```
+
+- 所有处理逻辑统一返回 `AppResult<T>`，`AppResult` 已内置 `Json<ApiResponse<T>>`，简化返回类型
+- 接口层直接 `.await?` 解构错误，无需冗余处理
+- 错误响应结构统一：
+
+## 六、响应格式：两种方案统一处理
+
+### 方案一：简单响应格式
+
+```rust
+// 单个对象或非分页响应
+ApiResponse::success(data)
+
+// 响应JSON：
+{
+  "code": 0,
+  "message": "Success",
+  "data": {
+    "id": 1,
+    "username": "admin"
+  }
+}
+```
+
+### 方案二：标准分页格式
+
+```rust
+// 分页列表接口
+ApiResponse::page(data, total)
+
+// 响应JSON：
+{
+  "code": 0,
+  "message": "Success",
+  "data": [...],
+  "total": 100
+}
+```
+
+Rustzen 并非刻意迎合 AI，而是**为人类写的清晰代码**恰好也让 AI 更好协作：
+
+```rust
+// 在 router.rs 中
+pub async fn get_user_list(...) -> AppResult<Vec<UserListVo>> {
+    let (users, total) = UserService::get_user_list(&pool, query).await?;
+    Ok(ApiResponse::page(users, total))  // 分页格式
+}
+
+pub async fn get_user_by_id(...) -> AppResult<UserDetailVo> {
+    let user = UserService::get_user_by_id(&pool, id).await?;
+    Ok(ApiResponse::success(user))  // 简单格式
+}
+```
+
+## 七、数据库迁移策略：Zen 风格编号体系
+
+| 类型          | 示例编号            | 描述                         |
+| ------------- | ------------------- | ---------------------------- |
+| 表结构        | `100100` ~ `100500` | 用户、角色、菜单等基础表     |
+| 外键 / 触发器 | `100800`, `100900`  | 表间约束、日志归档           |
+| 视图          | `1070xx`            | 聚合视图，如用户权限         |
+| 函数          | `1080xx`            | 查询封装、登录、权限计算     |
+| 数据种子      | `1090xx`            | 初始化用户、菜单、字典数据等 |
+
+- ✅ 模块化、可追踪、AI 可维护性极佳
+- ⚠️ **文件数量较多**，后期可考虑在达到里程碑时合并文件
+- 每个文件包含单一实体（视图、函数或种子），符合 Zen 风格
+
+## 八、模块间依赖关系管理
+
+### 清晰的模块边界
+
+```rust
+// 在 system/mod.rs 中
+pub fn system_routes() -> Router<PgPool> {
+    Router::new()
+        .nest("/users", user_routes())
+        .nest("/menus", menu_routes())
+        .nest("/roles", role_routes())
+        .nest("/dicts", dict_routes())
+        .nest("/logs", log_routes())
+}
+```
+
+> 面对复杂，我们选择清晰；
+> 面对冗余，我们选择必要；
+> 面对混乱，我们选择 Zen。
+
+**Rustzen 不是一套框架，而是一种思考方式。**
+希望它不仅写给现在的我，也能写给未来那些，也在路上的你。
+
+## 九、AI 辅助编程：结构越 Zen，效率越高
+
+- 结构清晰，AI 可自动生成模块（router/dto/service）
+- 命名统一、逻辑明确，便于提示生成和批量重构
+- 模块职责明确，减少错误和重写成本
+- **日志内容与函数名保持一致**，便于 AI 理解和调试
+
+## 十、结语：Rust + Zen，极简不是少，而是恰好
+
+Rustzen 是一次从混沌到秩序的架构探索。
+
+极简不是"少做"，而是**精准设计、恰到好处**；它为 AI 协作、团队合作、未来扩展都提供了更清晰的基础。
+
+### 架构优势总结
+
+- ✅ **简洁性**：三层架构降低认知负担
+- ✅ **AI 友好**：清晰的关注点分离，便于 AI 辅助
+- ✅ **类型安全**：强类型系统，编译时保证
+- ✅ **高性能**：缓存减少数据库负载，权限续期机制
+- ✅ **可维护性**：单一职责原则，清晰的错误处理
+- ✅ **安全性**：完善的缓存过期机制，强制重新认证
+
+---
+
+## 未来改进方向
+
+- 🔄 **Token 机制**：实现 refresh token 支持
+- 🔄 **完善功能模块**：发布初版后，根据反馈完善功能模块
+- 🔄 **监控指标**：添加性能监控和指标收集
+- 🔄 **缓存优化**：生产环境考虑 Redis 分布式缓存
+- 🔄 **文档完善**：更全面的 API 文档，便于 AI 分析
+- 🔄 **日志优化**：优化日志格式，便于 AI 分析
+
+---
+
+## 十、结尾寄语：成长中的项目，欢迎共鸣
+
+Rustzen 是我从前端转向后端探索的实践结晶，它不是一个终点，而是一条通往秩序与清晰的路。
+
+愿每一位开发者在追求“恰到好处”的过程中，找到属于自己的平衡与方向。
+
+**欢迎反馈和共建，让 Rustzen 成为更多开发者的“恰到好处”之选！**
+
+---
+
+- 📦 项目源码：[https://github.com/idaibin/rustzen-admin](https://github.com/idaibin/rustzen-admin)
