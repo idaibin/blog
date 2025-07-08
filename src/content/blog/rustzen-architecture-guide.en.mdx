@@ -86,56 +86,49 @@ Why design it this way?
 
 ---
 
-## IV. Authentication and Permission System: JWT + Middleware Loop
+## IV. Authentication & Authorization: JWT-based System
 
-Why design it this way?
+**System Overview:**
 
-> Permission security is the core of backend systems. Declarative permissions + caching mechanism achieve both security and performance, clear structure also facilitates AI collaboration.
+- User authentication and authorization are both handled via JWT tokens.
+- After user login, the system issues a JWT that contains user identity and permission claims.
+- This stateless design simplifies deployment and scaling.
+- Permission caching improves performance and reduces database load.
 
 ### 4.1 Middleware Architecture
 
 #### Core Middleware Components
 
-- ✅ **JWT Validation Middleware**: Extract user information, verify token validity
-- ✅ **Permission Verification Middleware**: Permission control based on `PermissionsCheck`
+- ✅ **JWT Authentication Middleware**: Verifies the token, validates user identity, and extracts claims.
+- ✅ **Permission Verification Middleware**: Checks user permissions based on the claims in the JWT.
 
 #### Middleware Implementation Example
 
 ```rust
-// JWT middleware
-pub async fn auth_middleware(
+// JWT authentication middleware - handles both auth and authorization
+pub async fn jwt_auth_middleware(
     mut request: Request,
     next: Next,
 ) -> Result<Response, AppError> {
-    // Extract token
     let token = extract_token_from_header(&request)?;
-    // Verify token
-    let user_id = verify_jwt_token(&token)?;
-    // Inject user information into request context
-    request.extensions_mut().insert(CurrentUser { id: user_id });
-    // Continue to next middleware
+    // JWT contains both user identity and permission claims
+    let user_claims = verify_jwt_claims(&token)?;
+    request.extensions_mut().insert(CurrentUser { id: user_claims.user_id });
     Ok(next.run(request).await)
 }
 
-// Permission middleware
+// Permission middleware example
 pub async fn permission_middleware(
     request: Request,
     next: Next,
     permissions: PermissionsCheck,
 ) -> Result<Response, AppError> {
-    // Get user information from request context
     let current_user = request.extensions().get::<CurrentUser>()
         .ok_or(ServiceError::InvalidToken)?;
-    // Check permissions
-    let has_permission = PermissionService::check_permissions(
-        current_user.id,
-        &permissions,
-    ).await?;
-    // If insufficient permissions, return error
+    let has_permission = PermissionService::check_permissions(current_user.id, &permissions).await?;
     if !has_permission {
         return Err(ServiceError::PermissionDenied.into());
     }
-    // Continue to next middleware
     Ok(next.run(request).await)
 }
 ```
@@ -159,10 +152,10 @@ Why design it this way?
 > Permission caching reduces database pressure, renewal mechanism ensures active user experience, automatic expiration cleanup enhances security.
 
 - ✅ **Local Memory Cache**: Reduces database queries
-- ✅ **Automatic Cache Expiration Cleanup**: 1-hour expiration, forces user re-authentication
+- ✅ **Automatic Cache Expiration Cleanup**: 1-hour expiration, requires re-authorization
 - ✅ **Permission Renewal Mechanism**: Automatically renews 1 hour each time user info interface is accessed
 - ✅ **User Status Changes**: Cache immediately cleared when user is disabled or kicked offline
-- ⚙️ **Future Extensions**: refresh token and online session management
+- ⚙️ **Future Extensions**: Add refresh token mechanism for better security
 
 #### Permission Cache Implementation Example
 
@@ -294,7 +287,7 @@ impl From<ServiceError> for AppError {
                 "Service temporarily unavailable, please try again later".to_string(),
             ),
             ServiceError::InvalidToken => (
-                StatusCode::UNAUTHORIZED,
+                StatusCode::FORBIDDEN,  // 改为 FORBIDDEN，因为这是授权问题
                 30000,
                 "Invalid or expired token, please login again".to_string(),
             ),
@@ -343,7 +336,7 @@ ApiResponse::page(data, total)
 }
 ```
 
-Rustzen is not deliberately catering to AI, but **clear code written for humans** happens to make AI collaboration better:
+Rustzen is not built for AI, but its clarity — designed for human understanding — happens to align well with how AI assistants interpret and generate code.
 
 ```rust
 // In router.rs
@@ -415,13 +408,14 @@ Minimalism is not "doing less", but **precise design, just right**; it provides 
 - ✅ **Type Safety**: Strong type system, compile-time guarantees
 - ✅ **High Performance**: Caching reduces database load, permission renewal mechanism
 - ✅ **Maintainability**: Single responsibility principle, clear error handling
-- ✅ **Security**: Perfect cache expiration mechanism, forced re-authentication
+- ✅ **Security**: Proper cache expiration mechanism, requires re-authorization when cache expires
 
 ---
 
 ## Future Improvement Directions
 
-- 🔄 **Token Mechanism**: Implement refresh token support
+- 🔄 **Authentication Flow**: Implement proper session-based authentication with secure session management
+- 🔄 **JWT Optimization**: Use JWT only for authorization, implement refresh token mechanism
 - 🔄 **Complete Feature Modules**: After initial release, complete feature modules based on feedback
 - 🔄 **Monitoring Metrics**: Add performance monitoring and metric collection
 - 🔄 **Cache Optimization**: Consider Redis distributed caching for production environment

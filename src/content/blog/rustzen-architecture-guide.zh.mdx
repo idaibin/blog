@@ -78,61 +78,54 @@ features/
 
 ---
 
-## 四、认证与权限系统：JWT + 中间件闭环
+## 四、认证与授权系统：基于 JWT 的系统
 
-为什么这样设计？
+**系统概览：**
 
-> 权限安全是后台系统的核心。声明式权限+缓存机制让安全与性能兼得，结构清晰也便于 AI 协作。
+- 用户认证和授权都通过 JWT 令牌处理。
+- 用户登录后，系统会签发包含用户身份和权限声明的 JWT。
+- 这种无状态设计简化了部署和扩展。
+- 权限缓存提高了性能并减少了数据库负载。
 
 ### 4.1 中间件架构
 
 #### 核心中间件组件
 
-- ✅ **JWT 校验中间件**：提取用户信息，验证 token 有效性
-- ✅ **权限验证中间件**：基于 `PermissionsCheck` 进行权限控制
+- ✅ **JWT 认证中间件**：验证令牌，验证用户身份，并提取声明。
+- ✅ **权限验证中间件**：基于 JWT 中的声明检查用户权限。
 
 #### 中间件实现示例
 
 ```rust
-// JWT 中间件
-pub async fn auth_middleware(
+// JWT 认证中间件 - 同时处理认证和授权
+pub async fn jwt_auth_middleware(
     mut request: Request,
     next: Next,
 ) -> Result<Response, AppError> {
-    // 提取 token
     let token = extract_token_from_header(&request)?;
-    // 验证 token
-    let user_id = verify_jwt_token(&token)?;
-    // 注入用户信息到请求上下文
-    request.extensions_mut().insert(CurrentUser { id: user_id });
-    // 继续执行下一个中间件
+    // JWT 包含用户身份和权限声明
+    let user_claims = verify_jwt_claims(&token)?;
+    request.extensions_mut().insert(CurrentUser { id: user_claims.user_id });
     Ok(next.run(request).await)
 }
 
-// 权限中间件
+// 权限中间件示例
 pub async fn permission_middleware(
     request: Request,
     next: Next,
     permissions: PermissionsCheck,
 ) -> Result<Response, AppError> {
-    // 从请求上下文中获取用户信息
     let current_user = request.extensions().get::<CurrentUser>()
         .ok_or(ServiceError::InvalidToken)?;
-    // 检查权限
-    let has_permission = PermissionService::check_permissions(
-        current_user.id,
-        &permissions,
-    ).await?;
-    // 如果权限不足，返回错误
+    let has_permission = PermissionService::check_permissions(current_user.id, &permissions).await?;
     if !has_permission {
         return Err(ServiceError::PermissionDenied.into());
     }
-    // 继续执行下一个中间件
     Ok(next.run(request).await)
 }
 ```
 
-#### 权限声明式用法示例
+#### 声明式权限使用示例
 
 ```rust
 .route_with_permission(
@@ -144,17 +137,17 @@ pub async fn permission_middleware(
 
 ---
 
-### 4.2 权限缓存与续期机制
+#### 4.2 权限缓存和更新机制
 
 为什么这样设计？
 
-> 权限缓存减少数据库压力，续期机制保证活跃用户体验，过期自动清理提升安全性。
+> 权限缓存减轻了数据库压力，更新机制确保了活跃的用户体验，过期自动清理增强了安全性。
 
-- ✅ **本地内存缓存**：减少数据库查询
-- ✅ **缓存过期自动清理**：1 小时过期，强制用户重新认证
-- ✅ **权限续期机制**：每次访问用户信息接口自动续期 1 小时
-- ✅ **用户状态变更**：被禁用或踢下线时缓存立即清空
-- ⚙️ **后续扩展**：refresh token 与在线会话管理
+- ✅ **本地内存缓存**： 减少数据库查询
+- ✅ **自动缓存过期清理**： 1 小时过期，需要重新授权
+- ✅ **权限更新机制**： 每次访问用户信息界面时自动更新 1 小时
+- ✅ **用户状态更改**： 当用户被禁用或踢离线时，缓存立即清除
+- ⚙️ **未来扩展**： 添加刷新令牌机制以提高安全性
 
 #### 权限缓存实现示例
 
