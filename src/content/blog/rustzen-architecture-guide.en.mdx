@@ -86,38 +86,38 @@ Why design it this way?
 
 ---
 
-## IV. Authentication & Authorization: JWT-based System
+## IV. Authentication & Authorization: JWT + Server-side Permission Cache
 
 **System Overview:**
 
-- User authentication and authorization are both handled via JWT tokens.
-- After user login, the system issues a JWT that contains user identity and permission claims.
-- This stateless design simplifies deployment and scaling.
-- Permission caching improves performance and reduces database load.
+- Users first authenticate by logging in with their username and password. Upon successful authentication, the server issues a JWT containing only user identity information (such as user ID and username), not permissions.
+- All subsequent requests include the JWT; the server verifies the user's identity via the JWT.
+- User permission information is stored in a server-side local cache (permission cache) and is looked up and checked as needed.
+- The permission cache mechanism reduces database pressure and improves system response speed.
 
 ### 4.1 Middleware Architecture
 
 #### Core Middleware Components
 
-- ✅ **JWT Authentication Middleware**: Verifies the token, validates user identity, and extracts claims.
-- ✅ **Permission Verification Middleware**: Checks user permissions based on the claims in the JWT.
+- ✅ **JWT Authentication Middleware**: Verifies the token and extracts user identity information
+- ✅ **Permission Verification Middleware**: Looks up and checks permissions in the server-side cache using the user ID
 
 #### Middleware Implementation Example
 
 ```rust
-// JWT authentication middleware - handles both auth and authorization
+// JWT authentication middleware - only responsible for identity verification
 pub async fn jwt_auth_middleware(
     mut request: Request,
     next: Next,
 ) -> Result<Response, AppError> {
     let token = extract_token_from_header(&request)?;
-    // JWT contains both user identity and permission claims
+    // JWT contains only user identity information
     let user_claims = verify_jwt_claims(&token)?;
     request.extensions_mut().insert(CurrentUser { id: user_claims.user_id });
     Ok(next.run(request).await)
 }
 
-// Permission middleware example
+// Permission middleware - checks permissions in the server-side cache
 pub async fn permission_middleware(
     request: Request,
     next: Next,
@@ -125,6 +125,7 @@ pub async fn permission_middleware(
 ) -> Result<Response, AppError> {
     let current_user = request.extensions().get::<CurrentUser>()
         .ok_or(ServiceError::InvalidToken)?;
+    // Look up permissions in the server-side cache using user ID
     let has_permission = PermissionService::check_permissions(current_user.id, &permissions).await?;
     if !has_permission {
         return Err(ServiceError::PermissionDenied.into());
@@ -145,17 +146,24 @@ pub async fn permission_middleware(
 
 ---
 
-### 4.2 Permission Caching and Renewal Mechanism
+#### 4.2 Permission Cache and Renewal Mechanism
 
 Why design it this way?
 
-> Permission caching reduces database pressure, renewal mechanism ensures active user experience, automatic expiration cleanup enhances security.
+> Permission caching reduces database pressure, the renewal mechanism ensures an active user experience, and automatic expiration cleanup enhances security.
 
-- ✅ **Local Memory Cache**: Reduces database queries
-- ✅ **Automatic Cache Expiration Cleanup**: 1-hour expiration, requires re-authorization
-- ✅ **Permission Renewal Mechanism**: Automatically renews 1 hour each time user info interface is accessed
-- ✅ **User Status Changes**: Cache immediately cleared when user is disabled or kicked offline
-- ⚙️ **Future Extensions**: Add refresh token mechanism for better security
+- ✅ **Local memory cache**: Reduces database queries
+- ✅ **Automatic cache expiration cleanup**: 1-hour expiration, requires re-authorization
+- ✅ **Permission renewal mechanism**: Each time the user info API is accessed, the user's permission cache is refreshed
+- ✅ **User status changes**: When a user is disabled or forcibly logged out, the cache is immediately cleared
+- ⚙️ **Future extension**: Plan to implement a refresh token mechanism for improved security
+
+**How it works:**
+
+- When a user makes a request, the server first verifies the JWT and extracts basic user info (ID, username)
+- The server then looks up the user's permissions in the server-side cache using the user ID
+- Each time the user info API is called, the permission cache for that user is automatically refreshed
+- The JWT token itself does not yet support refresh; this is planned for future implementation
 
 #### Permission Cache Implementation Example
 
@@ -220,20 +228,20 @@ impl AuthService {
 
 ### 4.3 Permission Granularity and Declaration
 
-- **Permission Granularity**: Current project's permission granularity is sufficiently fine-grained
-- **Permission Codes**: Such as `system:user:list`, `system:user:create`, etc.
-- **Wildcard Support**: `system:*` supports module general permissions
+- **Permission granularity**: The current project's permission granularity is sufficiently fine
+- **Permission codes**: Such as `system:user:list`, `system:user:create`, etc.
+- **Wildcard support**: `system:*` supports module-wide permissions
 
-**Note**: The current project doesn't need more fine-grained permission control, current granularity meets business requirements.
+**Note**: The current project does not require more fine-grained permission control; the current granularity meets business requirements.
 
 ---
 
 ### 4.4 Performance Optimization Strategies
 
-- **Connection Pool Management**: Configurable connection limits and timeout settings
-- **Prepared Statements**: Automatically handled through SQLx
-- **Efficient Pagination**: Use offset/limit for pagination queries
-- **Index Optimization**: Build indexes for commonly queried fields
+- **Connection pool management**: Configurable connection limits and timeout settings
+- **Prepared statements**: Automatically handled through SQLx
+- **Efficient pagination**: Use offset/limit for pagination queries
+- **Index optimization**: Build indexes for commonly queried fields
 
 ---
 

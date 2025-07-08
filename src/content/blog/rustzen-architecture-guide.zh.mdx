@@ -1,5 +1,5 @@
 ---
-title: 'Rustzen 极简架构设计指南：从混乱到清晰的后端演进实践'
+title: '用 Rust 构建后端架构：从混乱到极简的 Rustzen 实践指南'
 description: '从前端开发者转向 Rust 后端，这是一场关于结构、清晰与极简的探索。从 Tauri 到 Axum，从堆叠混乱到三层架构，这篇文章系统梳理了我在构建 rustzen 项目中的核心理念与实践路径，也是一份给未来自己的开发笔记。'
 pubDate: '2025-07-07'
 tags: ['Rust', 'Axum', 'SQLx', 'Backend', '架构设计', '全栈开发', 'Rustzen']
@@ -78,38 +78,38 @@ features/
 
 ---
 
-## 四、认证与授权系统：基于 JWT 的系统
+## 四、认证与授权系统：基于 JWT + 服务端权限缓存
 
 **系统概览：**
 
-- 用户认证和授权都通过 JWT 令牌处理。
-- 用户登录后，系统会签发包含用户身份和权限声明的 JWT。
-- 这种无状态设计简化了部署和扩展。
-- 权限缓存提高了性能并减少了数据库负载。
+- 用户首先通过账号密码登录，服务端校验通过后签发 JWT（仅包含用户 ID、用户名等基本信息，不包含权限）。
+- 后续所有请求，客户端携带 JWT，服务端通过 JWT 验证用户身份。
+- 用户权限信息存储在服务端本地缓存（permission cache）中，按需查找和校验。
+- 权限缓存机制减少数据库压力，提升系统响应速度。
 
 ### 4.1 中间件架构
 
 #### 核心中间件组件
 
-- ✅ **JWT 认证中间件**：验证令牌，验证用户身份，并提取声明。
-- ✅ **权限验证中间件**：基于 JWT 中的声明检查用户权限。
+- ✅ **JWT 认证中间件**：验证令牌，提取用户身份信息
+- ✅ **权限验证中间件**：根据用户 ID 查找服务端缓存，校验权限
 
 #### 中间件实现示例
 
 ```rust
-// JWT 认证中间件 - 同时处理认证和授权
+// JWT认证中间件 - 只负责身份认证
 pub async fn jwt_auth_middleware(
     mut request: Request,
     next: Next,
 ) -> Result<Response, AppError> {
     let token = extract_token_from_header(&request)?;
-    // JWT 包含用户身份和权限声明
+    // JWT只包含用户身份信息
     let user_claims = verify_jwt_claims(&token)?;
     request.extensions_mut().insert(CurrentUser { id: user_claims.user_id });
     Ok(next.run(request).await)
 }
 
-// 权限中间件示例
+// 权限中间件 - 服务端查缓存
 pub async fn permission_middleware(
     request: Request,
     next: Next,
@@ -117,6 +117,7 @@ pub async fn permission_middleware(
 ) -> Result<Response, AppError> {
     let current_user = request.extensions().get::<CurrentUser>()
         .ok_or(ServiceError::InvalidToken)?;
+    // 通过用户ID查找服务端缓存的权限
     let has_permission = PermissionService::check_permissions(current_user.id, &permissions).await?;
     if !has_permission {
         return Err(ServiceError::PermissionDenied.into());
@@ -143,11 +144,18 @@ pub async fn permission_middleware(
 
 > 权限缓存减轻了数据库压力，更新机制确保了活跃的用户体验，过期自动清理增强了安全性。
 
-- ✅ **本地内存缓存**： 减少数据库查询
-- ✅ **自动缓存过期清理**： 1 小时过期，需要重新授权
-- ✅ **权限更新机制**： 每次访问用户信息界面时自动更新 1 小时
-- ✅ **用户状态更改**： 当用户被禁用或踢离线时，缓存立即清除
-- ⚙️ **未来扩展**： 添加刷新令牌机制以提高安全性
+- ✅ **本地内存缓存**：减少数据库查询
+- ✅ **自动缓存过期清理**：1 小时过期，需要重新授权
+- ✅ **权限更新机制**：每次访问用户信息接口时，都会刷新该用户的权限缓存
+- ✅ **用户状态更改**：当用户被禁用或踢离线时，缓存立即清除
+- ⚙️ **未来扩展**：计划实现刷新令牌（refresh token）机制以提高安全性
+
+**如何工作：**
+
+- 当用户发起请求时，服务端首先验证 JWT 并提取用户基本信息（ID、用户名）
+- 然后根据用户 ID 在服务端缓存中查找用户权限
+- 每次访问用户信息相关接口时，都会自动刷新该用户的权限缓存
+- JWT 本身不支持刷新；这是未来计划实现的功能
 
 #### 权限缓存实现示例
 
