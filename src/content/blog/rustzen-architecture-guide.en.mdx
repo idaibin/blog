@@ -1,18 +1,21 @@
 ---
-title: 'Rustzen Minimalist Architecture Design Guide: From Chaos to Clarity in Backend Evolution Practice'
-description: 'As a frontend developer transitioning into Rust backend development, I embarked on a journey to design a clean, maintainable system—balancing performance and clarity. This article shares the philosophy and architectural principles behind Rustzen, from Tauri to Axum, and how minimalism became a powerful development guide.'
+title: 'My Rust Backend Journey: A Practical Guide from 0 to 1'
+description: 'As a frontend developer transitioning into Rust backend development, this is an exploration of structure, clarity, and minimalism. From Tauri to Axum, from chaotic stacking to three-layer architecture, this article systematically documents the core concepts and practical path in building the rustzen project, and serves as a development note for my future self.'
 pubDate: '2025-07-07'
 tags:
   [
     'Rust',
     'Axum',
     'SQLx',
+    'Backend',
     'Architecture Design',
     'Full-Stack Development',
     'Rustzen',
   ]
 author: 'idaibin'
 ---
+
+> 📦 GitHub：[https://github.com/idaibin/rustzen-admin](https://github.com/idaibin/rustzen-admin)
 
 ## I. What is Rustzen? Why this naming?
 
@@ -31,7 +34,7 @@ Minimalism is not "doing less", but "just right". Every evolution of Rustzen is 
 
 - Early **handler layer structure was loose**, unclear responsibilities, routes and logic stacked, leading to maintenance difficulties;
 - Lack of clear data transmission specifications, **logic duplication, increased testing costs**;
-- In AI collaboration, due to unclear code structure, **generated content was redundant and difficult to combine and reuse**.
+- In collaboration, due to unclear code structure, **generated content was redundant and difficult to combine and reuse**.
 
 The emergence of Rustzen is a response to these problems—not pursuing complex frameworks, but seeking "just right" in structure.
 
@@ -295,7 +298,7 @@ impl From<ServiceError> for AppError {
                 "Service temporarily unavailable, please try again later".to_string(),
             ),
             ServiceError::InvalidToken => (
-                StatusCode::FORBIDDEN,  // 改为 FORBIDDEN，因为这是授权问题
+                StatusCode::UNAUTHORIZED,
                 30000,
                 "Invalid or expired token, please login again".to_string(),
             ),
@@ -343,8 +346,6 @@ ApiResponse::page(data, total)
   "total": 100
 }
 ```
-
-Rustzen is not built for AI, but its clarity — designed for human understanding — happens to align well with how AI assistants interpret and generate code.
 
 ```rust
 // In router.rs
@@ -407,7 +408,7 @@ I hope it's written not just for the current me, but also for those of you who a
 
 Rustzen is an architectural exploration from chaos to order.
 
-Minimalism is not "doing less", but **precise design, just right**; it provides a clearer foundation for AI collaboration, team cooperation, and future expansion.
+Minimalism is not about "doing less", but about **simple design, just right**; it provides a clear foundation for AI collaboration, teamwork, and future expansion.
 
 ### Architecture Advantages Summary
 
@@ -422,13 +423,12 @@ Minimalism is not "doing less", but **precise design, just right**; it provides 
 
 ## Future Improvement Directions
 
-- 🔄 **Authentication Flow**: Implement proper session-based authentication with secure session management
-- 🔄 **JWT Optimization**: Use JWT only for authorization, implement refresh token mechanism
+- 🔄 **Token Mechanism**: Implement refresh token support
 - 🔄 **Complete Feature Modules**: After initial release, complete feature modules based on feedback
 - 🔄 **Monitoring Metrics**: Add performance monitoring and metric collection
 - 🔄 **Cache Optimization**: Consider Redis distributed caching for production environment
-- 🔄 **Documentation Improvement**: More comprehensive API documentation, facilitating AI analysis
-- 🔄 **Log Optimization**: Optimize log format, facilitating AI analysis
+- 🔄 **Documentation Improvement**: More comprehensive documentation, introducing related design and usage instructions
+- 🔄 **Log Optimization**: Optimize log format
 
 ---
 
@@ -441,5 +441,7 @@ May every developer find their own balance and direction in the pursuit of "just
 **Welcome feedback and co-creation, let Rustzen become more developers' choice of "just right"!**
 
 ---
+
+## 🔗 Project Links and More Content
 
 - 📦 Project Source Code：[https://github.com/idaibin/rustzen-admin](https://github.com/idaibin/rustzen-admin)
