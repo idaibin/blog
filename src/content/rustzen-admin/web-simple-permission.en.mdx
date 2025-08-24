@@ -1,0 +1,326 @@
+---
+title: "Frontend Simple Permission System Design and Implementation for Rustzen Admin"
+description: "A comprehensive frontend permission control system based on React + TypeScript + Zustand, featuring declarative permission components and intelligent permission matching"
+pubDate: "2025-08-24"
+tags: ["front-end", "permission", "zustand", "react"]
+---
+
+# Frontend Simple Permission System Design and Implementation for Rustzen Admin
+
+## Overview
+
+Rustzen Admin implements a comprehensive frontend permission control system built on React + TypeScript + Zustand technology stack. This system provides fine-grained permission control, including route-level permissions, component-level permissions, and operation-level permissions, ensuring users can only access and operate on functional modules they have permission for.
+
+## Core Architecture
+
+### 1. Permission Data Structure
+
+The system adopts a string-based permission code design with the format `module:resource:action`, for example:
+
+- `system:user:create` - User creation permission
+- `system:user:edit` - User editing permission
+- `system:user:delete` - User deletion permission
+- `system:user:list` - User list viewing permission
+
+```typescript
+interface UserInfoResponse {
+  id: number;
+  username: string;
+  realName?: string;
+  avatarUrl?: string;
+  permissions: string[]; // Permission code array
+  isSystem: boolean; // Whether it is a system administrator
+}
+```
+
+### 2. State Management - Zustand Store
+
+Permission state is centrally managed through `useAuthStore`, using Zustand's persist middleware for state persistence:
+
+```typescript
+interface AuthState {
+  userInfo: Auth.UserInfoResponse | null;
+  token: string | null;
+  updateUserInfo: (params: Auth.UserInfoResponse) => void;
+  updateToken: (params: string) => void;
+  setAuth: (params: Auth.LoginResponse) => void;
+  clearAuth: () => void;
+  checkPermissions: (code: string) => boolean;
+  checkMenuPermissions: (path: string) => boolean;
+}
+```
+
+## Permission Verification Mechanism
+
+### 1. Permission Code Verification
+
+The system implements an intelligent permission code matching, supports wildcards and hierarchical permissions, the specific implementation is as follows:
+
+```typescript
+checkPermissions: (code: string) => {
+  const permissions = get().userInfo?.permissions || [];
+  if (permissions.length === 0) {
+    return false;
+  }
+  if (permissions.includes("*")) {
+    return true; // Super admin
+  }
+  if (permissions.includes(code)) {
+    return true; // Exact match
+  }
+  // Hierarchical permission matching: system:user:* -> system:*
+  const codeArr = code.split(":");
+  for (let i = codeArr.length - 1; i > 0; i--) {
+    const prefix = codeArr.slice(0, i).join(":") + ":*";
+    if (permissions.includes(prefix)) {
+      return true;
+    }
+  }
+  return false;
+};
+```
+
+### 2. Route Permission Verification
+
+The system automatically converts route paths to permission codes for verification:
+
+```typescript
+const formatPathCode = (pathname: string) => {
+  const code = pathname.replace(/\//g, ":").slice(1);
+  // Create page
+  if (code.endsWith(":create")) {
+    return code;
+  }
+  // Edit page, detail page
+  if (code.endsWith(":edit") || code.endsWith(":detail")) {
+    return code
+      .split(":")
+      .filter((s) => !/^\d+$/.test(s))
+      .join(":");
+  }
+  // List page
+  return `${code}:list`;
+};
+```
+
+## Permission Component System
+
+### 1. AuthGuard - Route Guard
+
+The `AuthGuard` component is responsible for route-level permission control, verifying permissions when users access pages:
+
+```typescript
+export const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
+  const location = useLocation();
+  const { token, updateUserInfo, checkMenuPermissions } = useAuthStore();
+
+  // Redirect to login page if no token
+  if (!token) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Check page permissions
+  const isPermission = checkMenuPermissions(location.pathname);
+  return isPermission ? children : <Navigate to="/403" replace />;
+};
+```
+
+### 2. AuthWrap - Component-Level Permission Control
+
+The `AuthWrap` component is used to control the display/hide of components:
+
+```typescript
+export const AuthWrap: React.FC<AuthWrapProps> = ({
+  code,
+  children,
+  hidden = false,
+}) => {
+  const isPermission = useAuthStore.getState().checkPermissions(code);
+  if (isPermission && !hidden) {
+    return children;
+  }
+  return null;
+};
+```
+
+### 3. AuthConfirm - Operation-Level Permission Control
+
+The `AuthConfirm` component is used for permission control of operations that require confirmation:
+
+```typescript
+export const AuthConfirm: React.FC<AuthConfirmProps> = (props) => {
+  const handleConfirm = () => {
+    modalApi.confirm({
+      title: props.title,
+      content: props.description,
+      onOk: props.onConfirm,
+      onCancel: props.onCancel,
+    });
+  };
+
+  return (
+    <AuthWrap code={props.code} hidden={props.hidden}>
+      <span onClick={handleConfirm} className={props.className}>
+        {props.children}
+      </span>
+    </AuthWrap>
+  );
+};
+```
+
+## Practical Application Examples
+
+### 1. User Management Page Permission Control
+
+```typescript
+export default function UserPage() {
+  return (
+    <ProTable<User.Item>
+      // ... table configuration
+      toolBarRender={() => [
+        <AuthWrap code="system:user:create">
+          <UserModalForm mode="create" onSuccess={handleSuccess}>
+            <Button type="primary">Create User</Button>
+          </UserModalForm>
+        </AuthWrap>,
+      ]}
+      columns={[
+        // ... other columns
+        {
+          title: "Actions",
+          render: (_, entity) => (
+            <Space size="middle">
+              <AuthWrap code="system:user:detail">
+                <UserModalForm mode="detail" initialValues={entity}>
+                  <a>Detail</a>
+                </UserModalForm>
+              </AuthWrap>
+              <MoreButton>
+                <AuthWrap code="system:user:edit">
+                  <UserModalForm mode="edit" initialValues={entity}>
+                    <a>Edit</a>
+                  </UserModalForm>
+                </AuthWrap>
+                <AuthConfirm
+                  code="system:user:delete"
+                  title="Are you sure you want to delete this user?"
+                  onConfirm={handleDelete}
+                >
+                  Delete User
+                </AuthConfirm>
+              </MoreButton>
+            </Space>
+          ),
+        },
+      ]}
+    />
+  );
+}
+```
+
+### 2. Dynamic Menu Generation
+
+The system generates menus dynamically based on user permissions:
+
+```typescript
+export const getMenuData = (): AppRouter[] => {
+  const { checkMenuPermissions } = useAuthStore.getState();
+
+  const getMenuList = (menuList: AppRouter[]): AppRouter[] => {
+    return menuList
+      .filter((item) => {
+        if (!item.path) return false;
+        if (item.children) return true;
+        return checkMenuPermissions(item.path);
+      })
+      .map((item) => ({
+        ...item,
+        children: item.children ? getMenuList(item.children) : undefined,
+      }))
+      .filter((item) => {
+        // Hide items without sub-menus
+        if (item.children?.length === 0) {
+          return false;
+        }
+        return true;
+      });
+  };
+  return getMenuList(pageRoutes);
+};
+```
+
+## Permission System Features
+
+### 1. Fine-Grained Control
+
+- **Route-level permissions**: Control page access
+- **Component-level permissions**: Control functional module display
+- **Operation-level permissions**: Control specific operation buttons
+
+### 2. Intelligent Permission Matching
+
+- Support for exact permission code matching
+- Support for wildcard permissions (`*`)
+- Support for hierarchical permission inheritance (`system:user:*` → `system:*`)
+
+### 3. User Experience Optimization
+
+- Automatically hide content without permissions to avoid interface confusion
+- Graceful degradation when permission verification fails
+- Support for permission state persistence
+
+### 4. Permission Code Naming Conventions
+
+- Use `module:resource:action` format
+- Maintain naming consistency
+- Avoid overly complex permission hierarchies
+
+### 5. Component Usage Recommendations
+
+| Scenario                         | Component     | Example                              |
+| -------------------------------- | ------------- | ------------------------------------ |
+| Page access control              | `AuthGuard`   | Route-level permission verification  |
+| Functional module display        | `AuthWrap`    | Buttons, forms, and other components |
+| Dangerous operation confirmation | `AuthConfirm` | Delete, export, and other operations |
+
+## 🎯 Summary: Simple Permission Control Solution
+
+### Core Benefits
+
+Through this permission system, I achieved:
+
+- **Improved development efficiency**: Declarative permission control reduces repetitive code
+- **Enhanced user experience**: Automatically hide content without permissions for a cleaner interface
+- **Reduced maintenance costs**: Centralized permission logic management makes changes simpler
+- **Enhanced security**: Frontend and backend permission double verification
+
+### Technical Highlights
+
+1. **Intelligent permission matching**: Supports exact matching, wildcard matching, and hierarchical inheritance
+2. **Component-based design**: Three core components cover all permission scenarios
+3. **TypeScript support**: Complete type definitions for excellent development experience
+4. **Performance optimization**: Permission verification result caching to avoid repeated calculations
+
+### Applicable Scenarios
+
+This permission system is particularly suitable for:
+
+- **Small to medium-sized management systems**: Relatively simple permission structure
+- **Rapid development projects**: Need to quickly build permission control
+- **User experience priority**: Focus on interface aesthetics and smooth interactions
+- **Frontend-backend separation**: Permission data interaction based on APIs
+
+---
+
+## 🧭 Final Thoughts
+
+This permission system is my real practice in developing rustzen-admin, from initially hardcoding permissions to the final simple design. At the **current project stage**, simple permission control is sufficient to meet requirements. Unified permission standards between frontend and backend can avoid permission data inconsistency issues and facilitate future permission extensions.
+
+If you're also troubled by permission control, try this solution. Perhaps it will help you make your permission system simpler and easier to maintain, just like it helped me.
+
+---
+
+📫 **Related Resources**:
+
+- [rustzen-admin GitHub](https://github.com/idaibin/rustzen-admin)
+- [Backend Permission System Design](./rustzen-admin/permission-design.en.mdx)
