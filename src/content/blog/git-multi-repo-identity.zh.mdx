@@ -1,0 +1,191 @@
+---
+title: "Git 多仓库用户身份自动切换与隐私保护指南"
+description: "现代开发者必备技能：使用 Git includeIf 功能实现多仓库身份自动切换，支持 HTTPS/SSH 协议，保护个人隐私，告别手动配置的烦恼。从 GitHub 个人项目到公司内网仓库，一套配置解决所有身份管理问题。"
+pubDate: "2025-10-09"
+tags: ["Git", "配置管理", "多仓库", "开发者工具", "身份管理"]
+author: "idaibin"
+---
+
+在日常开发中，很多开发者会同时操作多个 Git 仓库，例如：
+
+- GitHub 个人项目
+- 公司内网 GitLab 或自建 Git 服务器
+
+不同仓库可能需要使用不同的提交身份（user.name / user.email）。此外，为了保护个人隐私，提交到公共仓库时可能希望隐藏真实邮箱。本文将系统讲解如何利用 Git 的 includeIf 功能，实现自动切换用户身份，并支持 HTTPS/SSH，同时隐藏邮箱信息。
+
+---
+
+## 1. 背景与目标
+
+我们希望实现以下目标：
+
+1. **自动切换身份**：根据远程仓库自动选择对应 user.name 和 user.email
+2. **支持多协议**：HTTPS 与 SSH 均可使用
+3. **隐私保护**：公共仓库使用 GitHub noreply 邮箱
+4. **多仓库统一管理**：无需在每个仓库单独修改配置
+
+---
+
+## 2. Git 版本要求
+
+本文使用 Git 2.49.0（macOS）进行示例。
+
+---
+
+## 3. 配置思路
+
+Git 提供了 includeIf 功能，可以根据条件自动包含其他配置文件。
+
+**核心思想**：
+
+- 在全局 Git 配置中设置默认身份
+- 根据远程仓库 URL 匹配不同的子配置文件
+- 子配置文件中设置不同的用户名和邮箱
+- 对公共仓库使用 GitHub 提供的 noreply 邮箱，保护隐私
+
+---
+
+## 4. 配置示例
+
+### 4.1 全局配置文件 ~/.gitconfig
+
+```ini
+# ----------------------------
+# Global defaults
+# ----------------------------
+
+[user]
+name = example
+email = example@dev.com
+
+[init]
+defaultBranch = main
+
+[credential]
+helper = osxkeychain
+
+# ----------------------------
+# Git LFS support
+# ----------------------------
+
+[filter "lfs"]
+clean = git-lfs clean -- %f
+smudge = git-lfs smudge -- %f
+process = git-lfs filter-process
+required = true
+
+# ----------------------------
+# IncludeIf: GitHub
+# ----------------------------
+
+# HTTPS
+[includeIf "hasconfig:remote.origin.url:https://github.com/**"]
+path = /Users/example/.gitconfig-github
+
+# SSH
+[includeIf "hasconfig:remote.origin.url:git@github.com:**/**"]
+path = /Users/example/.gitconfig-github
+
+# ----------------------------
+# IncludeIf: 公司内网 GitLab
+# ----------------------------
+
+# HTTPS
+[includeIf "hasconfig:remote.origin.url:https://work-ip-address/**"]
+path = /Users/example/.gitconfig-work
+
+# SSH
+[includeIf "hasconfig:remote.origin.url:git@work-ip-address:**/**"]
+path = /Users/example/.gitconfig-work
+```
+
+**注意**：
+
+- `**` 匹配 repo 名及后续路径
+- SSH 与 HTTPS 必须分开写，因为 URL 字符串不同
+- 子配置文件路径建议使用绝对路径，避免 `~` 展开失败
+
+---
+
+### 4.2 GitHub 子配置文件 ~/.gitconfig-github
+
+```ini
+[user]
+name = Example
+email = example@users.noreply.github.com
+```
+
+- 使用 GitHub 提供的 noreply 邮箱
+- 提交到公共仓库时，不会泄露真实邮箱
+
+---
+
+### 4.3 公司内网子配置文件 ~/.gitconfig-work
+
+```ini
+[user]
+name = Work
+email = work@company.com
+```
+
+- 使用公司邮箱，保证内部仓库身份一致
+
+---
+
+## 5. 配置验证
+
+1. **删除本地仓库的覆盖配置**：
+
+```bash
+git config --unset user.name
+git config --unset user.email
+```
+
+2. **测试当前仓库身份**：
+
+```bash
+git remote -v
+git config --show-origin user.name
+git config --show-origin user.email
+```
+
+- 输出应显示对应子配置文件路径
+- GitHub 仓库 → `~/.gitconfig-github`
+- 公司内网仓库 → `~/.gitconfig-work`
+
+---
+
+## 6. 额外提示
+
+### 6.1 HTTPS 与 SSH
+
+- 每种协议必须单独写 includeIf 条件
+- 例如 GitHub clone HTTPS 与 SSH，分别匹配：
+
+```bash
+https://github.com/** # HTTPS
+git@github.com:**/** # SSH
+```
+
+### 6.2 隐藏用户信息
+
+- 提交到公共仓库建议使用 GitHub noreply 邮箱
+- 保留真实用户名显示，保护个人邮箱
+
+### 6.3 历史提交隐私
+
+- 已经提交的历史记录不会自动修改
+- 若需要修改历史邮箱，需要手动处理，可以使用 `git filter-repo` 或 `git filter-branch`
+
+---
+
+## 7. 总结
+
+通过 Git 的 includeIf 功能，我们可以：
+
+- **自动切换身份**：不同远程仓库使用不同用户名和邮箱
+- **支持 HTTPS/SSH**：无论 clone 哪种协议，都能自动匹配
+- **保护隐私**：公共仓库使用 GitHub noreply 邮箱
+- **多仓库统一管理**：无需每个仓库手动配置
+
+这套配置尤其适合个人开发者、开源贡献者，同时管理公司内网仓库和 GitHub 公共仓库的场景。

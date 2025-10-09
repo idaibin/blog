@@ -1,0 +1,198 @@
+---
+title: "Git Multi-Repository User Identity Auto-Switching and Privacy Protection Guide"
+description: "Essential skill for modern developers: Use Git includeIf functionality to achieve automatic multi-repository identity switching, support HTTPS/SSH protocols, protect personal privacy, and say goodbye to manual configuration hassles. From GitHub personal projects to corporate intranet repositories, one configuration solves all identity management issues."
+pubDate: "2025-10-09"
+tags:
+  [
+    "Git",
+    "Configuration Management",
+    "Multi-Repository",
+    "Developer Tools",
+    "Identity Management",
+  ]
+author: "idaibin"
+---
+
+In daily development, many developers work with multiple Git repositories simultaneously, such as:
+
+- GitHub personal projects
+- Corporate intranet GitLab or self-hosted Git servers
+
+Different repositories may require different commit identities (user.name / user.email). Additionally, to protect personal privacy, you may want to hide your real email when committing to public repositories. This article systematically explains how to use Git's includeIf functionality to achieve automatic user identity switching, support HTTPS/SSH, and hide email information.
+
+---
+
+## 1. Background and Goals
+
+We want to achieve the following goals:
+
+1. **Automatic Identity Switching**: Automatically select corresponding user.name and user.email based on remote repository
+2. **Multi-Protocol Support**: Both HTTPS and SSH can be used
+3. **Privacy Protection**: Use GitHub noreply email for public repositories
+4. **Unified Multi-Repository Management**: No need to modify configuration in each repository separately
+
+---
+
+## 2. Git Version Requirements
+
+This article uses Git 2.49.0 (macOS) for examples.
+
+---
+
+## 3. Configuration Approach
+
+Git provides includeIf functionality that can automatically include other configuration files based on conditions.
+
+**Core Concept**:
+
+- Set default identity in global Git configuration
+- Match different sub-configuration files based on remote repository URL
+- Set different usernames and emails in sub-configuration files
+- Use GitHub's provided noreply email for public repositories to protect privacy
+
+---
+
+## 4. Configuration Examples
+
+### 4.1 Global Configuration File ~/.gitconfig
+
+```ini
+# ----------------------------
+# Global defaults
+# ----------------------------
+
+[user]
+name = example
+email = example@dev.com
+
+[init]
+defaultBranch = main
+
+[credential]
+helper = osxkeychain
+
+# ----------------------------
+# Git LFS support
+# ----------------------------
+
+[filter "lfs"]
+clean = git-lfs clean -- %f
+smudge = git-lfs smudge -- %f
+process = git-lfs filter-process
+required = true
+
+# ----------------------------
+# IncludeIf: GitHub
+# ----------------------------
+
+# HTTPS
+[includeIf "hasconfig:remote.origin.url:https://github.com/**"]
+path = /Users/example/.gitconfig-github
+
+# SSH
+[includeIf "hasconfig:remote.origin.url:git@github.com:**/***"]
+path = /Users/example/.gitconfig-github
+
+# ----------------------------
+# IncludeIf: Corporate Intranet GitLab
+# ----------------------------
+
+# HTTPS
+[includeIf "hasconfig:remote.origin.url:https://work-ip-address/**"]
+path = /Users/example/.gitconfig-work
+
+# SSH
+[includeIf "hasconfig:remote.origin.url:git@work-ip-address:**/**"]
+path = /Users/example/.gitconfig-work
+```
+
+**Notes**:
+
+- `**` matches repository name and subsequent paths
+- SSH and HTTPS must be written separately because URL strings are different
+- Sub-configuration file paths should use absolute paths to avoid `~` expansion failures
+
+---
+
+### 4.2 GitHub Sub-Configuration File ~/.gitconfig-github
+
+```ini
+[user]
+name = Example
+email = example@users.noreply.github.com
+```
+
+- Use GitHub's provided noreply email
+- Won't leak real email when committing to public repositories
+
+---
+
+### 4.3 Corporate Intranet Sub-Configuration File ~/.gitconfig-work
+
+```ini
+[user]
+name = Work
+email = work@company.com
+```
+
+- Use corporate email to ensure consistent identity in internal repositories
+
+---
+
+## 5. Configuration Verification
+
+1. **Remove local repository override configuration**:
+
+```bash
+git config --unset user.name
+git config --unset user.email
+```
+
+2. **Test current repository identity**:
+
+```bash
+git remote -v
+git config --show-origin user.name
+git config --show-origin user.email
+```
+
+- Output should show corresponding sub-configuration file paths
+- GitHub repository → `~/.gitconfig-github`
+- Corporate intranet repository → `~/.gitconfig-work`
+
+---
+
+## 6. Additional Tips
+
+### 6.1 HTTPS and SSH
+
+- Each protocol must have separate includeIf conditions
+- For example, GitHub clone HTTPS and SSH match respectively:
+
+```bash
+https://github.com/** # HTTPS
+git@github.com:**/** # SSH
+```
+
+### 6.2 Hide User Information
+
+- Recommend using GitHub noreply email for public repository commits
+- Keep real username display, protect personal email
+
+### 6.3 Historical Commit Privacy
+
+- Already committed historical records won't be automatically modified
+- If you need to modify historical emails, manual processing is required, you can use `git filter-repo` or `git filter-branch`
+
+---
+
+## 7. Summary
+
+Through Git's includeIf functionality, we can:
+
+- **Automatic Identity Switching**: Use different usernames and emails for different remote repositories
+- **Support HTTPS/SSH**: Automatically match regardless of which protocol you clone
+- **Protect Privacy**: Use GitHub noreply email for public repositories
+- **Unified Multi-Repository Management**: No need to manually configure each repository
+
+This configuration is especially suitable for individual developers and open source contributors who simultaneously manage corporate intranet repositories and GitHub public repositories.
