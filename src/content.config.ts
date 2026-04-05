@@ -6,34 +6,77 @@ const baseSchema = (image: any) => ({
   description: z.string(),
   pubDate: z.coerce.date(),
   heroImage: image().optional(),
+  cover: z.string().optional(),
+  author: z.string().optional(),
   tags: z.array(z.string()),
+  audience: z.array(z.enum(['beginner', 'developer', 'ai-practitioner'])).optional(),
+  featured: z.boolean().optional(),
 });
 
-const blog = defineCollection({
-  // Load Markdown and MDX files in the `src/content/blog/` directory.
-  loader: glob({ base: './src/content/blog', pattern: '**/*.en.{md,mdx}' }),
-  // Type-check frontmatter using a schema
+const signals = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'signals/**/*.en.{md,mdx}' }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
-const blogZh = defineCollection({
-  loader: glob({ base: './src/content/blog', pattern: '**/*.zh.{md,mdx}' }),
+const signalsZh = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'signals/**/*.zh.{md,mdx}' }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
-const rustzenAdmin = defineCollection({
+const workflows = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'workflows/**/*.en.{md,mdx}' }),
+  schema: ({ image }) => z.object(baseSchema(image)),
+});
+
+const workflowsZh = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'workflows/**/*.zh.{md,mdx}' }),
+  schema: ({ image }) => z.object(baseSchema(image)),
+});
+
+const prompts = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'prompts/**/*.en.{md,mdx}' }),
+  schema: ({ image }) => z.object(baseSchema(image)),
+});
+
+const promptsZh = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'prompts/**/*.zh.{md,mdx}' }),
+  schema: ({ image }) => z.object(baseSchema(image)),
+});
+
+const skills = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'skills/**/*.en.{md,mdx}' }),
+  schema: ({ image }) => z.object(baseSchema(image)),
+});
+
+const skillsZh = defineCollection({
+  loader: glob({ base: './src/content', pattern: 'skills/**/*.zh.{md,mdx}' }),
+  schema: ({ image }) => z.object(baseSchema(image)),
+});
+
+const notes = defineCollection({
   loader: glob({
-    base: './src/content/rustzen-admin',
-    pattern: '**/*.en.{md,mdx}',
+    base: './src/content',
+    pattern: '{blog,rustzen-admin}/**/*.en.{md,mdx}',
   }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
-const rustzenAdminZh = defineCollection({
+const notesZh = defineCollection({
   loader: glob({
-    base: './src/content/rustzen-admin',
-    pattern: '**/*.zh.{md,mdx}',
+    base: './src/content',
+    pattern: '{blog,rustzen-admin}/**/*.zh.{md,mdx}',
   }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
-export const collections = { blog, blogZh, rustzenAdmin, rustzenAdminZh };
+export const collections = {
+  signals,
+  signalsZh,
+  workflows,
+  workflowsZh,
+  prompts,
+  promptsZh,
+  skills,
+  skillsZh,
+  notes,
+  notesZh,
+};

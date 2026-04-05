@@ -1,0 +1,129 @@
+---
+import FeedList from "@/components/FeedList.astro";
+import Pagination from "@/components/Pagination.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { chunkItems, getSectionPosts, getFeedPath } from "@/utils";
+import { feedPageSize, sectionMeta, sections, type Locale, type SectionKey } from "@/site";
+
+const locale = (Astro.currentLocale || "en") as Locale;
+
+export async function getStaticPaths() {
+  const locale = "en" as Locale;
+  return Promise.all(
+    sections.map(async (section) => {
+      const posts = await getSectionPosts(section, locale);
+      const pages = chunkItems(posts, feedPageSize);
+      return pages.slice(1).map((items, index) => ({
+        params: { section, page: String(index + 2) },
+        props: {
+          page: {
+            currentPage: index + 2,
+            lastPage: pages.length,
+            total: posts.length,
+            data: items,
+            url: {
+              prev: index === 0 ? `/${section}` : `/${section}/page/${index + 1}`,
+              next:
+                index + 2 < pages.length
+                  ? `/${section}/page/${index + 3}`
+                  : undefined,
+            },
+          },
+        },
+      }));
+    }),
+  ).then((routes) => routes.flat());
+}
+
+const section = Astro.params.section as SectionKey;
+const meta = sectionMeta[locale][section];
+
+const { page } = Astro.props as {
+  page: {
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    data: Awaited<ReturnType<typeof getSectionPosts>>;
+    url: {
+      prev?: string;
+      next?: string;
+    };
+  };
+};
+
+const feedItems = page.data.map((post) => ({
+  section,
+  title: post.data.title,
+  description: post.data.description,
+  href: getFeedPath(section, post.id, locale),
+  pubDate: post.data.pubDate,
+  featured: post.data.featured,
+  tags: post.data.tags,
+  audience: post.data.audience,
+  heroImage: post.data.heroImage,
+  cover: post.data.cover,
+}));
+---
+
+<BaseLayout title={`${meta.title} · Page ${page.currentPage} · idaibin.dev`} description={meta.description}>
+  <main class="page-section">
+    <section class="page-intro">
+      <span class="intro-kicker">{meta.title}</span>
+      <h1 class="intro-title">{meta.title}</h1>
+      <p class="intro-copy">{meta.intro}</p>
+      <div class="intro-meta">
+        <span class="meta-chip">{page.total} items</span>
+        <span class="meta-chip">
+          {page.currentPage} / {page.lastPage}
+        </span>
+      </div>
+    </section>
+
+    <FeedList
+      items={feedItems}
+      locale={locale}
+      emptyTitle={meta.title}
+      emptyCopy={meta.summary}
+    />
+
+    <Pagination locale={locale} page={page} />
+  </main>
+</BaseLayout>
+
+<style>
+  .page-intro {
+    display: grid;
+    gap: 0.65rem;
+    max-width: 48rem;
+  }
+
+  .intro-kicker {
+    color: rgb(var(--accent-dark));
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  .intro-title {
+    margin: 0;
+    color: rgb(var(--black));
+    font-size: clamp(1.65rem, 2.6vw, 2.4rem);
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+  }
+
+  .intro-copy {
+    margin: 0;
+    max-width: 46rem;
+    color: rgb(var(--gray-dark));
+    font-size: 1.02rem;
+    line-height: 1.75;
+  }
+
+  .intro-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>

@@ -2,27 +2,43 @@
 import FeedList from "@/components/FeedList.astro";
 import Pagination from "@/components/Pagination.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getAllSectionPosts, getFeedPath } from "@/utils";
-import { feedPageSize, getFeedPagePath, homeMeta, sectionMeta, type Locale } from "@/site";
+import { getSectionCount, getSectionPosts, getFeedPath } from "@/utils";
+import {
+  feedPageSize,
+  getFeedPagePath,
+  sectionMeta,
+  sections,
+  type Locale,
+  type SectionKey,
+} from "@/site";
 
-const locale = "en" as Locale;
-const feedPosts = await getAllSectionPosts(locale);
+export async function getStaticPaths() {
+  return sections.map((section) => ({
+    params: { section },
+  }));
+}
+
+const locale = "zh" as Locale;
+const section = Astro.params.section as SectionKey;
+const meta = sectionMeta[locale][section];
+const posts = await getSectionPosts(section, locale);
+const count = await getSectionCount(section, locale);
 const page = {
   currentPage: 1,
-  lastPage: Math.max(1, Math.ceil(feedPosts.length / feedPageSize)),
+  lastPage: Math.max(1, Math.ceil(posts.length / feedPageSize)),
   url: {
     next:
-      feedPosts.length > feedPageSize
-        ? getFeedPagePath(locale, 2)
+      posts.length > feedPageSize
+        ? getFeedPagePath(locale, 2, section)
         : undefined,
   },
 };
 
-const feedItems = feedPosts.slice(0, feedPageSize).map((post) => ({
-  section: post.section,
+const feedItems = posts.slice(0, feedPageSize).map((post) => ({
+  section,
   title: post.data.title,
   description: post.data.description,
-  href: getFeedPath(post.section, post.id, locale),
+  href: getFeedPath(section, post.id, locale),
   pubDate: post.data.pubDate,
   featured: post.data.featured,
   tags: post.data.tags,
@@ -32,23 +48,23 @@ const feedItems = feedPosts.slice(0, feedPageSize).map((post) => ({
 }));
 ---
 
-<BaseLayout title="idaibin.dev" description={homeMeta.en.description}>
+<BaseLayout title={`${meta.title} · idaibin.dev`} description={meta.description}>
   <main class="page-section">
     <section class="page-intro">
-      <span class="intro-kicker">AI publication system</span>
-      <h1 class="intro-title">{homeMeta.en.title}</h1>
-      <p class="intro-copy">{homeMeta.en.lead}</p>
+      <span class="intro-kicker">{meta.title}</span>
+      <h1 class="intro-title">{meta.title}</h1>
+      <p class="intro-copy">{meta.intro}</p>
       <div class="intro-meta">
-        <span class="meta-chip">{feedPosts.length} items</span>
-        <span class="meta-chip">All streams</span>
+        <span class="meta-chip">{count} 篇</span>
+        <span class="meta-chip">{meta.summary}</span>
       </div>
     </section>
 
     <FeedList
       items={feedItems}
       locale={locale}
-      emptyTitle="No items yet"
-      emptyCopy={sectionMeta[locale].notes.summary}
+      emptyTitle={meta.title}
+      emptyCopy={meta.summary}
     />
 
     {page.lastPage > 1 && <Pagination locale={locale} page={page} />}
@@ -73,7 +89,7 @@ const feedItems = feedPosts.slice(0, feedPageSize).map((post) => ({
   .intro-title {
     margin: 0;
     color: rgb(var(--black));
-    font-size: clamp(1.7rem, 2.8vw, 2.6rem);
+    font-size: clamp(1.65rem, 2.6vw, 2.4rem);
     line-height: 1.02;
     letter-spacing: -0.05em;
   }

@@ -1,0 +1,40 @@
+---
+import { type CollectionEntry, type DataEntryMap } from 'astro:content';
+import { render } from 'astro:content';
+
+import BlogPost from '@/layouts/BlogPost.astro';
+import { getSectionPosts } from '@/utils';
+import {
+  sections,
+  type Locale,
+  type SectionKey,
+} from '@/site';
+
+export async function getStaticPaths() {
+  const locale: Locale = 'zh';
+
+  const paths = await Promise.all(
+    sections.map(async (section) => {
+      const posts = await getSectionPosts(section, locale);
+      return posts.map((post) => ({
+        params: { section, slug: post.id },
+        props: { post, section },
+      }));
+    }),
+  );
+
+  return paths.flat();
+}
+
+type Props = {
+  post: CollectionEntry<keyof DataEntryMap>;
+  section: SectionKey;
+};
+
+const { post, section } = Astro.props as Props;
+const { Content } = await render(post);
+---
+
+<BlogPost section={section} {...post.data}>
+  <Content />
+</BlogPost>

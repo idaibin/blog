@@ -1,0 +1,111 @@
+---
+import type { Locale } from "@/site";
+
+interface PaginationState {
+  currentPage: number;
+  lastPage: number;
+  url: {
+    prev?: string;
+    next?: string;
+  };
+}
+
+interface Props {
+  locale: Locale;
+  page: PaginationState;
+}
+
+const { locale, page } = Astro.props;
+const labels = {
+  en: {
+    previous: "Previous",
+    next: "Next",
+    counter: `Page ${page.currentPage} of ${page.lastPage}`,
+  },
+  zh: {
+    previous: "上一页",
+    next: "下一页",
+    counter: `第 ${page.currentPage} / ${page.lastPage} 页`,
+  },
+}[locale];
+---
+
+<nav class="pagination" aria-label={locale === "zh" ? "分页导航" : "Pagination"}>
+  <span class="pagination-counter">{labels.counter}</span>
+  <div class="pagination-actions">
+    {page.url.prev && (
+      <a class="pagination-link" href={page.url.prev}>
+        {labels.previous}
+      </a>
+    )}
+    {page.url.next && (
+      <a class="pagination-link" href={page.url.next}>
+        {labels.next}
+      </a>
+    )}
+  </div>
+</nav>
+
+<style>
+  .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 0.25rem;
+  }
+
+  .pagination-counter {
+    color: rgb(var(--gray-dark));
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .pagination-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  .pagination-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 6.5rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgba(var(--black), 0.08);
+    border-radius: 999px;
+    background: rgba(var(--surface), 0.9);
+    color: rgb(var(--black));
+    font-size: 0.88rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      transform 0.2s ease,
+      border-color 0.2s ease,
+      background 0.2s ease;
+  }
+
+  .pagination-link:hover {
+    transform: translateY(-1px);
+    border-color: rgba(var(--accent), 0.22);
+    background: rgba(var(--surface), 1);
+  }
+
+  @media (max-width: 640px) {
+    .pagination {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .pagination-actions {
+      width: 100%;
+    }
+
+    .pagination-link {
+      flex: 1 1 0;
+      min-width: 0;
+    }
+  }
+</style>

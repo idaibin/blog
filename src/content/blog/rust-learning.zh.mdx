@@ -1,0 +1,217 @@
+---
+title: "Rust 学习资源汇总"
+description: "Rust 官方与非官方学习资源完整列表，涵盖入门、中级、高级以及项目实战等各个阶段的学习资料"
+pubDate: "2025-11-04"
+tags: ["Rust", "学习资源", "编程语言", "教程"]
+author: "idaibin"
+---
+
+## 官方（Official）
+
+### 入门
+
+| 资源                                                                                                  | 难易程度 | 是否官方 |
+| ----------------------------------------------------------------------------------------------------- | -------- | -------- |
+| [Rust by Example](https://doc.rust-lang.org/stable/rust-by-example/) — 可运行示例，逐步讲解 Rust 概念 | 入门     | 是       |
+| [Rustlings](https://github.com/rust-lang/rustlings) — 小练习，帮助熟悉读写 Rust 代码                  | 入门     | 是       |
+| [The Rust Programming Language](https://doc.rust-lang.org/book/) — 官方"Rust 之书"                    | 入门     | 是       |
+
+### 中级
+
+| 资源                                                                                                                                 | 难易程度 | 是否官方 |
+| ------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------- |
+| [The Cargo Book](https://doc.rust-lang.org/cargo/index.html) — 包管理器 Cargo 指南                                                   | 中级     | 是       |
+| [The Edition Guide](https://doc.rust-lang.org/edition-guide/index.html) — 语言版本（Edition）指南                                    | 中级     | 是       |
+| [The rustc Book](https://doc.rust-lang.org/rustc/index.html) — Rust 编译器使用与概览                                                 | 中级     | 是       |
+| [The rustdoc Book](https://doc.rust-lang.org/stable/rustdoc/) — 文档生成工具 rustdoc 指南                                            | 中级     | 是       |
+| [The rustup Book](https://rust-lang.github.io/rustup/index.html) — Rust 工具链安装与管理                                             | 中级     | 是       |
+| [Clippy Documentation](https://doc.rust-lang.org/nightly/clippy/development/infrastructure/book.html) — 代码静态检查工具 Clippy 文档 | 中级     | 是       |
+| [Criterion.rs](https://bheisler.github.io/criterion.rs/book/getting_started.html) — 统计驱动的微基准测试                             | 中级     | 是       |
+| [mdBook](https://rust-lang.github.io/mdBook/) — 使用 Markdown 写书的构建工具                                                         | 中级     | 是       |
+| [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/) — API 设计与呈现规范                                              | 中级     | 是       |
+| [The bindgen User Guide](https://rust-lang.github.io/rust-bindgen/) — 生成 C/C++ FFI 绑定的工具指南                                  | 中级     | 是       |
+
+### 高级
+
+| 资源                                                                                                          | 难易程度 | 是否官方 |
+| ------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| [Guide to Rustc Development](https://rustc-dev-guide.rust-lang.org/) — 编译器内部实现指南                     | 高级     | 是       |
+| [Rust Forge](https://forge.rust-lang.org/) — Rust 团队内部文档                                                | 高级     | 是       |
+| [The Rust Reference](https://doc.rust-lang.org/reference/) — 语言参考（权威语义说明）                         | 高级     | 是       |
+| [The Rust Unstable Book](https://doc.rust-lang.org/unstable-book/) — 仅 nightly 可用的不稳定特性              | 高级     | 是       |
+| [The Rustonomicon](https://doc.rust-lang.org/nomicon/) — unsafe Rust"黑魔法"指南                              | 高级     | 是       |
+| [Unsafe Code Guidelines Reference](https://rust-lang.github.io/unsafe-code-guidelines/) — unsafe 代码实践规范 | 高级     | 是       |
+| [Asynchronous Programming in Rust](https://rust-lang.github.io/async-book/) — Rust 异步编程（async/await）    | 高级     | 是       |
+| [cargo-bisect-rustc](https://rust-lang.github.io/cargo-bisect-rustc/) — 自动下载/二分 rustc 工件以定位回归    | 高级     | 是       |
+| [Error Codes Index](https://doc.rust-lang.org/stable/error_codes/error-index.html) — 编译器错误码索引         | 高级     | 是       |
+| [Polonius](https://rust-lang.github.io/polonius/) — 实验性借用检查器                                          | 高级     | 是       |
+| [Rust RFCs](https://rust-lang.github.io/rfcs/) — Rust 改动的 RFC 列表                                         | 高级     | 是       |
+| [The Chalk Book](https://rust-lang.github.io/chalk/book/) — 新一代 trait 系统实现                             | 高级     | 是       |
+
+### 工作组与专项（多为高级）
+
+| 资源                                                                                                                          | 难易程度 | 是否官方 |
+| ----------------------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| [Compiler team working groups](https://rust-lang.github.io/compiler-team/working-groups/) — 编译器团队工作组列表              | 高级     | 是       |
+| [Const Generics Project Group](https://rust-lang.github.io/project-const-generics/index.html) — 常量泛型专项                  | 高级     | 是       |
+| [Rust Project Goals](https://rust-lang.github.io/rust-project-goals/) — Rust 项目目标追踪                                     | 高级     | 是       |
+| [Standard library developers Guide](https://std-dev-guide.rust-lang.org/about.html) — 标准库开发者指南                        | 高级     | 是       |
+| [The Rust Language Design Team](https://lang-team.rust-lang.org/design_notes.html) — 语言设计团队相关信息                     | 高级     | 是       |
+| [The Types Team](https://rust-lang.github.io/types-team/) — trait 实现改进                                                    | 高级     | 是       |
+| [wg-async](https://rust-lang.github.io/wg-async/) — async I/O 基础设施                                                        | 高级     | 是       |
+| [async fn fundamentals initiative](https://rust-lang.github.io/async-fundamentals-initiative/index.html) — async fn 基础专项  | 高级     | 是       |
+| [Dyn upcast initiative](https://rust-lang.github.io/dyn-upcasting-coercion-initiative/index.html) — dyn 向上转型/强制转换专项 | 高级     | 是       |
+| [Generic Associated Types Initiative](https://rust-lang.github.io/generic-associated-types-initiative/index.html) — GATs 专项 | 高级     | 是       |
+| [Impl trait initiative](https://rust-lang.github.io/impl-trait-initiative/index.html) — impl Trait 专项                       | 高级     | 是       |
+
+## 非官方（Unofficial）
+
+### 入门
+
+| 资源                                                                                                                                                                                       | 难易程度 | 是否官方 |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------- |
+| [100 Exercises to Learn Rust](https://rust-exercises.com/) — 100 个练习循序渐进学 Rust                                                                                                     | 入门     | 否       |
+| [A Gentle Introduction To Rust](https://stevedonovan.github.io/rust-gentle-intro/readme.html) — 温和的入门教程                                                                             | 入门     | 否       |
+| [A half-hour to learn Rust](https://fasterthanli.me/articles/a-half-hour-to-learn-rust) — 半小时速览                                                                                       | 入门     | 否       |
+| [Comprehensive Rust](https://google.github.io/comprehensive-rust/) — 多日课程，系统学习                                                                                                    | 入门     | 否       |
+| [Easy Rust](https://dhghomon.github.io/easy_rust/) — 面向非英语母语者的入门                                                                                                                | 入门     | 否       |
+| [Learning Rust](https://quinedot.github.io/rust-learning/index.html) — 资源索引合集                                                                                                        | 入门     | 否       |
+| [py2rs](https://rochacbruno.github.io/py2rs/) — 从 Python 过渡到 Rust                                                                                                                      | 入门     | 否       |
+| [r4cppp](https://github.com/nrc/r4cppp/blob/master/hello-world.md) — 面向 C++ 程序员的速成                                                                                                 | 入门     | 否       |
+| [Rust By Practice](https://practice.rs/) — 通过挑战、练习与项目实践学习                                                                                                                    | 入门     | 否       |
+| [Rust Cookbook](https://rust-lang-nursery.github.io/rust-cookbook/) — 常见任务示例集                                                                                                       | 入门     | 否       |
+| [Rust for C++ Programmers](https://aminb.gitbooks.io/rust-for-c/content/index.html) — 给 C++ 程序员的 Rust                                                                                 | 入门     | 否       |
+| [Rust for Clojurists](https://gist.github.com/oakes/4af1023b6c5162c6f8f0) — 给 Clojure 开发者的 Rust                                                                                       | 入门     | 否       |
+| [Rust for Node Developers](https://github.com/Mercateo/rust-for-node-developers/blob/master/setup/README.md) — 给 Node 开发者的 Rust                                                       | 入门     | 否       |
+| [Rust for the Polyglot Programmer](https://www.chiark.greenend.org.uk/~ianmdlvl/rust-polyglot/index.html) — 多语言程序员的 Rust                                                            | 入门     | 否       |
+| [Rust 101](https://rust-lang.guide/) — Rust 学习指南                                                                                                                                       | 入门     | 否       |
+| [Small Rust Tutorial For MLOps](https://nogibjj.github.io/rust-tutorial/) — 面向 MLOps 的小教程                                                                                            | 入门     | 否       |
+| [The Node Experiment: Exploring Async Basics with Rust](https://web.archive.org/web/20230125023131/https://cfsamson.github.io/book-exploring-async-basics/) — 通过示例理解异步基础（存档） | 入门     | 否       |
+| [Tokio Tutorial](https://tokio.rs/tokio/tutorial) — 事件驱动、非阻塞 I/O 框架入门                                                                                                          | 入门     | 否       |
+| [Rust and WebAssembly](https://rustwasm.github.io/docs/book/) — Rust 与 WebAssembly 入门                                                                                                   | 入门     | 否       |
+| [The wasm-pack Guide](https://rustwasm.github.io/docs/wasm-pack/) — wasm 项目打包工具指南                                                                                                  | 入门     | 否       |
+| [WASM It](https://azriel.im/wasm_it/) — WebAssembly 入门实践                                                                                                                               | 入门     | 否       |
+| [The Little Book of Rust Books](https://lborb.github.io/book/) — Rust 书籍导航小册                                                                                                         | 入门     | 否       |
+| [Rust Tutorials](https://zicklag.github.io/rust-tutorials/overview.html) — Rust 教程索引                                                                                                   | 入门     | 否       |
+| [Usability of Programming Languages](https://gergelyk.github.io/prog-lang-usability/) — 比较 Rust/Python/Crystal 的基础用法                                                                | 入门     | 否       |
+
+### 中级
+
+| 资源                                                                                                                                                                    | 难易程度 | 是否官方 |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| [Common Rust Lifetime Misconceptions](https://github.com/pretzelhammer/rust-blog/blob/master/posts/common-rust-lifetime-misconceptions.md) — 常见生命周期误解解析       | 中级     | 否       |
+| [Effective Rust](https://www.lurklurk.org/effective-rust/) — Rust 指南（部分概念尚不完整）                                                                              | 中级     | 否       |
+| [Error Handling in Rust](https://nrc.github.io/error-docs/) — 错误处理专题                                                                                              | 中级     | 否       |
+| [Futures Explained in 200 Lines of Rust](https://web.archive.org/web/20230324130904/https://cfsamson.github.io/books-futures-explained/) — 200 行代码讲 Futures（存档） | 中级     | 否       |
+| [Java-Rust Generics](https://gist.github.com/Kimundi/8391398) — Java 与 Rust 泛型对照                                                                                   | 中级     | 否       |
+| [Learning Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/) — 用链表过度学习 Rust                                            | 中级     | 否       |
+| [LifetimeKata](https://tfpk.github.io/lifetimekata/) — 生命周期练习                                                                                                     | 中级     | 否       |
+| [Pointers](https://github.com/diwic/reffers-rs/blob/master/docs/Pointers.md) — 指针专题                                                                                 | 中级     | 否       |
+| [rust-cross](https://github.com/japaric/rust-cross#table-of-contents) — 交叉编译指南                                                                                    | 中级     | 否       |
+| [Rust Anthology 1](https://brson.github.io/rust-anthology/1/index.html) — 精选文章集                                                                                    | 中级     | 否       |
+| [Rust Iterators](https://github.com/rustomax/rust-iterators/#introduction) — 迭代器专题                                                                                 | 中级     | 否       |
+| [Comparing parallel Rust and C++](https://parallel-rust-cpp.github.io/introduction.html) — 并行 Rust 与 C++ 的比较                                                      | 中级     | 否       |
+| [Command Line Applications in Rust](https://rust-cli.github.io/book/index.html) — 命令行应用开发                                                                        | 中级     | 否       |
+| [PNGme: An Intermediate Rust Project](https://jrdngr.github.io/pngme_book/) — 用 Rust 向 PNG 隐写信息                                                                   | 中级     | 否       |
+| [CXX — Safe Interop Between Rust and C++](https://cxx.rs) — Rust/C++ 安全互操作                                                                                         | 中级     | 否       |
+| [Embedded: The Missing Parts](https://emp.jamesmunns.com/) — 嵌入式 Rust 补全教材                                                                                       | 中级     | 否       |
+| [Embedded Rust on Espressif](https://esp-rs.github.io/std-training/) — ESP32-C3 平台嵌入式训练营                                                                        | 中级     | 否       |
+| [The Embedded Rust Book](https://rust-embedded.github.io/book/) — 嵌入式 Rust 书                                                                                        | 中级     | 否       |
+| [Workbook for Embedded Workshops](https://embedded-trainings.ferrous-systems.com/preparations.html) — 嵌入式工作坊讲义                                                  | 中级     | 否       |
+| [The wasm-bindgen Guide](https://rustwasm.github.io/docs/wasm-bindgen/) — wasm-bindgen 使用指南                                                                         | 中级     | 否       |
+| [The Rust FFI Omnibus](http://jakegoulding.com/rust-ffi-omnibus/) — Rust FFI 百宝箱（示例合辑）                                                                         | 中级     | 否       |
+| [The (unofficial) Rust FFI Guide](https://michael-f-bryan.github.io/rust-ffi-guide/) — FFI 深入指南                                                                     | 中级     | 否       |
+| [Real-Time Interrupt-driven Concurrency](https://rtic.rs/) — 实时中断驱动并发框架 RTIC                                                                                  | 中级     | 否       |
+| [Triangle From Scratch](https://rust-tutorials.github.io/triangle-from-scratch/) — 仅用 Win32 绘制三角形（无外部依赖）                                                  | 中级     | 否       |
+| [The wasm-pack Guide](https://rustwasm.github.io/docs/wasm-pack/) — wasm 打包指南                                                                                       | 中级     | 否       |
+| [Writing Interpreters in Rust: a Guide](https://rust-hosted-langs.github.io/book/introduction.html) — 用 Rust 写解释器                                                  | 中级     | 否       |
+| [Advanced Macros](https://www.cs.brandeis.edu/~cs146a/rust/doc-02-21-2015/book/advanced-macros.html) — 宏进阶                                                           | 中级     | 否       |
+| [MacroKata](https://tfpk.github.io/macrokata/) — 宏练习题                                                                                                               | 中级     | 否       |
+| [The Little Book of Rust Macros](https://veykril.github.io/tlborm/) — Rust 宏小书                                                                                       | 中级     | 否       |
+| [Rust Design Patterns](https://rust-unofficial.github.io/patterns/) — 设计模式                                                                                          | 中级     | 否       |
+| [Rust Fuzz Book](https://rust-fuzz.github.io/book/) — 模糊测试                                                                                                          | 中级     | 否       |
+| [Rust Performance](https://nnethercote.github.io/perf-book/) — 性能优化实践                                                                                             | 中级     | 否       |
+| [High Assurance Rust](https://highassurance.rs/) — 开发安全且健壮的软件                                                                                                 | 中级     | 否       |
+| [Secure Rust Guidelines](https://anssi-fr.github.io/rust-guide/) — 安全 Rust 指南                                                                                       | 中级     | 否       |
+| [The Rust Rand Book](https://rust-random.github.io/book/) — 随机数库 rand 指南                                                                                          | 中级     | 否       |
+
+### 高级
+
+| 资源                                                                                                                                  | 难易程度 | 是否官方 |
+| ------------------------------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| [Dyner](https://dyner.netlify.app/) — 实验性的 trait（dyn）对象探索                                                                   | 高级     | 否       |
+| [Learn Rust the Dangerous Way](http://cliffle.com/p/dangerust/) — 用"危险方式"学习，更贴近底层                                        | 高级     | 否       |
+| [Rustic Symmetries](https://github.com/kmcallister/rustic-symmetries/blob/master/README.md#rustic-symmetries) — 高级主题合集          | 高级     | 否       |
+| [Rust Ownership, the Hard Way](https://chrismorgan.info/blog/rust-ownership-the-hard-way/) — 困难模式下的所有权                       | 高级     | 否       |
+| [Async programming in Rust with async-std](https://book.async.rs/introduction.html) — 使用 async-std 的异步编程                       | 高级     | 否       |
+| [Async Raft](https://async-raft.github.io/async-raft/) — Raft 共识协议的异步实现                                                      | 高级     | 否       |
+| [Learning Async Rust with Entirely Too Many Web Servers](https://ibraheem.ca/posts/too-many-web-servers/) — 通过许多 Web 服务器学异步 | 高级     | 否       |
+| [Salsa](https://salsa-rs.github.io/salsa/) — 按需、可增量计算的框架                                                                   | 高级     | 否       |
+| [Using Unsafe for Fun and Profit](https://michael-f-bryan.github.io/rust-ffi-guide/) — 为乐趣与收益而用 unsafe（FFI 相关）            | 高级     | 否       |
+| [The Embedonomicon](https://docs.rust-embedded.org/embedonomicon/) — 从零编写 no_std 应用                                             | 高级     | 否       |
+| [Writing an OS in Rust](https://os.phil-opp.com/) — 用 Rust 编写操作系统                                                              | 高级     | 否       |
+
+> 注：Effective Rust 提示"部分概念尚不完整（截至 2022 年 3 月）"。
+
+## 项目实战（Applications）
+
+### 入门
+
+| 资源                                                                                                                                 | 难易程度 | 是否官方 |
+| ------------------------------------------------------------------------------------------------------------------------------------ | -------- | -------- |
+| [Discovery](https://docs.rust-embedded.org/discovery/) — 使用 F3 Discovery 开发板学习 Rust                                           | 入门     | 否       |
+| [The Rust on ESP Book](https://esp-rs.github.io/book/) — 在 Espressif SoC/模块上使用 Rust                                            | 入门     | 否       |
+| [Amethyst Game Engine](https://book.amethyst.rs/stable/) — Amethyst 游戏引擎教程                                                     | 入门     | 否       |
+| [BEVY The Book](https://bevyengine.org/learn/book/introduction/) — Bevy 数据驱动游戏引擎                                             | 入门     | 否       |
+| [Roguelike Tutorial - In Rust](https://bfnightly.bracketproductions.com/) — Roguelike 游戏开发教程                                   | 入门     | 否       |
+| [Rust sokoban](https://sokoban.iolivia.me/) — 推箱子小游戏实战                                                                       | 入门     | 否       |
+| [GUI development with Rust and GTK 4](https://gtk-rs.org/gtk4-rs/stable/latest/book/) — 使用 GTK4 的 GUI 开发                        | 入门     | 否       |
+| [SixtyFPS Memory Game Tutorial (Rust)](https://sixtyfps.io/releases/0.1.4/docs/tutorial/rust/) — 记忆小游戏（SixtyFPS/Slint 工具包） | 入门     | 否       |
+| [Plotly.rs](https://plotly.github.io/plotly.rs/content/getting_started.html) — 绘图库 Plotly.rs 入门                                 | 入门     | 否       |
+| [Tealdeer User Manual](https://dbrgn.github.io/tealdeer/) — tldr 工具的 Rust 实现                                                    | 入门     | 否       |
+
+### 中级
+
+| 资源                                                                                                                        | 难易程度 | 是否官方 |
+| --------------------------------------------------------------------------------------------------------------------------- | -------- | -------- |
+| [An Introduction to Chip-8 Emulation using Rust](https://github.com/aquova/chip8-book/releases) — Chip-8 模拟器 PDF 教程    | 中级     | 否       |
+| [A thoughtful introduction to the pest parser](https://pest.rs/book/) — pest 文本解析库                                     | 中级     | 否       |
+| [Build a Lua Interpreter in Rust](https://wubingzheng.github.io/build-lua-in-rust/en/) — 构建 Lua 解释器                    | 中级     | 否       |
+| [Cross-platform Rust Components](https://mozilla.github.io/application-services/book/index.html) — Firefox 集成的跨平台组件 | 中级     | 否       |
+| [Create Your Own Programming Language with Rust](https://createlang.rs/) — 自制编程语言                                     | 中级     | 否       |
+| [delta](https://dandavison.github.io/delta/introduction.html) — Git/diff/grep 的语法高亮分页器                              | 中级     | 否       |
+| [DMG-01: How to Emulate a Game Boy](https://rylev.github.io/DMG-01/public/book/) — Game Boy 模拟器教程                      | 中级     | 否       |
+| [Emergent AI](https://psichix.github.io/emergent/) — 智能体与事件                                                           | 中级     | 否       |
+| [Fyrox Cheat Book](https://fyrox-book.github.io/) — Fyrox 通用游戏引擎                                                      | 中级     | 否       |
+| [The Specs Book](https://specs.amethyst.rs/docs/tutorials/) — ECS 与 Specs 框架入门                                         | 中级     | 否       |
+| [Writing NES Emulator in Rust](https://bugzmanov.github.io/nes_ebook/index.html) — NES 模拟器                               | 中级     | 否       |
+| [Async-graphql Book](https://async-graphql.github.io/async-graphql/en/index.html) — GraphQL 服务器端库                      | 中级     | 否       |
+| [Cynic - A GraphQL Client For Rust](https://cynic-rs.dev/) — GraphQL 客户端                                                 | 中级     | 否       |
+| [Juniper - GraphQL Server for Rust](https://graphql-rust.github.io/) — GraphQL 服务器                                       | 中级     | 否       |
+| [Druid](https://linebender.org/druid/) — 原生 GUI 库 Druid                                                                  | 中级     | 否       |
+| [GUI development with Relm4](https://relm4.org/book/stable/) — 基于 GTK 的异步 GUI 框架                                     | 中级     | 否       |
+| [intermezzOS OS](http://intermezzos.github.io/book/second-edition/) — 教学型微内核操作系统                                  | 中级     | 否       |
+| [nalgebra](https://nalgebra.org/docs/) — 线性代数库                                                                         | 中级     | 否       |
+| [OpenPGP Card](https://openpgp-card.gitlab.io/guide/) — OpenPGP 卡片指南                                                    | 中级     | 否       |
+| [PNGme: An Intermediate Rust Project](https://jrdngr.github.io/pngme_book/) — PNG 隐写中级项目                              | 中级     | 否       |
+| [Rama Proxy](https://ramaproxy.org/book/) — 模块化服务代理框架                                                              | 中级     | 否       |
+| [Scaphandre](https://hubblo-org.github.io/scaphandre-documentation/index.html) — 能耗监控代理                               | 中级     | 否       |
+| [SeaORM](https://www.sea-ql.org/SeaORM/docs/index) — 异步动态 ORM                                                           | 中级     | 否       |
+| [Serde](https://serde.rs/) — 序列化/反序列化框架                                                                            | 中级     | 否       |
+| [Stakker actor runtime guide](https://uazu.github.io/stakker/about.html) — 轻量级单线程 actor 运行时                        | 中级     | 否       |
+| [The DNS Protocol](https://github.com/EmilHernvall/dnsguide/blob/master/chapter1.md) — DNS 协议实践                         | 中级     | 否       |
+| [The Nom Guide (Nominomicon)](https://tfpk.github.io/nominomicon/) — 解析组合子库 nom 指南                                  | 中级     | 否       |
+| [The Zebra Book](https://zebra.zfnd.org/) — 区块链实现文档（Zebra）                                                         | 中级     | 否       |
+| [Anachro](https://anachro.computer/) — 面向微控制器的网络协议与 PC 架构                                                     | 中级     | 否       |
+
+### 高级
+
+| 资源                                                                                         | 难易程度 | 是否官方 |
+| -------------------------------------------------------------------------------------------- | -------- | -------- |
+| [Book of crosvm](https://google.github.io/crosvm/) — 类型 2 虚拟机监视器                     | 高级     | 否       |
+| [Rust GPU Dev Guide](https://embarkstudios.github.io/rust-gpu/book/) — GPU 开发              | 高级     | 否       |
+| [Prusti user guide](https://viperproject.github.io/prusti-dev/user-guide/) — Rust 程序验证器 | 高级     | 否       |
+| [The Redox Operating System](https://doc.redox-os.org/book/) — Redox OS                      | 高级     | 否       |
+| [Thesus OS](https://theseus-os.github.io/Theseus/book/index.html) — Theseus OS 操作系统      | 高级     | 否       |
+
+---

@@ -1,48 +1,86 @@
 ---
-import Analytics from '@vercel/analytics/astro';
-import SpeedInsights from '@vercel/speed-insights/astro';
-import BaseHead from '@/components/BaseHead.astro';
-import PageHeader from '@/components/PageHeader.astro';
-import PageFooter from '@/components/PageFooter.astro';
-import FormattedDate from '@/components/FormattedDate.astro';
-import { Image } from 'astro:assets';
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
 
-const { title, description, pubDate, heroImage } = Astro.props;
+import BaseHead from "@/components/BaseHead.astro";
+import FormattedDate from "@/components/FormattedDate.astro";
+import PageHeader from "@/components/PageHeader.astro";
+import { type Locale, type SectionKey } from "@/site";
+
+interface Props {
+  section: SectionKey;
+  title: string;
+  description: string;
+  pubDate: Date;
+  heroImage?: ImageMetadata;
+  cover?: string;
+}
+
+const currentLocale = (Astro.currentLocale || "en") as Locale;
+const {
+  section,
+  title,
+  description,
+  pubDate,
+  heroImage,
+  cover,
+} = Astro.props as Props;
+
+const isPrompts = section === "prompts";
+const copyLabel = currentLocale === "zh" ? "复制 Prompt" : "Copy prompt";
+const copiedLabel = currentLocale === "zh" ? "已复制" : "Copied";
 ---
 
-<html lang={Astro.currentLocale || 'en'}>
+<html lang={currentLocale}>
   <head>
-    <BaseHead title={title} description={description} />
+    <BaseHead title={title} description={description} image={heroImage} />
   </head>
   <body>
     <PageHeader />
-    <main class="prose">
-      {
-        heroImage && (
+    <main class="article-page">
+      <header class="article-hero">
+        <div class="article-date">
+          <FormattedDate date={pubDate} />
+        </div>
+        <h1>{title}</h1>
+        <p class="article-description">{description}</p>
+
+        <div class="article-actions">
+          {isPrompts && (
+            <button id="copy-prompt" type="button" class="copy-chip">
+              {copyLabel}
+            </button>
+          )}
+        </div>
+      </header>
+
+      {heroImage && (
+        <figure class="article-image">
           <Image
-            width={800}
-            height={300}
+            width={1200}
+            height={560}
             loading="eager"
-            quality={100}
+            quality={95}
             format="webp"
             fit="cover"
             src={heroImage}
             alt={title}
           />
-        )
-      }
-      <article>
-        <div class="title">
-          <div class="date">
-            <FormattedDate date={pubDate} />
-          </div>
-          <h1>{title}</h1>
-          <hr />
-        </div>
+        </figure>
+      )}
+
+      {!heroImage && cover && (
+        <figure class="article-image">
+          <img src={cover} alt={title} />
+        </figure>
+      )}
+
+      <article class="article-body prose" data-copy-source>
         <slot />
       </article>
     </main>
-    <PageFooter />
     <Analytics />
     <SpeedInsights />
     <button id="back-to-top" aria-label="Back to top" style="display:none;">
@@ -60,114 +98,168 @@ const { title, description, pubDate, heroImage } = Astro.props;
         ></path>
       </svg>
     </button>
-    <script>
-      window.addEventListener('scroll', function () {
-        const btn = document.getElementById('back-to-top');
+    <script is:inline define:vars={{ copyLabel, copiedLabel }}>
+      const copyButton = document.getElementById("copy-prompt");
+      if (copyButton) {
+        copyButton.addEventListener("click", async () => {
+          const source = document.querySelector("[data-copy-source]");
+          const text = source?.innerText?.trim() ?? "";
+          await navigator.clipboard.writeText(text);
+          copyButton.textContent = copiedLabel;
+          window.setTimeout(() => {
+            copyButton.textContent = copyLabel;
+          }, 1200);
+        });
+      }
+
+      window.addEventListener("scroll", function () {
+        const btn = document.getElementById("back-to-top");
         if (btn) {
-          if (window.scrollY > 200) {
-            btn.style.display = 'flex';
-          } else {
-            btn.style.display = 'none';
-          }
+          btn.style.display = window.scrollY > 200 ? "flex" : "none";
         }
       });
-      const backToTopBtn = document.getElementById('back-to-top');
+
+      const backToTopBtn = document.getElementById("back-to-top");
       if (backToTopBtn) {
         backToTopBtn.onclick = function () {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          window.scrollTo({ top: 0, behavior: "smooth" });
         };
       }
     </script>
   </body>
 </html>
 <style>
-  main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: calc(100% - 2em);
+  .article-page {
+    width: min(960px, calc(100% - 2rem));
+    margin: 0 auto;
+    padding: 1.75rem 0 4rem;
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  .article-hero {
+    display: grid;
+    justify-items: center;
+    gap: 0.45rem;
+    padding: 0 0 0.6rem;
+  }
+
+  .article-date {
+    color: rgb(var(--accent-dark));
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+  }
+
+  .article-hero h1 {
+    margin: 0.1rem 0 0;
+    color: rgb(var(--black));
+    font-size: clamp(1.75rem, 2.8vw, 2.75rem);
+    line-height: 1.02;
+    letter-spacing: -0.05em;
+    max-width: 18ch;
+    text-align: center;
+  }
+
+  .article-description {
+    margin: 0;
     color: rgb(var(--gray-dark));
+    font-size: 0.98rem;
+    line-height: 1.78;
+    max-width: 62ch;
+    text-align: center;
   }
-  article {
+
+  .article-actions {
+    margin-top: 0.2rem;
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .article-image {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid rgba(var(--black), 0.08);
+    border-radius: 28px;
+    background: rgba(var(--surface), 0.74);
+  }
+
+  .article-image img {
+    display: block;
     width: 100%;
-  }
-  .title {
-    padding-top: 1em;
-    text-align: center;
-    line-height: 1;
-  }
-  .title h1 {
-    margin: 0 0 0.5em 0;
-  }
-  .date {
-    margin-bottom: 0.5em;
-    color: rgb(var(--gray));
-  }
-  .last-updated-on {
-    font-style: italic;
+    height: auto;
   }
 
-  .language-switcher {
-    text-align: center;
-    margin-bottom: 1rem;
+  .article-body {
+    width: 100%;
+    margin: 0;
+    padding: 1.25rem 0 0;
+    border-top: 1px solid rgba(var(--black), 0.08);
+    background: transparent;
+    max-width: none;
   }
 
-  .language-switcher a {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgb(var(--accent-light));
-    color: rgb(var(--accent));
-    text-decoration: none;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
-  }
-
-  .language-switcher a:hover {
-    background: rgb(var(--accent));
-    color: white;
-    transform: translateY(-1px);
+  .article-body.prose {
+    max-width: none;
   }
 
   :where([data-astro-image]) {
     object-fit: var(--fit);
     object-position: var(--pos);
   }
-  :where([data-astro-image='full-width']) {
+
+  :where([data-astro-image="full-width"]) {
     width: 100%;
   }
-  :where([data-astro-image='constrained']) {
+
+  :where([data-astro-image="constrained"]) {
     max-width: 100%;
   }
 
-  /* Add styles for back-to-top button */
   #back-to-top {
     position: fixed;
-    right: 2em;
-    bottom: 2em;
+    right: 1.5rem;
+    bottom: 1.5rem;
     z-index: 100;
-    background: rgb(var(--accent-light));
-    color: var(--gray-dark);
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    padding: 10px;
-    font-size: 1.5em;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    transition: background 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow:
-      0 6px 16px 0 rgba(0, 0, 0, 0.08),
-      0 3px 6px -4px rgba(0, 0, 0, 0.12),
-      0 9px 28px 8px rgba(0, 0, 0, 0.05);
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 999px;
+    background: rgb(var(--accent-dark));
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 14px 24px rgba(15, 18, 25, 0.16);
+    transition:
+      transform 0.2s ease,
+      background 0.2s ease;
   }
+
   #back-to-top:hover {
-    background: rgba(0, 0, 0, 0.06);
+    transform: translateY(-2px);
+    background: rgb(var(--accent));
+  }
+
+  @media (max-width: 720px) {
+    .article-page {
+      width: min(920px, calc(100% - 1.25rem));
+      padding: 1rem 0 3rem;
+    }
+
+    .article-hero h1 {
+      font-size: clamp(1.95rem, 10vw, 3rem);
+    }
+
+    .article-description {
+      font-size: 0.95rem;
+    }
+
+    .article-image,
+    .article-body {
+      border-radius: 22px;
+    }
   }
 </style>
