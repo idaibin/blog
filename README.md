@@ -1,92 +1,90 @@
 # idaibin.dev Blog
 
-A tech blog focused on Rust, React, and modern full-stack development.
-Sharing practical experience from building the open-source [Rustzen Admin](https://github.com/idaibin/rustzen-admin) project.
+`idaibin.dev` is a bilingual static blog built with Astro, MDX, and Tailwind CSS 4.
+It focuses on AI signals, workflows, prompts, skills, long-form notes, Rust, React, full-stack engineering, and Rustzen Admin.
 
 ## Features
 
-- ✅ Multi-language content (English & Chinese)
-- ✅ Focus on Rust, React, and full-stack engineering
-- ✅ Rustzen Admin project articles and tutorials
-- ✅ Modern Astro + MDX + Tailwind stack
-- ✅ Article counting utility
-- ✅ RSS Feed, SEO, and sitemap support
+- English and Chinese content with shared slugs and `.en` / `.zh` suffixes
+- AI-focused sections for signals, workflows, prompts, and skills
+- Long-form notes for blog posts and Rustzen Admin writing
+- RSS, sitemap, SEO, and Vercel analytics support
+- Content-driven structure with Astro content collections
 
-## Rustzen Admin Project
-
-**Rustzen Admin** is a modern admin system template built with Rust (Axum, SQLx) and React (Vite, Zustand, Tailwind).
-It features high performance, modularity, and comprehensive RBAC permissions.
-
-- Backend: Rust + Axum + SQLx + JWT + RBAC
-- Frontend: Vite + React + Zustand + Tailwind
-- Deploy: Rust binary, frontend and backend can be deployed separately
-
-## 🚀 Project Structure
+## Project Structure
 
 ```text
 ├── public/
 ├── src/
-│   ├── components/
-│   ├── content/
-│   ├── layouts/
-│   └── pages/
+│   ├── assets/
+│   ├── components/
+│   ├── content/
+│   │   ├── blog/
+│   │   ├── prompts/
+│   │   ├── rustzen-admin/
+│   │   ├── signals/
+│   │   ├── skills/
+│   │   └── workflows/
+│   ├── layouts/
+│   ├── pages/
+│   ├── site.ts
+│   ├── styles.css
+│   └── utils.ts
 ├── astro.config.mjs
-├── README.md
 ├── package.json
+├── pnpm-lock.yaml
 └── tsconfig.json
 ```
 
-## 📚 Content Collections
+## Content Collections
 
-This blog supports multi-language content collections:
+The actual content collections are:
 
-- `blog` (English articles)
-- `blogZh` (Chinese articles)
-- `rustzenAdmin` (English Rustzen Admin articles)
-- `rustzenAdminZh` (Chinese Rustzen Admin articles)
+- `signals` / `signalsZh`
+- `workflows` / `workflowsZh`
+- `prompts` / `promptsZh`
+- `skills` / `skillsZh`
+- `notes` / `notesZh`
 
-### Counting Articles
+`notes` is the combined collection for `blog` and `rustzen-admin`.
 
-To get the total number of articles in a collection:
+## Commands
 
-```ts
-import { getCollection } from 'astro:content';
-const allBlogPosts = await getCollection('blog');
-const blogCount = allBlogPosts.length;
-```
+All commands are run from the project root.
 
-For all articles (multi-collection):
+| Command | Action |
+| --- | --- |
+| `pnpm install` | Install dependencies |
+| `pnpm dev` | Start the local Astro dev server |
+| `pnpm build` | Build the production site into `./dist/` |
+| `pnpm preview` | Preview the production build locally |
+| `pnpm astro check` | Run Astro type and content checks |
 
-```ts
-const totalArticles =
-  (await getCollection('blog')).length +
-  (await getCollection('blogZh')).length +
-  (await getCollection('rustzenAdmin')).length +
-  (await getCollection('rustzenAdminZh')).length;
-```
+## Rustzen Admin
 
-> **Note:**
->
-> - Collection names in `getCollection` must match those in `content.config.ts`.
-> - For a large number of articles, consider file counting or build-time caching for better performance.
+Rustzen Admin is the main application theme referenced by this blog.
 
-## 🧞 Commands
+- Backend: Rust, Axum, SQLx, JWT, RBAC
+- Frontend: React, Vite, Zustand, Tailwind
+- Deployment: backend and frontend can be deployed separately
 
-All commands are run from the root of the project, from a terminal:
+## Reading Order
 
-| Command                | Action                                           |
-| :--------------------- | :----------------------------------------------- |
-| `pnpm install`         | Installs dependencies                            |
-| `pnpm dev`             | Starts local dev server at `localhost:4321`      |
-| `pnpm build`           | Build your production site to `./dist/`          |
-| `pnpm preview`         | Preview your build locally, before deploying     |
-| `pnpm astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `pnpm astro -- --help` | Get help using the Astro CLI                     |
+If you want to understand the repo quickly, read these files in order:
 
-## 👀 Want to learn more?
+1. `AGENTS.md`
+2. `package.json`
+3. `astro.config.mjs`
+4. `src/content.config.ts`
+5. `src/site.ts`
+6. `src/utils.ts`
+7. `src/layouts/BaseLayout.astro`
+8. `src/layouts/BlogPost.astro`
+9. `src/pages/`
 
-Check out [Astro documentation](https://docs.astro.build) or join the [Astro Discord](https://astro.build/chat).
+## Notes
 
-## Credit
-
-This theme is based off of the lovely [Bear Blog](https://github.com/HermanMartinus/bearblog/).
+- The repo uses Astro file-based routing.
+- Content schema is defined in `src/content.config.ts`.
+- Shared page copy and section metadata live in `src/site.ts`.
+- There is no dedicated `lint` or `test` script in `package.json`.
