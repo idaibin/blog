@@ -1,5 +1,5 @@
-import { glob } from 'astro/loaders';
-import { defineCollection, z } from 'astro:content';
+import { glob } from "astro/loaders";
+import { defineCollection, z } from "astro:content";
 
 const baseSchema = (image: any) => ({
   title: z.string(),
@@ -9,61 +9,70 @@ const baseSchema = (image: any) => ({
   cover: z.string().optional(),
   author: z.string().optional(),
   tags: z.array(z.string()),
-  audience: z.array(z.enum(['beginner', 'developer', 'ai-practitioner'])).optional(),
+  audience: z
+    .array(z.enum(["beginner", "developer", "ai-practitioner"]))
+    .optional(),
   featured: z.boolean().optional(),
+  readingTime: z.number().optional(),
 });
 
 const signals = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'signals/**/*.en.{md,mdx}' }),
+  loader: glob({ base: "./src/content", pattern: "signals/**/*.en.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 const signalsZh = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'signals/**/*.zh.{md,mdx}' }),
+  loader: glob({ base: "./src/content", pattern: "signals/**/*.zh.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const workflows = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'workflows/**/*.en.{md,mdx}' }),
+  loader: glob({
+    base: "./src/content",
+    pattern: "workflows/**/*.en.{md,mdx}",
+  }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const workflowsZh = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'workflows/**/*.zh.{md,mdx}' }),
+  loader: glob({
+    base: "./src/content",
+    pattern: "workflows/**/*.zh.{md,mdx}",
+  }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const prompts = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'prompts/**/*.en.{md,mdx}' }),
+  loader: glob({ base: "./src/content", pattern: "prompts/**/*.en.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const promptsZh = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'prompts/**/*.zh.{md,mdx}' }),
+  loader: glob({ base: "./src/content", pattern: "prompts/**/*.zh.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const skills = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'skills/**/*.en.{md,mdx}' }),
+  loader: glob({ base: "./src/content", pattern: "skills/**/*.en.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const skillsZh = defineCollection({
-  loader: glob({ base: './src/content', pattern: 'skills/**/*.zh.{md,mdx}' }),
+  loader: glob({ base: "./src/content", pattern: "skills/**/*.zh.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const notes = defineCollection({
   loader: glob({
-    base: './src/content',
-    pattern: '{blog,rustzen-admin}/**/*.en.{md,mdx}',
+    base: "./src/content",
+    pattern: "{blog,rustzen-admin}/**/*.en.{md,mdx}",
   }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
 const notesZh = defineCollection({
   loader: glob({
-    base: './src/content',
-    pattern: '{blog,rustzen-admin}/**/*.zh.{md,mdx}',
+    base: "./src/content",
+    pattern: "{blog,rustzen-admin}/**/*.zh.{md,mdx}",
   }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
