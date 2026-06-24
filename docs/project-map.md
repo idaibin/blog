@@ -7,7 +7,7 @@
 - Vite
 - TypeScript
 - pnpm
-- RSS / sitemap
+- Sitemap
 - Vercel Analytics / Speed Insights
 - sharp
 
@@ -16,7 +16,7 @@
 - 启动开发：`pnpm dev`
 - 本地预览：`pnpm preview`
 - 构建：`pnpm build`
-- Typecheck：`pnpm astro check`（当前还缺 `@astrojs/check`）
+- Typecheck：`pnpm astro check`
 - Lint：未发现
 - Test：未发现
 - Start：未发现
@@ -33,13 +33,13 @@
 - `src/assets/`：图片资源。
 
 ## 页面开发通常涉及的文件链路
-- 新文章：`src/content/blog/why-rust-admin.en.mdx` 这类内容文件 -> `src/content.config.ts` -> `src/utils.ts` -> `src/pages/blog/[...slug].astro` -> `src/layouts/BlogPost.astro`
-- 列表页：内容文件 -> `src/utils.ts` -> `src/pages/blog/index.astro` 或 `src/pages/rustzen-admin/index.astro` -> `src/components/BaseItems.astro`
-- 中文页：对应把路径换成 `/zh/...`，内容文件换成 `.zh.mdx`
+- 新文章：`src/content/blog/why-rust-admin.en.mdx` 这类内容文件 -> `src/content.config.ts` -> `src/utils.ts` -> `src/pages/[section]/[...slug].astro` -> `src/layouts/BlogPost.astro`
+- 列表页：内容文件 -> `src/utils.ts` -> `src/pages/[section]/index.astro` 或 `src/pages/[section]/page/[page].astro` -> `src/components/FeedList.astro`
+- 中文页：对应把路径换成 `/zh/[section]`，内容文件换成 `.zh.mdx`，路由入口在 `src/pages/zh/[section]/`
 
 ## 组件、接口、状态管理、样式、测试分别在哪里
 - 组件：`src/components/`
-- 接口 / 数据读取：`src/utils.ts`、`src/pages/rss.xml.js`
+- 接口 / 数据读取：`src/utils.ts`
 - 状态管理：未发现
 - 样式：`src/styles.css` + 组件/布局内的局部 `<style>`
 - 测试：未发现
@@ -47,7 +47,7 @@
 ## 高频改动区域
 - `src/content/`
 - `src/pages/`
-- `src/components/BaseItems.astro`
+- `src/components/FeedList.astro`
 - `src/layouts/BaseLayout.astro`
 - `src/layouts/BlogPost.astro`
 - `src/styles.css`
@@ -56,7 +56,6 @@
 ## 高风险区域
 - `src/content.config.ts`
 - `src/utils.ts` 的 slug 处理逻辑
-- `src/pages/rss.xml.js`
 - `src/components/LanguageSwitcher.astro`
 - `src/components/PageHeader.astro`
 - `src/layouts/BaseLayout.astro`
@@ -70,5 +69,5 @@
 - `src/utils.ts`
 - `src/layouts/BaseLayout.astro`
 - `src/layouts/BlogPost.astro`
-- `src/components/BaseItems.astro`
+- `src/components/FeedList.astro`
 - `src/pages/`

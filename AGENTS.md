@@ -1,10 +1,10 @@
 # AGENTS.md
 
 ## 仓库用途
-`idaibin.dev` 的博客仓库，基于 Astro + MDX + Tailwind CSS 4 构建。内容以 Rust、React、全栈开发和 Rustzen Admin 为核心，支持中英双语静态站点。
+`rustzen.dev` 的博客仓库，基于 Astro + MDX + Tailwind CSS 4 构建。内容以 AI 信号、工作流、Prompt、Skills、Rust、React、全栈开发和 Rustzen Admin 为核心，支持中英双语静态站点。
 
 ## 目录结构
-- `src/pages/`：文件式路由入口，包含首页、博客页、Rustzen Admin 页、中文页和 RSS。
+- `src/pages/`：文件式路由入口，包含首页、中文首页、动态 section 列表页、详情页和分页页。
 - `src/layouts/`：页面和文章的复用布局。
 - `src/components/`：共享组件。
 - `src/content/`：MDX 文章内容，按主题和语言后缀拆分。
@@ -30,7 +30,7 @@
 
 ## 改动后必须执行的检查命令
 - `pnpm build`
-- `pnpm astro check`（仓库已补齐 `@astrojs/check` 后再执行）
+- `pnpm astro check`
 
 ## 完成任务后的汇报格式
 - 改动文件：

@@ -1,6 +1,6 @@
-# idaibin.dev Blog
+# rustzen.dev Blog
 
-`idaibin.dev` is a bilingual static blog built with Astro, MDX, and Tailwind CSS 4.
+`rustzen.dev` is a bilingual static blog built with Astro, MDX, and Tailwind CSS 4.
 It focuses on AI signals, workflows, prompts, skills, long-form notes, Rust, React, full-stack engineering, and Rustzen Admin.
 
 ## Features
@@ -8,7 +8,7 @@ It focuses on AI signals, workflows, prompts, skills, long-form notes, Rust, Rea
 - English and Chinese content with shared slugs and `.en` / `.zh` suffixes
 - AI-focused sections for signals, workflows, prompts, and skills
 - Long-form notes for blog posts and Rustzen Admin writing
-- RSS, sitemap, SEO, and Vercel analytics support
+- Sitemap, SEO, and Vercel analytics support
 - Content-driven structure with Astro content collections
 
 ## Project Structure
@@ -88,3 +88,4 @@ If you want to understand the repo quickly, read these files in order:
 - Content schema is defined in `src/content.config.ts`.
 - Shared page copy and section metadata live in `src/site.ts`.
 - There is no dedicated `lint` or `test` script in `package.json`.
+- RSS support is not currently exposed by a committed `src/pages/rss.*` route.
