@@ -2,6 +2,8 @@
 dist/
 # generated types
 .astro/
+# local Vercel link metadata
+.vercel/
 
 # dependencies
 node_modules/
