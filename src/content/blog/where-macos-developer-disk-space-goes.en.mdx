@@ -1,0 +1,79 @@
+---
+title: 'Where does your macOS developer disk space go?'
+description: 'A practical look at Xcode DerivedData, Docker data, node_modules, Cargo target directories, IDE indexes, and AI tool caches — and why developer cleanup should start with scan, explanation, and preview before deletion.'
+pubDate: '2026-06-27'
+tags: ['macOS', 'Developer Tools', 'Disk Cleanup', 'Xcode', 'Docker', 'Node.js', 'Rust', 'Zen Clear']
+author: 'idaibin'
+audience: ['developer']
+featured: true
+---
+
+If you use macOS for development, running out of disk space is usually not caused by generic “system junk”. More often, it comes from toolchains quietly generating caches, build artifacts, indexes, logs, and temporary files in the background.
+
+Some of this data can be removed safely. Some of it can be downloaded or rebuilt later. Some of it may affect your current projects, containers, simulators, or local development environment. The real problem is not simply whether a file can be deleted. The real problem is whether you know **what it is**, **which tool created it**, and **what will happen after deletion**.
+
+## Common sources of disk usage
+
+On a developer Mac, large local data usually comes from these areas:
+
+- **Xcode**: DerivedData, Archives, simulator caches, and build outputs.
+- **Docker**: images, containers, volumes, build cache, and Docker Desktop data.
+- **Node.js / frontend projects**: `node_modules`, `.next/cache`, `dist`, `build`, and pnpm/npm/yarn caches.
+- **Rust**: project `target/` directories, Cargo registry data, git checkouts, and build cache.
+- **Java / JVM**: Gradle, Maven, local dependency caches, and build directories.
+- **Python**: `.venv`, pip cache, `__pycache__`, and tox environments.
+- **IDEs and editors**: VS Code, Cursor, JetBrains, Android Studio indexes, logs, and language service data.
+- **AI tools**: local models, indexes, session state, logs, and temporary files.
+
+This data is not always stored in one obvious location, and macOS Storage Management does not always explain it in a developer-friendly way. The result is simple: you can see that your disk is full, but it is hard to tell which space can actually be reclaimed.
+
+## Why one-click deletion is risky
+
+Developer caches are not automatically useless files.
+
+For example, `node_modules` can be reinstalled, but a project may currently depend on it. A Docker volume may be large, but it may contain database data. Xcode DerivedData is often removable, but the next build may be slower. AI tool data may contain local models or indexes that are expensive to recreate.
+
+That is why cleaning a development environment should optimize for caution, explanation, and confirmation — not simply for deleting as much as possible.
+
+I prefer to classify cleanup candidates into three groups:
+
+| Level | Meaning |
+| --- | --- |
+| Safe | Rebuildable cache or temporary data, usually safe to remove |
+| Caution | May affect your local development workflow and should be reviewed first |
+| Danger | Potentially important data that should not be selected by default |
+
+## A safer cleanup workflow
+
+A developer cleanup tool should follow at least three steps:
+
+1. **Scan first**: find development caches, build artifacts, package manager caches, IDE data, Docker data, and Xcode data.
+2. **Explain next**: tell the user what each item is, which tool produced it, and what may happen after deletion.
+3. **Preview before deletion**: clearly show the cleanup scope and risk level before anything is removed.
+
+This is why I am building **Zen Clear**.
+
+Zen Clear is a native macOS cleanup utility for developers and technical users. It does not only scan for large files. It tries to understand disk usage through the context of developer environments: which items are package caches, which are build artifacts, and which belong to Docker, Xcode, IDEs, or AI tools.
+
+The current product model is simple: the free version can scan and preview results; the Pro version unlocks cleanup. Pro is priced at **$10/year** and supports up to 3 devices.
+
+## Privacy and feedback
+
+Zen Clear scans locally. It does not upload your file contents, full file paths, or scan results.
+
+That is better for privacy, but it also means I cannot automatically see what users find during scans. Early feedback is therefore important:
+
+- Which developer caches take the most space on your Mac?
+- Which directories should be marked as dangerous by default?
+- Which explanations are unclear?
+- Would you pay for safe cleanup, preview, and restore support?
+
+Product page:
+
+https://app.rustzen.dev
+
+Feedback email:
+
+support@rustzen.dev
+
+If you try it, I recommend treating it first as a developer disk inspection tool: use it to understand what is filling your Mac before you clean anything.

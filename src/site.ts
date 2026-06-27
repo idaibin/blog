@@ -1,8 +1,10 @@
 export const locales = ['en', 'zh'] as const;
 export type Locale = (typeof locales)[number];
 
-export const sections = ['signals', 'workflows', 'prompts', 'skills', 'notes'] as const;
+export const sections = ['signals', 'prompts', 'skills', 'notes'] as const;
 export type SectionKey = (typeof sections)[number];
+
+export const navigationSections: SectionKey[] = ['signals', 'prompts', 'skills', 'notes'];
 
 export const audienceKeys = ['beginner', 'developer', 'ai-practitioner'] as const;
 export type AudienceKey = (typeof audienceKeys)[number];
@@ -10,14 +12,12 @@ export type AudienceKey = (typeof audienceKeys)[number];
 export const collectionMap = {
   en: {
     signals: 'signals',
-    workflows: 'workflows',
     prompts: 'prompts',
     skills: 'skills',
     notes: 'notes',
   },
   zh: {
     signals: 'signalsZh',
-    workflows: 'workflowsZh',
     prompts: 'promptsZh',
     skills: 'skillsZh',
     notes: 'notesZh',
@@ -35,16 +35,6 @@ export const sectionMeta = {
       summary:
         'What changed, why it matters, who should care, and whether it is worth trying.',
       action: 'Read signals',
-    },
-    workflows: {
-      title: 'Workflows',
-      description:
-        'Repeatable AI workflows for research, coding, writing, and automation.',
-      intro:
-        'Workflows turns AI capability into a clear operating system for real work.',
-      summary:
-        'From one-off usage to repeatable loops that fit how you actually work.',
-      action: 'Open workflows',
     },
     prompts: {
       title: 'Prompts',
@@ -82,13 +72,13 @@ export const sectionMeta = {
       'ai-practitioner': 'For AI practitioners',
     },
     home: {
-      title: 'AI signal desk for builders',
+      title: 'Technical notes for builders',
       description:
-        'A publication system for AI signals, workflows, prompts, skills, and long-term notes.',
+        'Rustzen notes, developer workflows, prompts, skills, and long-term engineering writing.',
       lead:
-        'I track meaningful AI changes, turn them into workflows, and keep reusable assets in one place.',
-      ctaPrimary: 'Explore Signals',
-      ctaSecondary: 'Browse Notes',
+        'I write about developer tools, Rustzen products, AI-assisted workflows, and practical engineering notes.',
+      ctaPrimary: 'Browse Notes',
+      ctaSecondary: 'Explore Prompts',
     },
   },
   zh: {
@@ -98,13 +88,6 @@ export const sectionMeta = {
       intro: 'Signals 负责把 AI 噪音过滤成可执行的高价值信号。',
       summary: '发生了什么、为什么重要、谁应该关注、是否值得试。',
       action: '查看信号',
-    },
-    workflows: {
-      title: 'Workflows',
-      description: '用于研究、写作、编码与自动化的可复用 AI 工作流。',
-      intro: 'Workflows 把 AI 能力转成真实工作里的操作系统。',
-      summary: '从一次性使用，变成可重复、可迭代的工作循环。',
-      action: '打开工作流',
     },
     prompts: {
       title: 'Prompts',
@@ -133,19 +116,18 @@ export const sectionMeta = {
       'ai-practitioner': '给 AI 从业者',
     },
     home: {
-      title: '面向建设者的 AI 信号台',
+      title: '面向建设者的技术笔记',
       description:
-        '围绕 AI 信号、工作流、Prompt、Skills 和长期笔记的内容系统。',
-      lead: '我会持续跟踪 AI 变化，把判断、方法和可复用资产沉淀在这里。',
-      ctaPrimary: '浏览 Signals',
-      ctaSecondary: '阅读 Notes',
+        '围绕 Rustzen、开发者工作流、Prompt、Skills 和长期工程笔记的内容系统。',
+      lead: '我会持续记录开发工具、Rustzen 产品、AI 辅助工作流和工程实践。',
+      ctaPrimary: '阅读 Notes',
+      ctaSecondary: '浏览 Prompts',
     },
   },
 } as const;
 
 export const homeSections: SectionKey[] = [
   'signals',
-  'workflows',
   'prompts',
   'skills',
   'notes',

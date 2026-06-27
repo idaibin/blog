@@ -2,7 +2,7 @@
 import LanguageSwitcher from "./LanguageSwitcher.astro";
 import SocialLinks from "./SocialLinks.astro";
 import { getRelativeLocaleUrl } from "astro:i18n";
-import { getSectionPath, sectionMeta, sections, type Locale } from "@/site";
+import { getSectionPath, navigationSections, sectionMeta, type Locale } from "@/site";
 
 const currentLang = (Astro.currentLocale || "en") as Locale;
 const title = "rustzen.dev";
@@ -23,7 +23,7 @@ const navItems = [
         href: getNavLink("/"),
         active: isHome,
     },
-    ...sections.map((section) => ({
+    ...navigationSections.map((section) => ({
         label: sectionMeta[currentLang][section].title,
         href: getSectionPath(section, currentLang),
         active: pathname.startsWith(`${prefix}/${section}`),

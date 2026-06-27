@@ -6,14 +6,14 @@ import {
 import {
   getCollectionName,
   getSectionPath,
-  sections,
+  homeSections,
   type Locale,
   type SectionKey,
 } from "./site";
 
 const normalizePostId = (id: string) => {
   const basename = id.split("/").pop() ?? id;
-  return basename.replace(/(zh|en)$/, "");
+  return basename.replace(/\.?(zh|en)$/, "");
 };
 
 export const getPosts = async (
@@ -65,7 +65,7 @@ export const getAllSectionPosts = async (
   limitPerSection: number = Number.MAX_SAFE_INTEGER,
 ) => {
   const entries = await Promise.all(
-    sections.map(async (section) => {
+    homeSections.map(async (section) => {
       const posts = await getSectionPosts(section, locale, limitPerSection);
       return posts.map((post) => ({
         ...post,
