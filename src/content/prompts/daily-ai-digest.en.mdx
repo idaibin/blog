@@ -1,22 +1,109 @@
 ---
 title: Daily AI Digest Prompt
-description: A copy-ready prompt for summarizing links, notes, and AI updates into a compact digest.
+description: A copy-ready prompt for turning a day of AI news, papers, product releases, and rough observations into a short, sourced, actionable digest.
 pubDate: 2026-04-05
-tags: ["AI", "Prompt", "Digest"]
-audience: ["beginner", "developer"]
+tags: ["AI", "Prompt", "Digest", "Research"]
+audience: ["beginner", "developer", "ai-practitioner"]
 featured: true
 ---
 
-Use this prompt when you want a daily summary:
+Use this prompt when you need a reliable daily AI digest. The goal is not to collect every update. The goal is to compress raw material into a few high-signal items: what changed, why it matters, where the source is, and what to do next.
+
+## When to use it
+
+- You are preparing a daily AI update from the previous day.
+- You have company blogs, papers, GitHub repositories, product changelogs, and news links.
+- You need material for `Signals`, a team digest, a newsletter, or a personal knowledge base.
+- You want sourced summaries instead of unsupported claims.
+
+## Input format
 
 ```text
-You are an editor for AI updates.
-Input: links, notes, and rough observations.
-Output:
-1. Three important signals
-2. Why each signal matters
-3. One action worth trying today
-4. A short note on uncertainty
+Coverage window: YYYY-MM-DD HH:mm to YYYY-MM-DD HH:mm
+Audience: developers / AI practitioners / technical readers
+Materials:
+1. Title: ...
+   URL: ...
+   Source: ...
+   Date: ...
+   Summary or excerpt: ...
+2. Title: ...
+   URL: ...
+   Source: ...
+   Date: ...
+   Summary or excerpt: ...
+Output language: English
+Output length: 3-5 items
 ```
 
-Keep the output short and practical. The reader should be able to act on it in a few minutes.
+## Copy-ready prompt
+
+```text
+You are an AI signal editor. Turn the provided materials into a short, reliable daily AI digest.
+
+Rules:
+1. Use only the materials I provide. Do not add unsupported facts.
+2. Every item must keep a source link.
+3. Prioritize updates that affect developers, product design, AI tooling, model capability, open-source ecosystems, policy, safety, or deployment.
+4. Do not write generic news summaries. Explain why each item is worth attention.
+5. If there are fewer than 3 strong items, say "not enough high-signal updates today" instead of padding the digest.
+
+Return this format:
+
+> Window: {coverage window}
+
+### <a href="source URL" target="_blank" rel="noreferrer">Title</a>
+
+Source name · Date · Type / topic
+
+Use 1-2 sentences to explain what happened.
+
+**Why it matters**: Use one sentence to explain the impact for developers, AI practitioners, or product judgment.
+
+---
+
+Then add:
+- Main thread: summarize the strongest pattern in one sentence.
+- Uncertainty: explain what still needs follow-up.
+```
+
+## Selection rules
+
+Prefer these:
+
+- Official releases from OpenAI, Anthropic, Google, Meta, Microsoft, GitHub, NVIDIA, and similar sources.
+- Papers and technical reports with methods, data, or reproducible details.
+- Open-source projects with new capabilities, adoption, or direct usability.
+- Toolchain changes: SDKs, agent runtimes, deployment, IDEs, CLIs, evaluation frameworks.
+- Policy and industry changes that affect model access, data use, labor, compliance, or safety boundaries.
+
+Downgrade these:
+
+- Unsourced rumors.
+- Marketing posts with no concrete capability, interface, or deployment detail.
+- Rewrites of the same story with no new information.
+- Funding news that does not affect product or technical judgment.
+
+## Example output
+
+```text
+> Window: 2026-06-26 through 2026-06-27 08:00 Beijing time.
+
+### <a href="https://example.com" target="_blank" rel="noreferrer">A model provider added enterprise access controls</a>
+
+Example Blog · 2026-06-26 · model release / access control
+
+The provider opened the model to selected enterprise customers with organization-level permissions, audit logs, and regional limits.
+
+**Why it matters**: Frontier model access is moving from simple API availability toward segmented access by organization, use case, and risk level.
+
+---
+
+Main thread: Access control and deployment governance are becoming part of model capability.
+
+Uncertainty: The release is still limited, so it is unclear whether it will become a public API or remain enterprise-only.
+```
+
+## Practical advice
+
+Collect 8-15 candidate items first, then ask the model to select the top 3-5. Do not search and write the final digest in one pass; that usually mixes weak stories into the final output.
