@@ -19,7 +19,7 @@ Use this prompt when you need a reliable daily AI digest. The goal is not to col
 ## Input format
 
 ```text
-Coverage window: YYYY-MM-DD HH:mm to YYYY-MM-DD HH:mm
+Date range: YYYY-MM-DD HH:mm to YYYY-MM-DD HH:mm
 Audience: developers / AI practitioners / technical readers
 Materials:
 1. Title: ...
@@ -47,12 +47,11 @@ Rules:
 3. Prioritize updates that affect developers, product design, AI tooling, model capability, open-source ecosystems, policy, safety, or deployment.
 4. Do not write generic news summaries. Explain why each item is worth attention.
 5. If there are fewer than 3 strong items, say "not enough high-signal updates today" instead of padding the digest.
+6. Do not output a coverage window line or a feed heading.
 
 Return this format:
 
-> Window: {coverage window}
-
-### <a href="source URL" target="_blank" rel="noreferrer">Title</a>
+### <a href="source URL" target="_blank" rel="noopener noreferrer">Title ↗</a>
 
 Source name · Date · Type / topic
 
@@ -61,10 +60,6 @@ Use 1-2 sentences to explain what happened.
 **Why it matters**: Use one sentence to explain the impact for developers, AI practitioners, or product judgment.
 
 ---
-
-Then add:
-- Main thread: summarize the strongest pattern in one sentence.
-- Uncertainty: explain what still needs follow-up.
 ```
 
 ## Selection rules
@@ -87,21 +82,13 @@ Downgrade these:
 ## Example output
 
 ```text
-> Window: 2026-06-26 through 2026-06-27 08:00 Beijing time.
-
-### <a href="https://example.com" target="_blank" rel="noreferrer">A model provider added enterprise access controls</a>
+### <a href="https://example.com" target="_blank" rel="noopener noreferrer">A model provider added enterprise access controls ↗</a>
 
 Example Blog · 2026-06-26 · model release / access control
 
 The provider opened the model to selected enterprise customers with organization-level permissions, audit logs, and regional limits.
 
 **Why it matters**: Frontier model access is moving from simple API availability toward segmented access by organization, use case, and risk level.
-
----
-
-Main thread: Access control and deployment governance are becoming part of model capability.
-
-Uncertainty: The release is still limited, so it is unclear whether it will become a public API or remain enterprise-only.
 ```
 
 ## Practical advice
