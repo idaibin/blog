@@ -1,0 +1,471 @@
+---
+title: Rustzen Admin Incremental Audit
+status: incremental
+repo: rustzen-admin
+section: rustzen-audit
+---
+
+# Incremental Audit: rustzen-admin
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-admin`.
+
+Reviewed files:
+
+- `Cargo.toml`
+- `README.md`
+- `AGENTS.md`
+- `docs/architecture.md`
+- `docs/project-map.md`
+- `docs/guides/backend.md`
+- `docs/guides/permission.md`
+- `justfile`
+- `apps/server/Cargo.toml`
+- `apps/server/src/main.rs`
+- `apps/server/src/infra/app.rs`
+- `apps/server/src/infra/db.rs`
+- `apps/server/src/infra/permission.rs`
+- `apps/server/src/features/manage/task/service.rs`
+- `apps/server/src/features/manage/task/repo.rs`
+- `apps/server/src/features/manage/deploy/service.rs`
+- `apps/server/src/features/manage/deploy/repo.rs`
+- `crates/auth/src/lib.rs`
+- `crates/auth/src/permission/mod.rs`
+- `crates/auth/src/permission/check.rs`
+- `crates/auth/src/permission/route.rs`
+- `crates/storage/src/lib.rs`
+- `crates/storage/src/sqlite.rs`
+- `crates/config/src/lib.rs`
+
+## PASS 1 — File-Level Inspection
+
+### `Cargo.toml`
+
+Observed:
+
+- Workspace members are `apps/server`, `crates/auth`, `crates/config`, `crates/runtime`, and `crates/storage`.
+- The workspace is backend/shared-crate oriented; `apps/web` is intentionally outside the Cargo workspace.
+- Release profile is size-oriented with `opt-level = "z"`, thin LTO, single codegen unit, abort panic, and stripping.
+
+Architecture classification:
+
+- Stronger layout than single-crate Rustzen tools.
+- Matches the Web/Rust A-class monorepo shape already documented for this repository.
+- Cargo-level boundary is clean; main pressure appears inside server feature and infra modules, not at workspace root.
+
+### `README.md`
+
+Observed:
+
+- Positions the repository as AI-first, local-first, SQLite-first, and intended for long-term AI-assisted maintenance.
+- Documents monorepo structure: shared auth crate, backend app, React frontend, deploy assets, and docs.
+- States that local startup is SQLite-first and does not require PostgreSQL.
+- Identifies `justfile` as command source of truth.
+- Explicitly marks `docs/history/` as non-current implementation truth.
+
+Architecture classification:
+
+- Documentation is aligned with current Rustzen architecture language.
+- README is lightweight and does not attempt to duplicate detailed architecture rules.
+- The root documentation correctly points to `docs/architecture.md` and `docs/README.md` for deeper context.
+
+### `AGENTS.md`
+
+Observed:
+
+- Defines source-of-truth order: source code, then `docs/architecture.md`, then `docs/guides/`.
+- Defines reading order and stable repository boundaries.
+- Explicitly says this repository is a Web/Rust A-class reference layout.
+- Explicitly excludes Peripheral Vercel, Tauri client, and legacy `zen-server` / `zen-web` layout rules.
+- Requires code, docs, and commands to change together when structure changes.
+
+Architecture classification:
+
+- Strong governance document.
+- The repository has clearer AI-facing rules than most earlier reviewed repos.
+- Boundary pressure is not caused by missing rules; it is caused by some large runtime modules carrying several valid but dense responsibilities.
+
+### `docs/architecture.md`
+
+Observed:
+
+- Declares `apps/server`, `apps/web`, shared `crates/*`, root `justfile`, and `deploy/` as the reference layout.
+- Defines module boundaries for auth, config, runtime, storage, server, frontend, deployment, and docs.
+- Defines backend feature shape as `mod.rs`, `handler.rs`, `service.rs`, `repo.rs`, and `types.rs`.
+- Defines `features/dashboard/` as an intentional smaller read-only aggregation exception.
+- Defines runtime topology around a single `RUSTZEN_RUNTIME_ROOT`.
+- Defines permission rules, built-in roles, and structure-change sync requirements.
+
+Architecture classification:
+
+- Current docs are specific and mostly consistent with code.
+- The architecture file already explains why this repository should not be evaluated with legacy Rustzen layouts.
+- The document creates a useful standard for Web/Rust admin systems, but some infra/service files are denser than the stated layer rules imply.
+
+### `docs/project-map.md`
+
+Observed:
+
+- Maps root, documentation, backend, backend features, frontend, and deployment paths.
+- Marks `apps/server/src/infra/db.rs` as owning SQLite pool creation, embedded migration runner, startup moves for legacy SQLite files, legacy deploy server files, and `deploy_versions.file_path` rows.
+- Marks `apps/server/src/infra/` as owning config, app assembly, database, auth runtime, capability cache, and menu sync.
+- Maps manage task and manage deploy features explicitly.
+
+Architecture classification:
+
+- Good orientation document.
+- It honestly records the same infra density found in code.
+- The map confirms that `infra/db.rs` intentionally owns more than pure DB connection setup.
+
+### `docs/guides/backend.md`
+
+Observed:
+
+- Defines backend layers: `mod.rs` route assembly, `handler.rs` request/response only, `service.rs` orchestration/validation/transactions/cross-repo coordination, `repo.rs` SQL/persistence only, `types.rs` data types.
+- Prohibits SQL in handlers, service bypass of repos, repo cross-feature calls, generated-file edits, compatibility fallbacks, and speculative abstraction.
+- Keeps SQLite as the current storage backend and PostgreSQL compatibility out of the sqlite-first phase.
+
+Architecture classification:
+
+- Clear and enforceable guide.
+- The guide is stronger than several implementation modules; it is useful as the audit reference.
+- No conflict with unified Rustzen v1; it refines v1 for Web/Rust admin repositories.
+
+### `docs/guides/permission.md`
+
+Observed:
+
+- Shared auth and permission-capability code lives in `crates/auth`.
+- Server capability cache and menu sync live in `apps/server/src/infra/`.
+- Route capabilities are registered through `route_with_permission`.
+- Built-in roles are `owner`, `admin`, and `viewer`.
+- `users.is_system`, `roles.is_system`, and `menus.is_system` are explicitly not permission grants.
+- Prohibits super-admin fallback logic and silent permission-sync failure.
+
+Architecture classification:
+
+- Permission semantics are well documented.
+- The model is more explicit than earlier Rustzen repos.
+- Main pressure is implementation concentration inside `infra/permission.rs`, not missing permission policy.
+
+### `justfile`
+
+Observed:
+
+- Defines `dev-server`, `dev-web`, `check`, `reset-db`, `build`, `build-server`, `build-web`, `build-config`, `bump-version`, and `clean`.
+- `check` runs Rust workspace check plus frontend lint.
+- Build pipeline signs server and web artifacts, packages web with `rz-zip`, and writes deployment config into `target/rustzen-admin`.
+- `bump-version` updates server, shared crates, and frontend package version together.
+
+Architecture classification:
+
+- Root command source is coherent with documentation.
+- Deployment build logic is centralized at root, not scattered through feature code.
+- The command layer is acceptable as repository-level orchestration.
+
+### `apps/server/Cargo.toml`
+
+Observed:
+
+- Server binary is `rustzen-admin`, entry is `src/main.rs`.
+- Dependencies include Axum, Tokio, SQLx SQLite, zip, ed25519, sha2, tracing, tower-http, croner, sysinfo, and shared Rustzen crates.
+- `rustzen-core` points to `../../crates/auth`, so the package alias does not match the directory name.
+
+Architecture classification:
+
+- Server crate intentionally owns HTTP runtime, task scheduler, deployment validation, SQLite, and static serving.
+- Dependency set is expected for a full-stack admin backend, but it makes server-side feature boundaries important.
+- Package aliasing of `crates/auth` as `rustzen-core` is a minor naming consistency risk.
+
+### `apps/server/src/main.rs`
+
+Observed:
+
+- Entry file declares `common`, `features`, `infra`, and `middleware` modules.
+- Main initializes `.env`, sets process timezone before Tokio runtime creation, builds a multi-thread Tokio runtime, initializes logging, then delegates to `run_server`.
+- Contains a static binary marker for deployment validation.
+
+Architecture classification:
+
+- Main is thin and mostly correct as runtime entry.
+- Deployment marker is local and explicit.
+- Process timezone mutation is intentional and placed before worker threads are created; this keeps the risk bounded.
+
+### `apps/server/src/infra/app.rs`
+
+Observed:
+
+- `run_server` creates the SQLite pool, runs schema migrations, runs startup data migrations, tests the connection, creates and bootstraps `TaskService`, creates `DeployService`, builds CORS, builds public/protected API routers, applies logging and auth middleware, syncs permissions, mounts static resources, binds listener, and starts Axum.
+- Also owns `/api/summary` response.
+
+Architecture classification:
+
+- Confirmed startup composition pressure.
+- This is not business logic, but it is a dense runtime assembly point.
+- It remains MEDIUM risk because it centralizes DB lifecycle, task bootstrap, deploy service injection, permission sync, router assembly, middleware, static serving, and listener startup.
+
+### `apps/server/src/infra/db.rs`
+
+Observed:
+
+- Creates default DB config from runtime config and storage helpers.
+- Creates SQLite pool and runs embedded migrations.
+- Before opening SQLite, moves legacy SQLite files into the current `data/db/` layout.
+- Also migrates legacy deploy server files into `bin/` and rewrites current server symlink when needed.
+- After schema migrations, rewrites legacy `deploy_versions.file_path` rows.
+- Includes rollback behavior for SQLite file moves and tests for legacy SQLite migration cases.
+
+Architecture classification:
+
+- Confirmed infra/db over-responsibility.
+- Pure storage helpers live in `crates/storage`, but server-local `infra/db.rs` also owns filesystem migration and deployment-record migration.
+- Risk is MEDIUM because the logic is startup-scoped and tested, but it mixes DB bootstrap, runtime filesystem movement, deploy layout migration, symlink handling, and DB row rewriting.
+
+### `crates/storage/src/lib.rs` and `crates/storage/src/sqlite.rs`
+
+Observed:
+
+- `crates/storage` exports SQLite connection helpers only.
+- `connect_sqlite_with_options` ensures the parent directory exists, builds `SqliteConnectOptions`, enables create-if-missing, and creates the pool.
+- Tests verify database URL formatting, directory handling, and empty-path rejection.
+
+Architecture classification:
+
+- PASS.
+- This crate is a good example of a narrow shared helper crate.
+- It does not contain feature policy or business logic.
+
+### `crates/config/src/lib.rs`
+
+Observed:
+
+- Loads `RUSTZEN_*` config through Figment and `once_cell::sync::Lazy`.
+- Defines SQLite path, host/port, DB pool config, JWT config, runtime root, file prefix, log retention, timezone, task retention, and deploy signature settings.
+- Provides runtime layout path helpers.
+- Guards production/release JWT secrets through `ensure_production_jwt_secret`.
+
+Architecture classification:
+
+- Mostly PASS.
+- Config and runtime path resolution are properly centralized.
+- The crate owns both generic runtime config and rustzen-admin-specific defaults, which is acceptable while this crate remains repository-local.
+
+### `crates/auth/src/*`
+
+Observed:
+
+- `crates/auth/src/lib.rs` exposes `auth`, `capability`, `error`, and `permission` modules.
+- `permission/mod.rs` exports `PermissionsCheck`, permission registration, and route extension.
+- `permission/check.rs` implements `Require`, `Any`, and `All` checks, with wildcard and prefix-wildcard support.
+- `permission/route.rs` registers route permission codes and wraps Axum routes with permission middleware.
+
+Architecture classification:
+
+- PASS.
+- Shared auth capability code is correctly outside `apps/server`.
+- The crate owns runtime authorization primitives without depending on server feature modules.
+
+### `apps/server/src/infra/permission.rs`
+
+Observed:
+
+- Owns capability cache, menu seed generation, route permission sync, legacy permission canonicalization, built-in role sync, default owner binding, and cache lookup.
+- Uses `crates/auth` for `CurrentUser`, capability constants, permission checks, and registered route capability collection.
+- Stores user permissions in an in-memory cache with one-hour expiration.
+- Generates menu hierarchy from capability strings and synchronizes built-in roles from current menu capability catalog.
+
+Architecture classification:
+
+- MEDIUM pressure.
+- The split between shared permission primitives and server-local sync/cache is conceptually correct.
+- The implementation is dense because cache, permission-menu sync, role policy, legacy canonicalization, and owner binding live in one infra file.
+
+### `apps/server/src/features/manage/task/service.rs`
+
+Observed:
+
+- Owns task catalog, built-in task specs, cron parsing, timezone parsing, scheduler loop, task bootstrap, manual run, scheduled run, run locking, async task execution, run status finalization, and cleanup executors.
+- Uses `TaskRepository` for persistence and `LogService` for operation-log cleanup.
+- Supports fixed timezone values and offset parsing.
+- Tests cover supported fixed timezones and rejection of unsupported named timezone database entries.
+
+Architecture classification:
+
+- MEDIUM pressure.
+- `TaskService` is coherent as a scheduled-task service, but it combines scheduling, registry, execution lifecycle, lock policy, executor construction, timezone parsing, and retention executors.
+- It matches the previous `rustzen-inspect` pattern: scheduler and execution are validly related but dense inside one service module.
+
+### `apps/server/src/features/manage/task/repo.rs`
+
+Observed:
+
+- Owns SQL for task list, task run list, task sync, stale-running failure, next-run update, run insertion, skipped run insertion, finish-run update, task summary update, and retention cleanup.
+- Keeps SQL inside repo and maps rows to domain/API items.
+- Uses transactions for stale-run repair and insert/finish summary updates.
+
+Architecture classification:
+
+- PASS with density note.
+- Persistence is mostly contained in repo.
+- Summary-update behavior is persistence-coupled but remains inside the task aggregate, not a cross-feature policy engine.
+
+### `apps/server/src/features/manage/deploy/service.rs`
+
+Observed:
+
+- Owns multipart upload parsing, component/version/arch validation, upload size validation, server binary validation, web zip validation, SHA-256 hash generation, file saving, DB insert rollback cleanup, current version deployment, server symlink swap, delayed server restart, web zip extraction, web dist activation, rollback of web dist on DB failure, expired cleanup, binary marker validation, signed marker verification, zip entry validation, and content hash computation.
+
+Architecture classification:
+
+- HIGH density inside a single feature service, but repository-level risk remains MEDIUM because the density is isolated to one operational domain.
+- The deploy feature mixes application orchestration with filesystem IO, archive validation, signature policy, process restart, rollback, and DB coordination.
+- This is the strongest internal pressure point in `rustzen-admin`.
+
+### `apps/server/src/features/manage/deploy/repo.rs`
+
+Observed:
+
+- Owns SQL for list/count, find, version existence, insert, current lookup, set-current transaction, mark-expired, soft-delete, expired query, old-version expiration, filter building, and row conversion.
+- Uses `QueryBuilder` for filtered list queries.
+- `set_current` commits current-version update and then attempts old-version expiration with warning-only failure handling.
+
+Architecture classification:
+
+- PASS with consistency note.
+- Persistence stays in repo.
+- Warning-only old-version expiration is a repo-local operational choice, not a layer violation.
+
+## PASS 2 — Cross-Module Consistency
+
+### Repository layout
+
+- `Cargo.toml`, `README.md`, `AGENTS.md`, and `docs/architecture.md` agree that this is a Web/Rust A-class monorepo.
+- `apps/server` and shared `crates/*` are correctly separated at the repository level.
+- `apps/web` is documented as part of the monorepo but intentionally outside the Rust workspace.
+
+Finding:
+
+- Layout is a PASS. Risk is not root-level structure; risk is internal module density.
+
+### Backend layer model
+
+- The backend guide says handlers handle HTTP, services orchestrate, and repos persist.
+- Reviewed task and deploy repos keep SQL in repo files.
+- `infra/app.rs` is a runtime composition file, not a feature handler.
+
+Finding:
+
+- Backend feature convention is mostly followed.
+- The main exception class is operational services and infra files that validly cross runtime concerns but become dense.
+
+### Shared crates
+
+- `crates/storage` is narrow and persistence-helper only.
+- `crates/auth` cleanly owns shared permission primitives and route permission registration.
+- `crates/config` centralizes runtime config and path helpers.
+
+Finding:
+
+- Shared crates are stronger than earlier reviewed repos.
+- `rustzen-core = { path = "../../crates/auth" }` in server dependency metadata remains a naming consistency issue because package alias does not match the crate's conceptual boundary.
+
+### Runtime and startup
+
+- `main.rs` delegates server runtime after env/timezone/logging setup.
+- `infra/app.rs` owns runtime assembly.
+- `infra/db.rs` performs DB startup and legacy runtime file migrations.
+
+Finding:
+
+- Startup work is deterministic and explicit.
+- `infra/db.rs` is not pure DB bootstrap; it is a startup migration coordinator for DB files, server binaries, symlinks, and deploy-version rows.
+
+### Permission model
+
+- Permission docs, shared auth primitives, route registration, capability sync, and built-in role sync are conceptually aligned.
+- `users.is_system`, `roles.is_system`, and `menus.is_system` are documented as record-protection flags, not grants.
+- Route permissions are collected from route registration and synchronized into menu rows.
+
+Finding:
+
+- Permission model is a PASS conceptually.
+- Implementation density in `infra/permission.rs` should be tracked as infra pressure, not as a policy failure.
+
+### Scheduled task model
+
+- Task service and task repo follow service/repo layering.
+- Task service still owns scheduler loop, task catalog, cron/timezone logic, execution lifecycle, executor creation, and retention executors.
+
+Finding:
+
+- This is consistent with `rustzen-inspect` scheduler/execution coupling pattern.
+- Risk remains MEDIUM, not HIGH, because persistence is separate and the scheduler domain is intentionally local to manage tasks.
+
+### Deploy model
+
+- Deploy repo keeps SQL and state mutation persistence isolated.
+- Deploy service owns upload validation, file persistence, signature validation, archive validation, activation, rollback, and restart behavior.
+
+Finding:
+
+- Deploy service is the largest service pressure point in this repo.
+- The service is operationally cohesive but exceeds normal CRUD service complexity.
+
+## PASS 3 — Unified Architecture Rules Update
+
+### Confirmed repo status
+
+`rustzen-admin` remains **MEDIUM risk**.
+
+This repo is structurally healthier than `rustzen-zipper`, `rustzen-clear`, and `rustzen-clipboard` because it has a documented monorepo layout, shared crates, backend feature conventions, and explicit guides.
+
+It is not LOW risk because `infra/app.rs`, `infra/db.rs`, `infra/permission.rs`, `TaskService`, and especially `DeployService` carry dense runtime or operational responsibilities.
+
+### Rustzen Architecture v1 rule additions from this pass
+
+For Web/Rust admin repositories:
+
+- `apps/server + apps/web + crates/* + deploy/` is a valid Rustzen A-class layout.
+- `apps/web` does not need to be inside the Cargo workspace.
+- `apps/server/src/main.rs` should remain runtime entry only.
+- `apps/server/src/infra/app.rs` may compose DB, routers, middleware, static serving, and service injection, but it must not absorb feature business rules.
+- `crates/auth`, `crates/config`, and `crates/storage` are valid shared crates when they remain narrow and do not depend on server feature modules.
+- Server feature modules should follow `mod.rs`, `handler.rs`, `service.rs`, `repo.rs`, and `types.rs`, except documented read-only aggregation features.
+- Repos must keep SQL and persistence inside the feature aggregate and must not call across feature boundaries.
+- Operational services such as deploy/version activation are allowed to coordinate DB, filesystem, archive validation, signature validation, rollback, and process restart, but must be classified separately from ordinary CRUD services.
+- Startup migration logic that moves runtime files or rewrites deployment records should be tracked as startup migration pressure, even when it is intentionally placed under `infra/db.rs`.
+- Permission menu synchronization may live in server infra only when shared permission primitives remain in `crates/auth` and route registration remains the source of capability discovery.
+
+### Consolidated rustzen-admin audit result
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Root workspace | PASS | Clear Rust workspace for server and shared crates |
+| Documentation | PASS | README, AGENTS, architecture, and guides align |
+| Shared auth crate | PASS | Permission primitives isolated from server features |
+| Shared storage crate | PASS | SQLite helper scope is narrow |
+| Shared config crate | PASS | Runtime config and layout helpers centralized |
+| Server main | PASS | Thin runtime entry |
+| Server app assembly | PARTIAL | DB, routes, middleware, services, permission sync, static serving in one composition file |
+| Server infra/db | PARTIAL | DB bootstrap plus legacy runtime file and deploy record migrations |
+| Server infra/permission | PARTIAL | Cache, menu sync, built-in roles, legacy canonicalization, owner binding in one file |
+| Manage task service | PARTIAL | Scheduler, catalog, execution lifecycle, locking, timezone parsing, executors in one module |
+| Manage task repo | PASS | SQL/persistence remains inside repo |
+| Manage deploy service | PARTIAL | Upload, validation, signature, archive, filesystem, rollback, restart, and DB coordination combined |
+| Manage deploy repo | PASS | SQL and deploy-version persistence isolated |
+| Heatmap status | MEDIUM | Existing classification confirmed |
+
+## Audit Delta
+
+This pass confirms that `rustzen-admin` is not a monolith at repository level.
+
+The risk is concentrated in runtime composition and operational service modules:
+
+- `infra/app.rs` is a dense startup and router composition point.
+- `infra/db.rs` crosses DB bootstrap, runtime file migration, deploy binary migration, symlink handling, and deploy row migration.
+- `infra/permission.rs` combines capability cache, menu sync, role sync, legacy canonicalization, and default owner binding.
+- `TaskService` combines scheduler and execution lifecycle.
+- `DeployService` combines upload, validation, filesystem activation, rollback, and process restart behavior.
+
+Unified rule refinement: Web/Rust admin repositories should not be judged only by workspace layout. A repository can have strong top-level boundaries while still accumulating MEDIUM risk through dense infra and operational services.
