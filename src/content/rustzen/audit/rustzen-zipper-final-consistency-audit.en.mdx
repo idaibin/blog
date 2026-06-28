@@ -1,0 +1,264 @@
+---
+title: Rustzen Zipper Final Consistency Audit
+status: final-incremental
+repo: rustzen-zipper
+section: rustzen-audit
+spec: rustzen-architecture-v1
+---
+
+# Incremental Audit: rustzen-zipper Final Consistency Pass
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-zipper`.
+
+This is a final consistency pass for the CLI-only Rustzen repository class. It does not modify `rustzen-zipper`; it only records incremental audit notes and updates the unified Rustzen Architecture v1 rules inside the blog audit section.
+
+Reviewed files:
+
+- `Cargo.toml`
+- `README.md`
+- `package.json`
+- `index.js`
+- `scripts/install.js`
+- `scripts/verify-package.js`
+- `src/main.rs`
+
+---
+
+## PASS 1 — File-Level Inspection
+
+### `Cargo.toml`
+
+Observed:
+
+- Package name is `rustzen-zipper`.
+- Version is `0.2.0`.
+- Edition is `2024`.
+- Dependency set directly includes CLI parsing, glob matching, hashing, walking directories, ZIP IO, time formatting, and JSON parsing.
+- No workspace, library crate, command module, domain module, or service crate is declared.
+
+Classification:
+
+- Binary-only CLI crate.
+- Rust boundary remains concentrated at package root.
+- Architecture risk is implementation concentration, not dependency bloat.
+
+### `README.md`
+
+Observed:
+
+- Public npm package is `@rustzen/zipper`.
+- Published CLI command is `rz-zip`.
+- Documented command surface includes default packing and `rz-zip unpack`.
+- Configuration precedence is documented as CLI args, explicit config path, workspace config files, then defaults.
+- Release contract requires GitHub Release assets matching the npm/Cargo version.
+- Supported assets are macOS arm64, macOS x86_64, Linux x86_64 GNU, and Windows x86_64 MSVC.
+
+Classification:
+
+- Product-facing documentation is more structured than the Rust source layout.
+- Release and install behavior is explicit.
+- The documentation implies separate architectural domains: command contract, config resolution, pack engine, unpack engine, release/install adapter.
+
+### `package.json`
+
+Observed:
+
+- npm package name is `@rustzen/zipper`.
+- npm version is `0.2.0`, matching Cargo version.
+- Only one public binary is exported: `rz-zip`.
+- `index.js`, README, install script, and verification script are included in the npm package.
+- `ci` runs Rust build, Rust tests, clippy, and package verification.
+- Description still says `CLI & JS library`.
+
+Classification:
+
+- npm package is a distribution adapter.
+- Runtime surface is CLI-only.
+- Metadata overstates JS API ownership because no JS library API is exposed.
+
+### `index.js`
+
+Observed:
+
+- Resolves platform binary from package-local `bin/`.
+- Fails fast if binary is missing.
+- Delegates all arguments to the Rust binary.
+- Uses inherited stdio.
+
+Classification:
+
+- Correct thin adapter.
+- No CLI workflow or product logic leaks into JavaScript.
+
+### `scripts/install.js`
+
+Observed:
+
+- Detects `darwin/arm64`, `darwin/x64`, `linux`, and `win32`.
+- Linux branch always maps to `x86_64-unknown-linux-gnu`.
+- Builds release URL from `rustzen/rustzen-zipper`, tag `v${package.version}`, and `rustzen-zipper-${target-triple}`.
+- Writes the binary into package-local `bin/`.
+- Applies executable permission on non-Windows platforms.
+
+Classification:
+
+- Install responsibility is isolated from Rust runtime.
+- Platform mapping is intentionally small.
+- Release asset lookup follows README contract but does not validate the full asset matrix.
+
+### `scripts/verify-package.js`
+
+Observed:
+
+- Reads Cargo version from `Cargo.toml`.
+- Verifies npm package version equals Cargo package version.
+- Runs `npm pack --dry-run --json` and verifies required files.
+- Copies the built debug binary into package `bin/`.
+- Verifies `node index.js --version` includes the npm package version.
+
+Classification:
+
+- Package verification covers local wrapper integrity.
+- It confirms version alignment and package contents.
+- It still does not verify uploaded GitHub Release assets.
+
+### `src/main.rs`
+
+Observed line bands:
+
+- Lines 1–14 import all runtime domains into one file: time formatting, CLI parsing, glob matching, JSON parsing, hashing, filesystem IO, path handling, walking, ZIP reading, and ZIP writing.
+- Lines 16–34 define the root CLI and hidden `unpack` subcommand.
+- Lines 36–126 define all pack options.
+- Lines 128–159 define unpack options and enum-level command settings.
+- Lines 161–234 define stats, runtime options, and config model.
+- Lines 236–248 parse CLI and dispatch directly to `run_pack` or `run_unpack`.
+- Lines 250–299 implement unpack validation, output directory preparation, archive traversal, path safety, file creation, copy, and terminal output.
+- Lines 301–500 implement pack orchestration, config resolution, source validation, include/exclude parsing, output path creation, overwrite behavior, compression setup, prefix rules, directory walking, filtering, stats mutation, dry-run behavior, zip writing, checksum generation, and summary rendering.
+- Lines 502–578 resolve runtime pack options from CLI and config.
+- Lines 581–695 load and parse config from `.rzrc`, `.rzrc.json`, or `package.json`.
+- Lines 697–824 parse compression, level, overwrite, booleans, file options, patterns, prefix stripping, checksum output, matching, and summary output.
+
+Classification:
+
+- `src/main.rs` remains a confirmed CLI monolith.
+- The file owns command declaration, config contract, workflow execution, archive IO, filesystem traversal, filtering, checksum, terminal reporting, and helper parsing.
+- This confirms the HIGH risk classification for `rustzen-zipper`.
+
+---
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### CLI surface consistency
+
+Finding:
+
+- README documents `rz-zip unpack` as an active command.
+- Rust command definition keeps `unpack` hidden.
+- npm exports only `rz-zip`, which is consistent with the wrapper model.
+
+Result: PARTIAL.
+
+### Version consistency
+
+Finding:
+
+- Cargo package version is `0.2.0`.
+- npm package version is `0.2.0`.
+- Verification script enforces this alignment.
+
+Result: PASS.
+
+### JS/Rust boundary consistency
+
+Finding:
+
+- `index.js` is a process adapter only.
+- `scripts/install.js` is an install-time adapter only.
+- No JavaScript file owns pack/unpack behavior.
+
+Result: PASS.
+
+### Release contract consistency
+
+Finding:
+
+- README defines required release assets.
+- Install script fetches the current platform asset by version tag.
+- Verification script does not validate that every documented release asset exists.
+
+Result: PARTIAL.
+
+### Rust architecture consistency
+
+Finding:
+
+- All Rust runtime behavior is concentrated in `src/main.rs`.
+- No internal module boundary exists between command parsing, config loading, pack workflow, unpack workflow, archive IO, filters, checksum, and summary rendering.
+
+Result: FAIL.
+
+---
+
+## PASS 3 — Unified Rustzen Architecture Rules Update
+
+### Confirmed classification
+
+`rustzen-zipper` remains HIGH risk.
+
+Risk reason:
+
+> A CLI-only repository can still be high-risk when `main.rs` owns command parsing, config resolution, workflow execution, filesystem traversal, archive IO, filtering, checksum, and reporting together.
+
+### CLI-only Rustzen rule
+
+For Rustzen CLI-only repositories:
+
+- JavaScript wrappers may exist only as distribution adapters.
+- Install scripts may own platform detection and release download only.
+- CLI entry must remain argument parsing and dispatch only.
+- Command workflow must be separated from command declaration.
+- Config resolution must be separated from archive or filesystem IO.
+- Pack and unpack must be treated as independent workflow domains.
+- Filtering, prefix transformation, and checksum generation must be separately auditable deterministic logic.
+- Release verification must cover version alignment, package contents, wrapper execution, and the documented release asset matrix.
+
+### Cross-repo rule impact
+
+This pass closes the CLI-specific part of Rustzen Architecture v1.
+
+Unified rule added:
+
+> Repository size does not reduce boundary requirements. Small tools, prototypes, GUI clients, servers, workflow engines, and media gateways are evaluated by responsibility ownership, not by file count or product size.
+
+---
+
+## Final Unified Rustzen Architecture v1 Coverage
+
+| Repository | Final audit status | Risk |
+|---|---:|---:|
+| `rustzen-admin` | reviewed | MEDIUM |
+| `rustzen-analytics` | reviewed | MEDIUM |
+| `rustzen-clear` | reviewed | HIGH |
+| `rustzen-clipboard` | reviewed | HIGH |
+| `rustzen-core` | reviewed-empty | EMPTY / NOT ASSESSABLE |
+| `rustzen-inspect` | reviewed | MEDIUM |
+| `rustzen-launcher` | reviewed | LOW-MEDIUM |
+| `rustzen-lite` | reviewed-empty | EMPTY / NOT ASSESSABLE |
+| `rustzen-mcp` | reviewed-empty | EMPTY / NOT ASSESSABLE |
+| `rustzen-report` | reviewed | MEDIUM-HIGH |
+| `rustzen-video` | reviewed | MEDIUM-HIGH |
+| `rustzen-zipper` | reviewed | HIGH |
+
+Final Architecture v1 status: COMPLETE for the currently discoverable `rustzen-*` repository set.
+
+---
+
+## Audit Delta
+
+This pass adds no product rewrite plan and no implementation proposal.
+
+It only confirms the final Rustzen Architecture v1 audit rule:
+
+> Architecture compliance is determined by responsibility boundaries: handler, service, core/domain, persistence, runtime engine, UI state, workflow engine, media engine, adapter, and release adapter must be independently identifiable even when the repository is small.
