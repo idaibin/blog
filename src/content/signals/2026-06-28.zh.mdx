@@ -1,0 +1,58 @@
+---
+title: 2026-06-28 AI Signals
+description: 面向开发者的每日 AI 高信号摘要。
+pubDate: 2026-06-28
+tags: ["AI", "Signals", "Agents", "Research"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+---
+
+> 覆盖时间：2026-06-27 至 2026-06-28 08:01（北京时间）；周末官方发布较少，补充最新可验证研究批次中的高信号条目。
+
+### <a href="https://github.com/eli-labz/Godcoder" target="_blank" rel="noreferrer">Godcoder: local-first desktop coding agent</a>
+
+GitHub · 2026-06-27 · GitHub project / coding agent
+
+Godcoder 仓库将项目定位为本地优先、开源的桌面 AI 编码 Agent：代码不经过中间云服务，用户自行配置 OpenAI、Anthropic 或兼容 API，并提供 Ask、Plan、Coding 三种模式、MCP 支持、差异审查、checkpoint 和可选的图感知代码搜索。
+
+**值得关注**：AI 编码工具正在从纯云端 IDE 插件，继续向本地桌面、可审计执行和自带上下文索引的形态分化。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.26669" target="_blank" rel="noreferrer">SKILL-DISCO distills agent traces into reusable procedural skills</a>
+
+arXiv · 2026-06-25 · research / agent skills
+
+这篇论文提出 SkillDisCo，把成功的 Agent 执行轨迹抽象为可复用、可调用、可验证的程序化技能，并在 ALFWorld 和 WebArena 上报告了成功率提升和 Agent 轮次减少。
+
+**值得关注**：这和 Rustzen 的 prompt / skill 资产化方向高度相关，说明“把一次成功执行沉淀为可复用技能”正在成为 Agent 工程的重要问题。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.27009" target="_blank" rel="noreferrer">Semantic early-stopping for iterative LLM agent loops</a>
+
+arXiv · 2026-06-25 · research / agent efficiency
+
+论文研究多轮 LLM Agent 循环何时停止，不再只依赖固定 max_iterations，而是用连续草稿的语义变化和质量变化判断是否继续；在 HotpotQA 小样本实验中，judge-free 语义停止器在质量近似不变时减少了 38% operational tokens。
+
+**值得关注**：对本地优先和成本敏感的 Agent 系统来说，停止条件比“多跑几轮”更关键，可以直接影响延迟、token 成本和用户体验。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.26649" target="_blank" rel="noreferrer">Autoformalization of agent instructions into policy-as-code</a>
+
+arXiv · 2026-06-25 · research / agent safety
+
+这篇 AIWILD / ICML 2026 workshop 论文尝试把 Agent prompt、MCP tool 描述和自然语言策略文档转成 Cedar Policy Language 中的可验证策略，用于高风险场景下的工具调用约束。
+
+**值得关注**：Agent 安全边界正在从“提示词提醒”和分类器 guardrail，转向更接近权限系统、策略语言和可验证执行约束的工程实现。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.27288" target="_blank" rel="noreferrer">A co-failure ceiling for routing, voting, and mixture-of-agents</a>
+
+arXiv · 2026-06-25 · research / model ensembles
+
+论文分析 67 个前沿模型，指出多模型路由、投票和 mixture-of-agents 的收益受“所有模型在同一问题上同时失败”的比例限制；作者认为平均 pairwise error correlation 不能充分刻画这种共失败尾部。
+
+**值得关注**：这提醒开发者不要默认“多模型组合必然更强”，实际收益取决于模型是否在不同问题上失败，而不是简单堆更多模型。
