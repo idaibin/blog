@@ -1,0 +1,290 @@
+---
+title: Rustzen Launcher Final Architecture Consistency
+status: final-consistency-pass
+repo: rustzen/rustzen-launcher
+kind: audit
+---
+
+# Rustzen Launcher Final Architecture Consistency
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-launcher`.
+
+This is an incremental final architecture-consistency pass. It does not replace the earlier `rustzen-launcher-incremental-audit.en.mdx`; it appends the final Rustzen Architecture v1 classification for this repository.
+
+Reviewed files in this pass:
+
+- `README.md`
+- `docs/prototype-graduation.md`
+- `package.json`
+- `src-tauri/Cargo.toml`
+- `src-tauri/tauri.conf.json`
+- `src-tauri/src/lib.rs`
+- `src-tauri/src/utils/clipboard.rs`
+- `src/routes/index.tsx`
+- `src/hooks/useClipboard.ts`
+- `src/hooks/useGlobalShortcut.ts`
+- `src/utils/index.ts`
+
+---
+
+## PASS 1 — Final File-Level Observations
+
+### Product and documentation boundary
+
+Observed:
+
+- `README.md` classifies the repository as a Rustzen Client/Tauri desktop prototype for a local launcher/search surface.
+- The README explicitly states that it is not a release baseline and not a reusable Rustzen desktop template.
+- The status block records `release: none`, `updater: none`, and root `src-tauri` as a prototype-only layout exception.
+- `docs/prototype-graduation.md` repeats the same classification and records the formal product status, release baseline status, updater status, release status, and root `src-tauri` exception.
+- The documentation states that the formal Rustzen desktop layout remains `zen-core` plus `zen-gui/src-tauri` unless a repository-specific exception is approved.
+
+Classification:
+
+- Product scope: PASS as prototype.
+- Release posture: PASS as blocked/non-release.
+- Template posture: PASS as explicitly non-template.
+- Architecture risk: LOW-MEDIUM at repository level because the prototype boundary is documented, but runtime ownership remains under-specified.
+
+### `package.json`
+
+Observed:
+
+- Package identity is `rustzen-launcher` and the package is private.
+- Scripts are limited to `preview`, `postbuild`, `dev`, `build`, `tauri`, `format`, `lint`, and `check`.
+- `postbuild` invokes `rz-zip`, keeping the launcher dependent on the Rustzen packaging CLI path.
+- Runtime dependencies include React 19, TanStack Router/Query, Tauri APIs, autostart, clipboard, global shortcut, log, and opener plugins.
+- `check` is write-mode because it runs `biome check --write`, matching the README warning.
+
+Classification:
+
+- Frontend script boundary: PASS for prototype.
+- Build-side Rustzen dependency visibility: PASS.
+- Audit note: write-mode checks remain a validation caveat, not an architecture failure.
+
+### `src-tauri/Cargo.toml`
+
+Observed:
+
+- The Rust crate is named `rustzen-launcher`, version `0.1.0`, edition `2021`.
+- The crate exposes `staticlib`, `cdylib`, and `rlib` under `rustzen_launcher_lib`.
+- Tauri uses `macos-private-api`.
+- Dependencies are limited to Tauri, opener, serde, serde_json, clipboard-manager, log, and Tokio full.
+- Non-mobile targets add autostart and global-shortcut plugins.
+
+Classification:
+
+- Prototype desktop crate boundary: PASS.
+- Runtime density warning: Tokio full plus plugin startup is acceptable only inside the documented prototype exception.
+- Product baseline status: NOT APPROVED.
+
+### `src-tauri/tauri.conf.json`
+
+Observed:
+
+- `productName` is `rustzen-launcher`.
+- Bundle identifier is `com.daibin.rustzen-launcher`.
+- The main window is undecorated, transparent, non-resizable, skipped from taskbar, and sized as a launcher surface.
+- CSP is `null`.
+- `bundle.active` is `false` while `targets` contains `app`.
+
+Classification:
+
+- Launcher surface identity: PASS as prototype.
+- Release boundary: BLOCKED by documented identity, CSP, capability, signing, updater, and bundle policy gaps.
+- Architecture risk: LOW-MEDIUM because this is explicitly not a release baseline.
+
+### `src-tauri/src/lib.rs`
+
+Observed:
+
+- `run()` creates a Tokio runtime manually.
+- The Tauri builder installs log, autostart, clipboard-manager, global-shortcut, and opener plugins.
+- `setup()` clones the app handle and spawns `start_clipboard_monitor()` into the runtime.
+- App startup, plugin registration, runtime creation, and background task ownership live in one composition point.
+
+Classification:
+
+- Composition root: MEDIUM pressure.
+- Runtime ownership: MEDIUM risk.
+- Prototype exception: valid only because this repository is not a release baseline.
+
+### `src-tauri/src/utils/clipboard.rs`
+
+Observed:
+
+- `start_clipboard_monitor()` polls clipboard text every 500ms.
+- It stores only `last_content` in memory.
+- It emits `clipboard://change` without event payload.
+- It logs read failures and event emit failures.
+- `running` is initialized to `true` but no external shutdown path mutates it.
+
+Classification:
+
+- Clipboard monitor: MEDIUM-HIGH local runtime risk.
+- Event contract: incomplete.
+- Shutdown ownership: incomplete.
+- Data scope: text-only and memory-only, which is acceptable for prototype but not enough for a product contract.
+
+### `src/routes/index.tsx`
+
+Observed:
+
+- The route owns the local launcher UI.
+- Search data is hardcoded mock data.
+- Search results are shown when input is non-empty.
+- Selection is keyboard-driven through ArrowUp, ArrowDown, Enter, and Escape.
+- `handleItemSelect()` intentionally discards the item and only clears UI state.
+- Window height is resized according to result count.
+
+Classification:
+
+- UI prototype: PASS.
+- Launcher command contract: ABSENT.
+- Real local data contract: ABSENT.
+- Product readiness: BLOCKED.
+
+### `src/hooks/useClipboard.ts`
+
+Observed:
+
+- The hook exits outside Tauri.
+- It registers one listener for `clipboard://change`.
+- It logs the event but does not consume payload or update product state.
+- It handles async registration cleanup after cancellation.
+
+Classification:
+
+- Frontend event subscription: PASS for prototype.
+- Clipboard event semantics: incomplete.
+- Runtime-to-UI contract: incomplete.
+
+### `src/hooks/useGlobalShortcut.ts`
+
+Observed:
+
+- The shortcut is `CommandOrControl+Shift+R`.
+- The hook unregisters before registering.
+- Pressed state toggles the launcher window.
+- Escape hides the window using a browser keydown listener.
+- Cleanup unregisters the shortcut and removes the Escape listener.
+
+Classification:
+
+- Shortcut lifecycle: PASS for prototype.
+- Shortcut ownership: MEDIUM risk if reused as product baseline because conflict policy and user configurability are not documented.
+- Window behavior: prototype-only.
+
+### `src/utils/index.ts`
+
+Observed:
+
+- Tauri window helpers directly toggle visibility, hide, resize, maximize, and expose an empty `unmaximizeWindow()`.
+- `resizeWindow()` hardcodes width `600`, base height `80`, and row height `80`.
+
+Classification:
+
+- Window utility boundary: PASS for prototype.
+- Product surface contract: incomplete because launcher dimensions are embedded as behavior rather than documented UI policy.
+
+---
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### Rustzen Architecture v1 consistency
+
+Result: PARTIAL PASS.
+
+Consistent points:
+
+- Local-first direction is preserved.
+- No cloud backend is introduced.
+- No updater, release, signing, or publishing workflow is present.
+- Documentation correctly marks root `src-tauri` as a prototype exception.
+- Mock UI and placeholder product behavior are explicitly documented as blockers.
+
+Inconsistent or incomplete points:
+
+- Runtime ownership for clipboard polling is not fully specified.
+- `clipboard://change` has no payload contract.
+- Launcher search has no real local command/data contract.
+- Product identity is explicitly prototype state and cannot be treated as release identity.
+- Tauri capability minimization is not documented at product level.
+
+### Cross-repository consistency
+
+Result: PASS with prototype exception.
+
+- Compared with `rustzen-clear` and `rustzen-clipboard`, this repo must not be scored as a full GUI-first local product.
+- Compared with `rustzen-zipper`, this repo is not a CLI and has no command execution baseline.
+- Compared with `rustzen-report`, `rustzen-video`, and `rustzen-inspect`, this repo does not contain a mature workflow engine or multi-process runtime.
+- The correct classification is `Client/Tauri prototype`, not `desktop product`, `desktop template`, `CLI`, or `runtime gateway`.
+
+---
+
+## PASS 3 — Final Classification
+
+Final risk rating: **LOW-MEDIUM**.
+
+Rationale:
+
+- LOW at product-governance level because the README and prototype graduation document correctly prevent release/template reuse.
+- MEDIUM at runtime level because Tauri startup, plugin setup, manual Tokio runtime entry, background clipboard polling, event emission, shortcut registration, and dynamic window resizing are already present.
+- Not HIGH because the repository does not yet contain persistent storage, cleanup execution, command execution, media pipelines, job schedulers, or analytical aggregation logic.
+
+Final repository status:
+
+- `rustzen-launcher` remains a documented prototype.
+- It is not a Rustzen release baseline.
+- It is not a reusable Rustzen desktop template.
+- Its current root `src-tauri` layout remains a bounded exception.
+
+---
+
+## Rustzen Architecture v1 Rule Update
+
+### Rule: Launcher prototypes are not product templates
+
+A Rustzen launcher-style Tauri repository may keep a root `src-tauri` layout only when all of the following are true:
+
+1. The repository is explicitly classified as a prototype.
+2. Release status is `none`.
+3. Updater status is `none`.
+4. Bundling is disabled or explicitly non-release.
+5. Documentation states that the layout must not be copied into new desktop products.
+6. Mock UI and missing command/data contracts are treated as blockers, not product features.
+
+### Rule: Shortcut surfaces require runtime scoring even when product scope is small
+
+A small desktop launcher still requires runtime-engine scoring when it owns any of the following:
+
+- global shortcut registration;
+- background clipboard polling;
+- Tauri plugin setup;
+- event emission from Rust to frontend;
+- window visibility and size lifecycle;
+- manual Tokio runtime creation.
+
+This repository remains LOW-MEDIUM because those behaviors exist but are contained by the documented prototype boundary.
+
+---
+
+## Rustzen Blog Series Article
+
+### Designing a Local-First Launcher Prototype Without Turning It Into a Template
+
+A launcher looks small from the outside. It has an input box, a keyboard shortcut, a few search results, and a window that opens quickly. That surface can make the product feel simple, but the implementation already crosses several runtime boundaries.
+
+`rustzen-launcher` is useful precisely because it keeps that distinction visible. It is not presented as a finished desktop product. It is not presented as the default Rustzen desktop layout. It is a prototype for exploring a launcher/search surface.
+
+That matters for Rustzen Architecture v1 because a prototype can contain direct runtime wiring without pretending that the wiring is reusable architecture. In this repository, Tauri startup, plugin registration, global shortcuts, clipboard polling, and window resizing are all present. Those are real runtime behaviors, even if the search data is still mock data.
+
+The main lesson is that local-first does not mean structure-free. A local launcher still needs clear ownership for background tasks, event names, window lifecycle, and command execution. Until those contracts exist, the repository should remain a prototype.
+
+This is why the root `src-tauri` layout is acceptable here but not as a general Rustzen desktop rule. The exception is bounded by documentation: no release baseline, no updater, no signing workflow, no bundling posture, and no claim that other Rustzen desktop products should copy this structure.
+
+The better architecture signal is restraint. `rustzen-launcher` does not invent a platform. It does not add cloud services. It does not introduce a generic plugin system. It records the current exploration surface and keeps the release boundary closed.
+
+For Rustzen, that is the correct use of a prototype: explore the interaction model, expose the runtime pressure early, and prevent the prototype from silently becoming the template.
