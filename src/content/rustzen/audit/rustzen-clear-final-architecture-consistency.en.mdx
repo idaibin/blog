@@ -1,0 +1,352 @@
+---
+title: Rustzen Clear Final Architecture Consistency
+status: final
+repo: rustzen/rustzen-clear
+kind: audit
+---
+
+# Rustzen Clear Final Architecture Consistency
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-clear`.
+
+This pass records a final architecture consistency review for the developer-first disk analyzer and cleaner repository. It is an audit-only blog entry and does not modify `rustzen-clear`.
+
+Reviewed files in this pass:
+
+- `README.md`
+- `AGENTS.md`
+- `Cargo.toml`
+- `docs/20-project-map.md`
+- `docs/specs/development-cache-scan.md`
+- `zen-core/Cargo.toml`
+- `zen-core/src/lib.rs`
+- `zen-core/src/analyzer/mod.rs`
+- `zen-core/src/analyzer/service.rs`
+- `zen-core/src/scan/mod.rs`
+- `zen-core/src/scan/dev_cache.rs`
+- `zen-core/src/license/mod.rs`
+- `zen-cli/Cargo.toml`
+- `zen-cli/src/main.rs`
+- `zen-cli/src/args.rs`
+- `zen-cli/src/cmd_scan.rs`
+- `zen-gui/src-tauri/Cargo.toml`
+- `zen-gui/src-tauri/src/main.rs`
+- `zen-gui/src-tauri/src/state.rs`
+- `zen-gui/src-tauri/src/command_development_cache_scan.rs`
+- `zen-gui/src-tauri/src/command_reclaim.rs`
+
+---
+
+## PASS 1 — File-Level Consistency
+
+### Product contract
+
+Finding:
+
+- `README.md` defines ZenClear as a developer-first macOS disk analyzer and cleaner.
+- The product contract is clear: scan, analyze, clean, restore, Tauri desktop app, CLI, license/update clients, and external Rustzen Cloud integration.
+- Safety language is explicit: no silent deletion, no destructive default behavior, no automatic high-risk selection, preview before deletion, and careful handling of project data, local models, sessions, and state files.
+- The documented domain is not generic disk cleanup; it is developer-environment cleanup with project/tool context.
+
+Classification:
+
+- **PASS** for product clarity.
+- The audit risk is not product ambiguity; it is implementation density around the core service, scan engine, development-cache scanner, and Tauri command layer.
+
+### Repository layout
+
+Finding:
+
+- Root `Cargo.toml` declares a workspace with only `zen-cli` and `zen-core` as members.
+- `zen-gui/src-tauri/Cargo.toml` is its own Tauri package with a standalone `[workspace]`, outside the root Rust workspace.
+- `docs/20-project-map.md` still treats `zen-core`, `zen-cli`, and `zen-gui` as the repository's protected product layout.
+
+Classification:
+
+- **PARTIAL** under Rustzen Architecture v1.
+- The repository has meaningful separation between CLI, core, and GUI, but it does not follow the current `apps/* + crates/*` v1 target shape.
+- Because this is an established product repo, the layout is classified as a legacy product exception, not an empty or prototype repository.
+
+### `AGENTS.md`
+
+Finding:
+
+- The agent rules enforce one focused task per pass, no fallback/compatibility logic, no architecture changes unless explicitly required, spec-first execution, and real Tauri-window verification for UI work.
+
+Classification:
+
+- **PASS** for deterministic agent execution guidance.
+- The execution contract aligns with Rustzen audit behavior: narrow scope, explicit validation, no opportunistic broad changes.
+
+### Development-cache specification
+
+Finding:
+
+- `docs/specs/development-cache-scan.md` defines a non-destructive scan mode for caches, AI tool data, models, IDE data, and build outputs.
+- The spec defines category filtering, progress callback, cancellation, Tauri events, no license gate for scanning, Pro gating for cleanup/restore/batch/configuration, and a complete output contract.
+- It requires one summary per `DevelopmentCacheCategory`, including zero-result categories.
+
+Classification:
+
+- **PASS** for scan-mode contract clarity.
+- The spec is stronger than the implementation boundary: the domain policy is explicit, but the implementation still concentrates discovery, target definition, stat walking, progress, summarization, and safety labeling in one large scanner file.
+
+### `zen-core/src/lib.rs` and `analyzer/mod.rs`
+
+Finding:
+
+- `lib.rs` exposes top-level modules for analyzer, audit, config, license, platform, rules, safety, scan, and types.
+- `analyzer/mod.rs` fans out into analyze, category summary, cleanup, detector, progress, reclaim, report, restore, service, and tree modules.
+
+Classification:
+
+- **PASS/PARTIAL**.
+- Module names describe the domain clearly.
+- The risk appears at the service boundary, where many otherwise distinct capabilities converge behind `ZenService`.
+
+### `ZenService`
+
+Finding:
+
+- `ZenService` owns home directory, app config, rule registry, and license manager.
+- It exposes scan, scan with progress, scan with roots, development-cache scan/discovery, analyze, cleanup plan/preview/apply, reclaim preview/apply, progress-aware reclaim apply, restore list/apply, config update, default scan context construction, privacy-scope exclusion, request-root resolution, and conversion from development-cache items into ordinary findings.
+- The same service surface spans product configuration, rule registry, scan orchestration, development-cache scan orchestration, cleanup/reclaim, restore, license-gated operations, and scan-report merging.
+
+Classification:
+
+- **FAIL** under strict Rustzen Architecture v1 service narrowness.
+- Final local classification: **HIGH service density**.
+- `ZenService` is the central product façade and the main architecture risk point for `rustzen-clear`.
+
+### Generic scan engine
+
+Finding:
+
+- `zen-core/src/scan/mod.rs` owns WalkDir traversal, exclusions, path normalization, rule execution, parallel/sequential mode selection, Rayon pool construction, timeout checks, finding build orchestration, progress emission, duplicate suppression, filesystem coverage metadata, validation, follow-up action construction, scan-entry classification, and scan tests.
+- The file keeps deterministic ordering after parallel execution by sorting outcomes by rule and candidate indices.
+- It also handles permission-denied and ignorable filesystem errors without aborting the whole scan.
+
+Classification:
+
+- **PARTIAL**.
+- The behavior is deterministic and safety-aware.
+- The file is a scan-engine boundary, not a simple utility module.
+- Final local classification: **MEDIUM-HIGH scan-engine density**.
+
+### Development-cache scanner
+
+Finding:
+
+- `zen-core/src/scan/dev_cache.rs` defines categories, safety levels, scan options, scan items, category summaries, failures, progress payloads, reports, target collection, target deduplication, sequential and parallel stat walking, atomic progress tracking, summary generation, global target definitions, project discovery, privacy gates, and safety-policy text.
+- It embeds detailed product knowledge for Node/frontend, Rust, Go, Python, Java/JVM, Homebrew, Docker, AI tools, Xcode, IDE, and system cache data.
+- Safety labels are conservative for Docker data, local models, AI sessions, and tool state.
+
+Classification:
+
+- **FAIL** under small-module expectations.
+- Final local classification: **HIGH localized scanner density**.
+- The file is valid as a domain engine boundary, but it must be scored separately from ordinary `scan` plumbing.
+
+### License module
+
+Finding:
+
+- `zen-core/src/license/mod.rs` owns license plans, status, activation/deactivation command payloads, encrypted local license storage, trial metadata, device limits, validation intervals, offline grace behavior, trial creation, cloud validation, and local record persistence.
+- It imports a cloud client submodule but keeps a broad amount of commercial/runtime policy in the module itself.
+
+Classification:
+
+- **PARTIAL**.
+- The license boundary is explicit.
+- Final local classification: **MEDIUM commercial-runtime density**.
+
+### CLI entry
+
+Finding:
+
+- `zen-cli/src/main.rs` is thin: it parses CLI, creates `ZenService`, installs Ctrl-C handling, and dispatches commands.
+- `zen-cli/src/args.rs` defines command shapes and has parser tests for scan, analyze, reclaim, and restore.
+- `cmd_scan.rs` performs root normalization, scan execution, JSON output, terminal-only interactive mode, selection parsing, preview, confirmation, and apply.
+
+Classification:
+
+- `main.rs`: **PASS**.
+- `args.rs`: **PASS**.
+- `cmd_scan.rs`: **PARTIAL** because interactive selection and destructive confirmation are command-edge behavior, but the file also owns preview/apply flow control.
+- The CLI is not a monolith like `rustzen-zipper`; its risk is concentrated in command-specific workflow handlers.
+
+### Tauri app composition
+
+Finding:
+
+- `zen-gui/src-tauri/src/main.rs` wires Tauri plugins, single-instance behavior, updater, deep-link handling, tray menu, app-managed state, commands, disk monitor, scheduled scan, and close-to-hide window behavior.
+- `AppState` owns `Mutex<ZenService>`, `Mutex<LicenseManager>`, scheduled scan history, current cached development scan, scan/cancel atomics, and scan-history persistence path.
+
+Classification:
+
+- `main.rs`: **MEDIUM composition pressure**.
+- `state.rs`: **MEDIUM-HIGH state aggregation**.
+- The GUI runtime is explicit, but state combines service ownership, license ownership, scan lifecycle flags, cached report state, and history persistence.
+
+### Development-cache Tauri command
+
+Finding:
+
+- `command_development_cache_scan.rs` owns scan category preparation, Full Disk Access gating for Docker/System Cache, scan lifecycle lock, cancellation flag, progress throttling, spawn-blocking execution, event emission, report caching, history append, error event emission, and scan-guard cleanup.
+
+Classification:
+
+- **MEDIUM-HIGH command-runtime density**.
+- The command is not merely an adapter; it is a GUI runtime boundary for long-running scan work.
+
+### Reclaim Tauri command
+
+Finding:
+
+- `command_reclaim.rs` owns Pro gating, cached-scan lookup, scan-report reconstruction, selected-finding validation, global cleanup-progress state, mpsc progress bridge, cleanup apply, post-cleanup rescan, cached-report refresh, cleanup snapshot computation, history append, and frontend event emission.
+
+Classification:
+
+- **HIGH command-runtime density**.
+- This is the highest-risk GUI command file because it mixes cleanup lifecycle, progress ownership, cached state, history, and post-cleanup measurement in one boundary.
+
+---
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### Product safety vs implementation
+
+Result: **CONSISTENT**.
+
+- The documented conservative cleanup model is reflected in code paths: destructive operations require explicit selection, preview, Pro gating in GUI cleanup paths, and MoveToTrash behavior.
+- Dangerous development-cache items are converted to non-selectable/non-reclaimable findings.
+
+### CLI-first model
+
+Result: **PARTIAL**.
+
+- The CLI exists and is reasonably thin at `main.rs` level.
+- The product also has a strong Tauri GUI runtime; therefore `rustzen-clear` must be evaluated as CLI + GUI + core, not as a CLI-only repository.
+
+### Local-first model
+
+Result: **PARTIAL**.
+
+- Scan, analysis, cleanup, restore, app config, scan history, and local license cache are local-first.
+- License activation and update flows target external Rustzen Cloud, which is already acknowledged by the README.
+
+### Layering consistency
+
+Result: **PARTIAL / FAIL**.
+
+- CLI and Tauri handlers generally call into `ZenService` or core modules.
+- `ZenService` has become a broad control plane for scan, analysis, cleanup, restore, config, license-gated behavior, and development-cache conversion.
+- Development-cache and reclaim GUI commands are runtime command boundaries, not thin handlers.
+
+### Documentation alignment
+
+Result: **PASS**.
+
+- README, project map, AGENTS rules, and development-cache spec are aligned on the current product identity.
+- The docs do not hide that this is a developer cleanup product with GUI, CLI, safety policy, license/update integration, and conservative deletion behavior.
+
+---
+
+## PASS 3 — Rustzen Architecture v1 Rule Update
+
+### New rule: desktop cleaner repositories require dual scoring
+
+`rustzen-clear` cannot be scored only as a CLI utility or only as a Tauri desktop app. It must be scored on two axes:
+
+1. **Product-entry score** — CLI/Tauri entrypoints, command handlers, runtime state, and event contracts.
+2. **Cleanup-engine score** — scan rules, development-cache discovery, safety labels, reclaim/restore, report conversion, and cleanup lifecycle.
+
+### New rule: cleanup engines are first-class runtime boundaries
+
+Any repository that owns filesystem traversal, safety classification, destructive preview/apply flow, trash/restore behavior, scan cancellation, and post-cleanup rescan must be reviewed as a cleanup engine boundary.
+
+This boundary is not equivalent to ordinary `core` logic because it combines filesystem IO, user safety policy, runtime progress, and irreversible-risk control.
+
+### New rule: safety policy must be explicit in both docs and code
+
+A Rustzen cleanup repository is consistent only when the following remain visible:
+
+- destructive actions are not default behavior;
+- high-risk items are not automatically selected;
+- preview exists before apply;
+- risk labels map to selectable/reclaimable behavior;
+- sensitive AI/session/model/tool state is not treated as generic cache.
+
+### New rule: Tauri command files are not always thin handlers
+
+When a Tauri command owns long-running work, progress events, cancellation flags, cached report state, history append, permission gating, and post-operation measurement, it must be reviewed as a runtime command boundary, not as a handler-only adapter.
+
+---
+
+## Final Classification
+
+`rustzen-clear` final risk: **HIGH**.
+
+Reason:
+
+- Product documentation and safety model are clear.
+- CLI and GUI entrypoints are understandable.
+- The core risk is concentrated in `ZenService`, `scan/dev_cache.rs`, and GUI cleanup command runtime ownership.
+- The repository is an established Rustzen desktop product, not a prototype and not an empty repository.
+- The current implementation is product-complete enough to expose architecture density rather than missing architecture.
+
+Risk heatmap for this repository:
+
+| Area | Classification | Notes |
+| --- | --- | --- |
+| Product contract | PASS | Clear developer-cleaner positioning |
+| Root workspace | PARTIAL | Legacy `zen-*` product layout |
+| CLI `main.rs` | PASS | Thin dispatch |
+| CLI scan command | PARTIAL | Interactive workflow at edge |
+| `ZenService` | HIGH | Broad product façade |
+| Generic scan engine | MEDIUM-HIGH | Rule execution + traversal + validation |
+| Development-cache scanner | HIGH | Large domain engine |
+| License module | MEDIUM | Commercial runtime policy |
+| Tauri composition | MEDIUM | Explicit but broad wiring |
+| Tauri state | MEDIUM-HIGH | Service/license/history/cache/lifecycle aggregation |
+| Tauri reclaim command | HIGH | Cleanup runtime boundary |
+
+---
+
+## Rustzen Blog Series Article
+
+### Designing a Local-First Developer Cleaner Without Hiding the Cleanup Engine
+
+A developer disk cleaner is not just a file-size scanner.
+
+The hard part is not finding large folders. The hard part is explaining what those folders are, who created them, whether they are rebuildable, whether they are part of a project, and whether deleting them will break a workflow.
+
+That is the architecture lesson from `rustzen-clear`.
+
+The repository already has a strong product identity: it focuses on developer machines filled with package caches, build outputs, IDE state, Docker data, AI tool sessions, local models, logs, and temporary artifacts. The safety model is explicit: scan first, explain the finding, preview the cleanup, avoid high-risk defaults, and prefer reversible movement to trash where possible.
+
+This is the right product direction. It also creates a specific architecture burden.
+
+A cleanup product has a hidden engine unless that engine is treated as a first-class boundary. It is not enough to say `core` owns the logic. In practice, the cleanup engine owns filesystem traversal, rule matching, project discovery, safety labeling, path exclusion, privacy-scope handling, progress reporting, cancellation, reclaim preview, destructive apply, restore, and post-cleanup measurement.
+
+That makes it different from a normal deterministic computation crate.
+
+In `rustzen-clear`, the key architecture pressure appears around `ZenService`, the generic scan engine, the development-cache scanner, and the Tauri reclaim command. Each of these modules is understandable by itself, but each owns multiple layers of responsibility. `ZenService` acts as the product façade for scan, analysis, cleanup, restore, config, license, development-cache conversion, and report merging. `scan/dev_cache.rs` contains a large amount of domain knowledge: Node, Rust, Go, Python, Java, Homebrew, Docker, AI tools, Xcode, IDEs, and system caches. The Tauri reclaim command owns cleanup progress, cached scan state, post-cleanup rescan, history updates, and frontend events.
+
+The important point is not that these files are wrong. The important point is that they are not small adapter files. They are runtime boundaries.
+
+A developer cleaner should therefore be reviewed differently from a simple CLI utility. It needs two scores: one for the product entrypoints, and one for the cleanup engine. The CLI can be thin and still the cleanup engine can be dense. The Tauri app can be explicit and still the command runtime can own too much lifecycle.
+
+The safest Rustzen rule is simple: never hide destructive behavior behind generic service names. Cleanup, restore, preview, risk classification, and post-cleanup measurement are product-critical boundaries. They should remain visible in documentation, visible in code review, and visible in audit notes.
+
+That is what makes a local-first developer cleaner trustworthy: not only that it deletes less by default, but that the architecture makes deletion policy reviewable.
+
+---
+
+## Audit Closure Note
+
+This pass adds the final `rustzen-clear` architecture consistency classification to the Rustzen audit section.
+
+No source repository was modified. No PR was created. No system upgrade or new abstraction was proposed.
