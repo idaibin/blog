@@ -1,0 +1,338 @@
+---
+title: Rustzen Admin Final Architecture Consistency
+status: final-consistency
+repo: rustzen-admin
+section: rustzen-audit
+---
+
+# Final Architecture Consistency: rustzen-admin
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-admin`.
+
+This is a strict incremental consistency pass for the existing `rustzen-admin` audit. It only records audit findings inside `rustzen/blog`. It does not change the source repository, does not create a PR, and does not introduce a new system or abstraction.
+
+Reviewed files in this pass:
+
+- `Cargo.toml`
+- `README.md`
+- `AGENTS.md`
+- `docs/architecture.md`
+- `docs/project-map.md`
+- `docs/guides/backend.md`
+- `docs/guides/frontend.md`
+- `apps/server/Cargo.toml`
+- `apps/server/AGENTS.md`
+- `apps/server/src/infra/app.rs`
+- `apps/server/src/infra/db.rs`
+- `apps/server/src/features/manage/task/service.rs`
+- `apps/server/src/features/manage/deploy/service.rs`
+- `apps/server/src/features/manage/deploy/repo.rs`
+- `apps/web/AGENTS.md`
+- `apps/web/src/routes/__root.tsx`
+
+## PASS 1 — Incremental File-Level Findings
+
+### `Cargo.toml`
+
+Observed:
+
+- The root workspace is explicit and compact: `apps/server`, `crates/auth`, `crates/config`, `crates/runtime`, and `crates/storage`.
+- The workspace uses resolver `2` and a release profile tuned for a small packaged binary.
+- There is no root-level mixed application logic in the workspace file.
+
+Consistency result:
+
+- PASS at workspace boundary level.
+- The root layout remains the clearest Web/Rust A-class reference among the reviewed Rustzen repositories.
+
+### `README.md`
+
+Observed:
+
+- The product is still documented as AI-first and local-first.
+- The documented shape remains Axum backend, React frontend, local SQLite, deployment assets, and repository-level documentation.
+- The README points to `docs/architecture.md` for structure and keeps `README.md` / `AGENTS.md` lightweight.
+- `docs/history/` is explicitly not current implementation truth.
+
+Consistency result:
+
+- PASS at product and repository orientation level.
+- The README describes a reusable admin/runtime foundation, not a generic UI-only template.
+
+### `AGENTS.md`
+
+Observed:
+
+- Source-of-truth priority is clear: code first, then architecture document, then guides.
+- Repository boundaries are explicit: shared auth in `crates/auth`, backend in `apps/server`, frontend in `apps/web`, migrations under server, deployment assets under `deploy`.
+- The document prevents unrelated layout rules from leaking in: Peripheral Vercel, Tauri client, and legacy `zen-server` / `zen-web` rules are excluded.
+- SQLite remains the default storage backend, with PostgreSQL-first migration history archived.
+
+Consistency result:
+
+- PASS as repository-wide AI and boundary guidance.
+- The document aligns with Rustzen Architecture v1: stable boundaries are more important than generic restructuring.
+
+### `docs/architecture.md`
+
+Observed:
+
+- `rustzen-admin` is explicitly classified as the Web/Rust A-class reference layout.
+- Shared crates are assigned to concrete capability boundaries: auth, config, runtime paths, and storage.
+- Backend feature code remains defined as `features/<feature>/{mod,handler,service,repo,types}` unless intentionally smaller.
+- `features/dashboard/` is documented as a read-only aggregation exception.
+- Runtime topology is local-first: runtime root, versioned server binary files, web dist, SQLite database, uploads, avatars, logs, and app env are all rooted under the runtime directory.
+- Permission behavior is documented: JWT and capability checks live in `crates/auth`, protected routes require `Require(...)`, built-in roles are synchronized from menu capabilities, and `is_system` does not grant permissions.
+
+Consistency result:
+
+- PASS at architecture document level.
+- This file remains the strongest cross-repo example of Rustzen v1 documentation discipline.
+- The pressure is not missing documentation; the pressure is whether high-density operational features remain auditable inside the documented layout.
+
+### `docs/project-map.md`
+
+Observed:
+
+- The project map gives path-level entry points for root, docs, backend, backend features, frontend, and deployment.
+- `apps/server/src/infra/db.rs` is accurately described as SQLite pool creation, embedded migration runner, and startup moves for legacy SQLite files, legacy deploy server files, and `deploy_versions.file_path` rows.
+- `features/manage/deploy` is accurately described as uploaded server/web deploy versions, file validation, and local activation.
+- Frontend API, routes, layout, store, constants, and utilities are mapped separately.
+
+Consistency result:
+
+- PASS as a navigation artifact.
+- The map is honest about density in `infra/db.rs` and deploy management; it does not pretend those files are trivial.
+
+### `docs/guides/backend.md`
+
+Observed:
+
+- The backend guide defines the standard feature layer contract: `mod.rs`, `handler.rs`, `service.rs`, `repo.rs`, and `types.rs`.
+- It explicitly prohibits SQL in handlers, services bypassing repos, repo cross-feature calls, compatibility fallbacks, generated-file edits, and speculative abstraction.
+- It keeps SQLite as the default runtime storage backend and marks PostgreSQL compatibility as out of scope for the sqlite-first phase.
+
+Consistency result:
+
+- PASS as baseline backend guidance.
+- The guide is sufficient for ordinary request/response admin features.
+- Operational features such as deploy activation and scheduled task execution still need an additional audit lens because they own runtime side effects, not only CRUD orchestration.
+
+### `docs/guides/frontend.md`
+
+Observed:
+
+- Frontend rules keep auth redirects, permission gates, current-user bootstrap, and not-found handling in `apps/web/src/routes/__root.tsx`.
+- API modules own HTTP URL details and transport shaping.
+- React Query owns read-side server state; Zustand remains constrained to shared auth state and small persisted UI filters.
+- The guide avoids premature generic abstraction: no future groups, no route-local `-content/` directories, and no shared API type redeclarations inside pages.
+
+Consistency result:
+
+- PASS at frontend boundary level.
+- The frontend rules match the same Rustzen principle used in backend code: keep ownership local until reuse is real.
+
+### `apps/server/Cargo.toml`
+
+Observed:
+
+- The server binary is named `rustzen-admin`.
+- Dependencies match the documented runtime: Axum, Tokio, SQLx SQLite, tracing, tower-http, Argon2, croner, zip, Ed25519, and local Rustzen capability crates.
+- `rustzen-core` is sourced from `../../crates/auth`, while config and storage are separate local crates.
+
+Consistency result:
+
+- PASS at dependency intent level.
+- The dependency list confirms that this is a local-first admin/runtime server with built-in deployment and scheduled-task concerns.
+
+### `apps/server/AGENTS.md`
+
+Observed:
+
+- Backend-specific rules repeat the core layer contract.
+- Handlers are explicitly request/response only.
+- Services own orchestration, validation, and transactions.
+- Repos own persistence and must not cross feature boundaries.
+- `PermissionsCheck::Require(...)` remains the default route rule.
+
+Consistency result:
+
+- PASS for backend contribution rules.
+- These rules remain aligned with the documented architecture.
+
+### `apps/server/src/infra/app.rs`
+
+Observed:
+
+- `run_server` creates the database pool, runs migrations, runs startup data migrations, tests the connection, constructs `TaskService`, bootstraps the scheduler, constructs `DeployService`, builds CORS, builds protected and public API routers, syncs permissions, configures uploads/avatars/static web serving, binds the listener, and serves Axum.
+- Protected routes include account, auth, dashboard, manage, and system.
+- Middleware includes operation logging and auth context extraction.
+- Static files and uploaded resources are served from config-derived runtime paths.
+
+Consistency result:
+
+- MEDIUM composition pressure.
+- The file is still mostly an application assembly root, not a business logic file.
+- The pressure comes from startup sequencing and dependency aggregation: database bootstrap, task bootstrap, permission sync, deployment service injection, middleware, API routing, static resources, and SPA fallback are all assembled in one surface.
+
+### `apps/server/src/infra/db.rs`
+
+Observed:
+
+- The first section is clean database configuration and pool creation.
+- `create_default_pool` performs legacy deploy server version migration and legacy SQLite file migration before creating the pool.
+- `run_startup_data_migrations` performs legacy deploy file path migration after schema migration.
+- The file also owns filesystem moves, SQLite sidecar migration, rollback of partially moved DB files, executable bit updates, deploy binary symlink rewrite checks, runtime path resolution, and deploy version row migration.
+- Test coverage exists for idle timeout behavior, SQLite file movement, skip-on-target-exists, and orphan sidecar behavior.
+
+Consistency result:
+
+- MEDIUM-HIGH localized infrastructure density.
+- The file name says database infrastructure, but the behavior includes runtime filesystem migration and deploy artifact migration.
+- This is acceptable as an explicit startup compatibility surface, but it is not a pure database module under the strict `storage` boundary reading.
+
+### `apps/server/src/features/manage/task/service.rs`
+
+Observed:
+
+- `TaskService` owns the pool, task repository, in-memory task catalog, configured timezone, task bootstrap, stale-run cleanup, task synchronization, cron calculation, scheduling loop, manual run entry point, run lock, async task spawn, and run completion persistence.
+- Fixed task specs are source-defined and synchronized into storage.
+- The scheduler handles both scheduled and manual trigger paths.
+- Timezone support is intentionally fixed-offset oriented: UTC, Shanghai aliases, and explicit offsets are supported; general timezone database names are rejected.
+- Executors are local and narrow: operation-log cleanup uses `LogService`, task-run cleanup uses `TaskRepository`.
+
+Consistency result:
+
+- MEDIUM runtime-service density.
+- The implementation is coherent and small enough to remain in one feature, but it is more than ordinary CRUD service orchestration because it owns long-running task scheduling and async execution lifecycle.
+
+### `apps/server/src/features/manage/deploy/service.rs`
+
+Observed:
+
+- `DeployService` owns multipart upload parsing, component/version/arch normalization, file-size validation, server binary validation, web zip validation, SHA-256 hashing, file save, DB insert cleanup on failure, deploy activation, expire/delete cleanup, and expired-version cleanup.
+- Server deployment owns symlink switching, current-version DB mutation, rollback on DB failure, and delayed service restart scheduling.
+- Web deployment owns zip extraction, temporary directory staging, dist activation, previous dist rollback, current-version DB mutation, and cleanup.
+- Validation code includes binary marker checks, optional signed marker verification, Ed25519 verification key parsing, signature parsing, web marker validation, zip entry constraints, decompressed-size limits, path enclosure checks, deterministic content hashing, and binary arch detection.
+
+Consistency result:
+
+- HIGH localized operational-service density.
+- The file remains inside the documented deploy feature boundary, but it is broader than a normal service layer.
+- It combines upload protocol, package validation, artifact storage, runtime activation, rollback, restart scheduling, signature verification, zip safety, and binary inspection.
+
+### `apps/server/src/features/manage/deploy/repo.rs`
+
+Observed:
+
+- The repository is persistence-focused: list/count/find/insert/find-current/set-current/expire/delete/expired query operations are all SQL-backed.
+- SQL is explicit and does not use `SELECT *`.
+- `set_current` uses a transaction to clear the old current row and set the target row current.
+- After commit, old deployed versions are expired by retention policy.
+- Dynamic filters are isolated through `QueryBuilder`.
+
+Consistency result:
+
+- PASS as a repo layer with one caveat.
+- The repository mostly stays persistence-only, but deploy retention policy appears in `expire_old_versions` and is invoked after `set_current`.
+- This is a small policy leakage compared with the much larger operational density in `DeployService`.
+
+### `apps/web/AGENTS.md`
+
+Observed:
+
+- Frontend rules are short and aligned with the guide.
+- Auth routing and permission gates stay in `__root.tsx`.
+- Request code stays in `apps/web/src/api/`.
+- Generated route tree edits are prohibited.
+
+Consistency result:
+
+- PASS as frontend contribution guidance.
+
+### `apps/web/src/routes/__root.tsx`
+
+Observed:
+
+- Root route owns token redirect, login redirect, permission-free paths, menu permission checks, 403 redirect, not-found redirect, current-user bootstrap, app-level layout, message container, and devtools loading.
+- Permission checks derive from current pathname through the auth store.
+- Devtools are lazy-loaded only in development.
+
+Consistency result:
+
+- MEDIUM frontend root pressure.
+- The file matches the documented frontend rules, but it is an intentional concentration point for auth, routing, permission, current-user bootstrap, layout shell, and developer tooling.
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### Consistent
+
+- `rustzen-admin` remains the Web/Rust A-class reference layout.
+- Workspace boundaries are explicit and still align with the architecture document.
+- Shared crates are meaningful: auth, config, runtime path helpers, and storage helpers are not arbitrary abstractions.
+- Backend feature layout remains documented and mostly implemented through `handler/service/repo/types` boundaries.
+- Frontend route/API/state rules are documented and consistent with the root route implementation.
+- Runtime topology remains local-first and concrete: SQLite, runtime root, uploads, avatars, web dist, logs, and versioned server binary files.
+- Permission semantics are documented and centralized through capability checks rather than hidden role flags.
+
+### Pressured
+
+- `infra/app.rs` is a broad composition root.
+- `infra/db.rs` mixes DB pool/migration concerns with runtime filesystem migration and deploy artifact migration.
+- `manage/task/service.rs` is a runtime scheduler surface, not only a CRUD service.
+- `manage/deploy/service.rs` is the highest-density operational surface in the repository.
+- `manage/deploy/repo.rs` is mostly persistence-only, but current-version retention policy is close to repo code.
+- `apps/web/src/routes/__root.tsx` intentionally centralizes auth, permission, layout, bootstrap, and devtools concerns.
+
+## PASS 3 — Unified Rustzen Architecture Rules Update
+
+### Final risk rating
+
+`rustzen-admin` remains **MEDIUM risk**.
+
+Reason:
+
+- Repository-level layout: PASS.
+- Documentation boundary: PASS.
+- Local-first runtime model: PASS.
+- Backend and frontend guides: PASS.
+- Highest-pressure implementation areas: MEDIUM to HIGH localized density, especially deploy management.
+
+The final rating is not driven by root layout. The root layout is strong. The rating is driven by operational runtime features inside the admin product: deployment activation, artifact validation, scheduler lifecycle, startup migration, and static/runtime serving.
+
+### Rustzen Architecture v1 update
+
+Add this audit rule:
+
+> Web/Rust A-class layout is not a full architecture score. A repository can be the reference layout and still carry MEDIUM implementation risk when operational runtime features concentrate startup migration, scheduler lifecycle, deploy artifact validation, symlink activation, rollback, service restart, and static/runtime serving inside a small number of files.
+
+Add this consistency rule:
+
+> In Rustzen Architecture v1, admin repositories must be evaluated on two axes: layout/documentation conformance and operational-runtime density. `api -> service -> repo` remains the baseline for CRUD-style admin features, but deploy management, startup migration, scheduled tasks, and root auth/permission routing are runtime ownership surfaces and must be audited separately.
+
+### Repo-specific final check
+
+- Do not treat `rustzen-admin` as layout migration debt.
+- Do not classify it as LOW risk only because the workspace layout is clean.
+- Do not score deployment management as ordinary CRUD.
+- Score it as a local-first admin/runtime foundation with strong documentation and medium operational density.
+
+## Blog Series Article
+
+### Designing a Local-First Admin Runtime Without Hiding the Operational Core
+
+An admin product usually looks like a set of tables: users, roles, menus, dictionaries, logs, scheduled tasks, and deployment versions. That view is useful, but incomplete. In a local-first Rust admin runtime, the real architecture is not only the CRUD layer. The real architecture is the boundary between ordinary management screens and operational behavior that changes the running system.
+
+`rustzen-admin` is a useful reference because its repository layout is clear. The backend lives in `apps/server`, the frontend lives in `apps/web`, shared Rust capability crates live under `crates/*`, deployment assets live under `deploy`, and current architecture rules live under `docs/`. This shape gives AI-assisted development a stable map. A contributor can usually find where a change belongs before touching code.
+
+The important lesson is that a clean layout does not remove runtime pressure. Deployment management is not just a table of versions. It parses uploaded packages, validates server binaries and web zips, hashes content, verifies markers and signatures, writes versioned artifacts, switches symlinks, activates web dist output, updates the current deployment record, rolls back failed activation, and schedules process restart. That is product behavior, not generic admin plumbing.
+
+The same pattern appears in scheduled tasks. A task page can look simple in the UI, but the backend owns cron parsing, timezone interpretation, fixed task catalog synchronization, stale run cleanup, run locking, async task spawning, executor dispatch, and completion persistence. This is a runtime lifecycle, not just a list endpoint.
+
+The correct Rustzen reading is therefore two-layered. First, check whether the repository has a stable shape that humans and AI can follow. `rustzen-admin` passes that test. Second, check where runtime ownership concentrates. In this repo, the main pressure points are startup assembly, database/runtime migration, scheduled task execution, and deploy activation.
+
+That distinction matters for the Rustzen Architecture v1 spec. A local-first product should avoid pretending that operational behavior is ordinary CRUD. The code can still be pragmatic and compact, but the audit language must name the real ownership surface. For `rustzen-admin`, the architecture value is not that everything is abstracted away. The value is that the product keeps a readable Web/Rust reference layout while making the operational core visible enough to review.
+
+The product narrative is also consistent with the broader Rustzen direction. Rustzen tools should be understandable from source, runnable locally, concrete in runtime paths, and conservative about abstractions. `rustzen-admin` shows the strength and the cost of that approach: strong boundaries at the repository level, with careful attention still required wherever the code crosses from management UI into runtime-changing behavior.
