@@ -90,78 +90,47 @@ No reverse dependency allowed.
 
 ---
 
-# 5. PR-Level Refactor Strategy (NEW)
+# 5. PR-Level Refactor Strategy
 
 ## 5.1 Refactor Phases
-
 ### Phase A: Extraction
-- extract service logic from god modules
-- split db layer from service layer
-- isolate CLI handlers
+- split service logic
+- isolate db layer
+- extract handlers
 
 ### Phase B: Stabilization
 - enforce dependency direction
-- remove cross-layer imports
-- unify error types
+- remove cross-layer coupling
 
 ### Phase C: Standardization
-- align CLI naming (rz system)
-- unify module naming
-- enforce crate boundaries
-
----
-
-## 5.2 PR Structure Template
-Each repo refactor PR MUST include:
-
-### PR-1: Service Split
-- split god service into domain services
-
-### PR-2: DB Isolation
-- move all SQL/migration into db crate
-
-### PR-3: Handler Cleanup
-- ensure apps/* only calls service layer
-
-### PR-4: CLI Alignment
-- unify command mapping
+- unify CLI mapping (rz system)
+- align naming conventions
 
 ---
 
 # 6. Per-Repo Refactor Guidance
 
 ## rustzen-clear
-- split ZenService into:
-  - ScanService
-  - CleanupService
-  - AnalyzeService
-- extract scanner engine into core
+- split ZenService (scan/analyze/cleanup/restore)
+- isolate scanner engine
 
 ## rustzen-clipboard
-- split storage.rs:
-  - ClipboardRepository
-  - HistoryStore
-- isolate capture loop from logic
+- split storage.rs (repository + history + settings)
+- isolate clipboard capture loop
 
 ## rustzen-zipper
-- split main.rs god module:
-  - PackService
-  - UnpackService
-  - FilterEngine
+- split main.rs god module
+- separate pack/unpack/filter engines
 
 ## rustzen-analytics
-- split report service:
-  - AggregationService
-  - WindowCalculator
-  - ReportRenderer
+- split report service into aggregation + rendering
 
 ## rustzen-inspect
-- separate scheduler from execution engine
-- isolate DB logging layer
+- separate scheduler vs execution engine
 
 ---
 
-# 7. Dependency Enforcement Rules
+# 7. Dependency Rules
 
 ## Allowed
 - service -> core
@@ -175,16 +144,66 @@ Each repo refactor PR MUST include:
 
 ---
 
-# 8. CI Enforcement Strategy
+# 8. Architecture Diagram
 
-Future rule (design stage):
-- rustzen-arch-check linter
-- detect god modules
-- enforce layering violations
+```mermaid
+graph TD
+CLI --> Service
+GUI --> Service
+API --> Service
+Service --> Core
+Service --> DB
+Core --> Domain
+DB --> SQLite[(SQLite)]
+```
 
 ---
 
-# 9. Final Goal
-Rustzen evolves into:
+# 9. Evolution Rule
+After each PASS cycle:
+1. update architecture rules
+2. refine CLI mapping
+3. refine module boundaries
+4. update diagram
 
-> A strictly layered Rust ecosystem with enforced architecture boundaries, CLI consistency, and predictable modular decomposition across all repositories.
+---
+
+# 10. Architecture Heatmap (UPDATED)
+
+| Repo | Risk | Key Issue |
+|------|------|----------|
+| rustzen-clear | HIGH | ZenService god module |
+| rustzen-clipboard | HIGH | storage + capture coupling |
+| rustzen-zipper | HIGH | CLI monolith (main.rs) |
+| rustzen-analytics | MEDIUM | report service overgrowth |
+| rustzen-inspect | MEDIUM | scheduler + execution coupling |
+| rustzen-admin | MEDIUM | infra/db over-responsibility |
+
+---
+
+# 11. Actionable Refactor Recommendations
+
+## System-wide Actions
+- enforce service/db split across all repos
+- eliminate direct CLI → DB access
+- unify error handling model
+- standardize service naming conventions
+
+## Priority Order
+1. rustzen-zipper (highest risk CLI monolith)
+2. rustzen-clear (ZenService split)
+3. rustzen-clipboard (storage isolation)
+4. rustzen-analytics (report decomposition)
+
+---
+
+# 12. Next Phase Targets
+- introduce architecture lint rules (conceptual)
+- define enforceable module boundaries
+- generate future PR blueprints per repo
+
+---
+
+# 13. Final Goal
+Rustzen evolves into:
+> A strictly layered, CLI-driven, SQLite-first Rust ecosystem with enforceable architecture governance and deterministic modular decomposition across all repositories.
