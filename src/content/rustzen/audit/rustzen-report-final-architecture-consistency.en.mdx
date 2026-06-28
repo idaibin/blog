@@ -1,0 +1,210 @@
+---
+title: Rustzen Report Final Architecture Consistency
+status: final-consistency
+repo: rustzen-report
+section: rustzen-audit
+---
+
+# Final Architecture Consistency: rustzen-report
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-report`.
+
+This is a strict incremental consistency pass for the existing `rustzen-report` audit. It does not change the source repository, does not create a PR, and does not introduce a new system or abstraction.
+
+Reviewed files in this pass:
+
+- `README.md`
+- `docs/architecture.md`
+- `docs/guides/backend.md`
+- `zen-server/src/app.rs`
+- `zen-server/src/features/job/service.rs`
+- `zen-server/src/features/job/scheduler.rs`
+- `zen-server/src/features/job/executor.rs`
+- `zen-server/src/features/job/registry.rs`
+
+## PASS 1 — Incremental File-Level Findings
+
+### `README.md`
+
+Observed:
+
+- The repository is still documented as a full-stack report system with a Rust backend and React frontend.
+- Runtime state remains local-first: SQLite, uploads, frontend static output, and logs are all described as local runtime assets.
+- The module list still identifies `job`, `cron`, `periodic`, `uploads`, and `websocket` as first-class backend concerns.
+- The deployment contract remains fixed around `/opt/rustzen-report`, `HOME_PATH`, `data/report-server.db`, `data/uploads/`, `web/dist/`, and `logs/`.
+
+Consistency result:
+
+- PASS at product/runtime description level.
+- The README does not hide the system shape: this is an operational report automation product, not a generic admin template.
+
+### `docs/architecture.md`
+
+Observed:
+
+- The repository is explicitly classified as `Web/Rust A-class legacy/current layout`.
+- `zen-server` and `zen-web` remain protected layout names.
+- The documentation still prevents general migration to `apps/server` + `apps/web`.
+- Backend feature code is assigned to `zen-server/src/features/<feature>/` and shared infrastructure to `zen-server/src/infra/<subsystem>/`.
+- The protected deployment contract is part of the architecture document, not only README prose.
+
+Consistency result:
+
+- PASS at repository boundary level.
+- The root architecture document remains compatible with Rustzen Architecture v1: protected current layouts can be valid when the boundary is documented and stable.
+
+### `docs/guides/backend.md`
+
+Observed:
+
+- Backend layering remains explicit: `api.rs` handles HTTP, `service.rs` handles orchestration and validation, `repo.rs` handles SQL and persistence, and `types.rs` owns local DTOs and rows.
+- The guide still prohibits SQL in API handlers, service-to-repo bypass, repo cross-feature calls, speculative fallback branches, and generated-output edits.
+- Browser/report-specific URL validation remains repository-specific: intranet, private IP, and localhost targets are not generically blocked.
+- Runtime schema compatibility remains constrained to the documented job-id rename exception and historical account password read fallback.
+
+Consistency result:
+
+- PASS as a backend guide.
+- The guide is strong enough for CRUD-style features, but `rustzen-report` requires an additional workflow-engine audit axis because the job path is not CRUD-shaped.
+
+### `zen-server/src/app.rs`
+
+Observed:
+
+- `AppState` owns config, database pool, task registry, auth service, job service, template service, overview service, periodic service, cron service, uploads service, user/system/account/flow/dataset services, and websocket hub.
+- `AppState::new` constructs repositories, services, cross-feature dependencies, the job service dependency object, periodic generation task registration, cron service, overview service, and user service.
+- `create_router` merges protected routes for auth, health, websocket, job, overview, cron, uploads, user, system, account, flow, and dataset.
+- The same file contains protected API route assembly, auth middleware, CORS, tracing, and SPA fallback serving.
+
+Consistency result:
+
+- MEDIUM composition pressure.
+- The file is still primarily assembly code; the risk is dependency graph density, not direct business implementation leakage.
+
+### `zen-server/src/features/job/service.rs`
+
+Observed:
+
+- `JobService` owns registry, repository, template, flow, system, account, dataset, uploads, config, and websocket dependencies.
+- `normalize_create_job_request` combines request normalization, flow/system validation, account validation, dataset bundle resolution, passthrough record handling, total row/account derivation, and report metadata setup.
+- `create_job` combines template resolution, request-id generation, existing runtime overwrite handling, result clearing, websocket secret registration, runtime creation, summary persistence, and async job spawning.
+- `prepare_job` and `resolve_job_resources` duplicate part of the same resource-planning surface: system-template validation, dataset resolution, account selection, execution plan/resource projection.
+- Later service methods reconcile in-memory runtime state with persisted summaries, logs, results, pagination, period filtering, and cancellation.
+
+Consistency result:
+
+- HIGH localized workflow-service density.
+- The file remains inside the job feature boundary, but it is broader than ordinary `service.rs` orchestration.
+
+### `zen-server/src/features/job/scheduler.rs`
+
+Observed:
+
+- `JobSpawnInput` carries runtime, registry, repo, uploads, template, system, account, dataset, config, and websocket dependencies.
+- `spawn_job` owns concurrency permit acquisition, missing-system handling, template resolution, dataset row resolution, passthrough record shaping, account secret resolution, browser execution dispatch, final summary persistence, terminal websocket event emission, and channel cleanup.
+- `convert_rows_to_records` remains local to scheduler even though row-shape normalization also appears in the service layer.
+
+Consistency result:
+
+- MEDIUM-HIGH workflow boundary pressure.
+- The file name says scheduler, but its behavior is scheduler + setup orchestrator + terminal-event finalizer.
+
+### `zen-server/src/features/job/executor.rs`
+
+Observed:
+
+- Executor imports browser/CDP protocol types, template rendering, URL validation, upload handling, websocket events, runtime state, persistence, path safety, and browser launch helpers.
+- `execute_actions` performs value rendering, selector rendering, guard branching, action dispatch, screenshot collection, upload result collection, error publication, and loop control.
+- `execute_action_once` handles page navigation, pause/reload/load waits, click/input/select actions, file upload path validation, keyboard events, screenshots, network/request wait approximations, and browser cache clearing.
+- Upload file handling rejects absolute paths and parent traversal before resolving under the configured upload directory.
+- `PlaceholderCallbacks` bridges runtime mutation, websocket publication, result persistence, upload persistence, step lifecycle events, log serialization, and successful-result checks.
+- `run_traced_groups_for_station` carries browser state, runtime callbacks, upload service, websocket hub, mutable counters, parse policy, suspend decisions, per-group execution, uploads, log merging, and result persistence.
+
+Consistency result:
+
+- HIGH localized workflow-engine density.
+- This is the effective report workflow engine, DSL interpreter, browser adapter, upload handler, event publisher, and persistence callback surface in one file.
+- The implementation contains concrete safety checks, but the architecture risk remains density and multi-role ownership.
+
+### `zen-server/src/features/job/registry.rs`
+
+Observed:
+
+- `TaskRegistry` owns the running job map and concurrency semaphore.
+- `JobRuntime` owns request data, state lock, result lock, log lock, timestamps, cancellation token, and suspend controller.
+- Runtime snapshots filter visible running jobs by user id and running-like states.
+- Suspend behavior is explicit through `SuspendDecision`, `SuspendController`, notify/wait logic, cancellation handling, and timeout default.
+
+Consistency result:
+
+- MEDIUM runtime-state pressure.
+- Registry is coherent as an in-memory runtime boundary, but it confirms that report execution has a real runtime axis beyond normal request/response service code.
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### Consistent
+
+- `zen-server` / `zen-web` protected layout remains documented and implemented.
+- Runtime path contract remains local-first and stable.
+- Backend feature layout still mostly follows `features/<feature>/{api,service,repo,types}`.
+- `api -> service -> repo` remains a valid baseline rule for CRUD and request-response paths.
+- Browser automation and intranet target behavior are documented as repository-specific product constraints.
+- Runtime schema compatibility remains explicitly documented and narrow.
+
+### Pressured
+
+- `job/service.rs` is larger than a standard service boundary.
+- `job/scheduler.rs` performs more than scheduling.
+- `job/executor.rs` is the highest-density workflow engine surface.
+- `job/registry.rs` confirms that runtime ownership is a separate axis from persistence ownership.
+- `app.rs` is still acceptable assembly code, but its dependency graph is broad enough to remain a watch point.
+
+## PASS 3 — Unified Rustzen Architecture Rules Update
+
+### Final risk rating
+
+`rustzen-report` remains **MEDIUM-HIGH risk**.
+
+Reason:
+
+- Repository-level layout: PASS.
+- Documentation boundary: PASS.
+- Local-first runtime model: PASS.
+- Highest-pressure execution path: MEDIUM-HIGH to HIGH localized risk.
+
+The final rating is not driven by root layout. It is driven by the job workflow path, where planning, scheduling, browser execution, upload capture, websocket publication, runtime state, persistence callbacks, and suspend/cancel behavior converge.
+
+### Rustzen Architecture v1 update
+
+Add this audit rule:
+
+> Browser-driven report automation repositories must be evaluated with two separate scores: repository layout score and workflow-engine density score. A repository can pass layout standardization while still carrying MEDIUM-HIGH risk if its workflow path combines planning, scheduling, browser/CDP execution, upload capture, websocket publication, runtime state mutation, and persistence callbacks in one dense feature surface.
+
+Add this consistency rule:
+
+> In Rustzen Architecture v1, `api -> service -> repo` is the baseline for request/response features. It is not sufficient for automation engines. Any feature that owns long-running jobs, runtime cancellation, suspend/resume decisions, browser control, file capture, and live events must be audited as a runtime workflow boundary.
+
+### Repo-specific final check
+
+- Do not treat `rustzen-report` as migration debt because it uses `zen-server` and `zen-web`.
+- Do not classify it as a simple admin system.
+- Do not score it only by CRUD layering.
+- Score it as a local-first report automation product with a high-density workflow engine.
+
+## Blog Series Article
+
+### Designing a Local-First Report Automation System Without Hiding the Workflow Engine
+
+A local-first report automation product looks simple from the outside. It has accounts, systems, datasets, templates, scheduled jobs, uploads, logs, and a web interface. But the real product is not the CRUD layer. The real product is the execution path that turns report data into browser actions and observable results.
+
+`rustzen-report` makes this visible. The repository has a stable local runtime model: SQLite lives under `data/`, uploads live under `data/uploads/`, static frontend output lives under `web/dist/`, and logs live under `logs/`. The current `zen-server` and `zen-web` layout is also documented as protected, which means the layout is not accidental migration debt.
+
+The important architectural pressure appears inside the job path. `JobService` prepares requests, validates systems and templates, resolves datasets and accounts, creates runtime state, persists summaries, registers websocket secrets, and spawns jobs. The scheduler acquires concurrency permits, resolves templates and account secrets, prepares records, dispatches execution, persists terminal summaries, and publishes final websocket events. The executor renders DSL values, drives the browser, handles selectors, captures screenshots, saves uploads, publishes progress, merges logs, and records results.
+
+That creates the main Rustzen lesson: local-first infrastructure does not automatically make workflow code simple. SQLite, a single binary, and a protected runtime directory can keep deployment simple, while the job engine still becomes the highest-risk architecture surface.
+
+For Rustzen Architecture v1, `rustzen-report` confirms that automation systems need a separate workflow-engine score. CRUD layering protects API and persistence boundaries, but browser automation needs another boundary around runtime ownership: cancellation, suspend/resume, browser control, upload capture, live events, and persistence callbacks.
+
+The product narrative is therefore clear. A local-first automation app should remain operationally small, but its execution engine must not be invisible. The engine is the product, and the audit model must treat it as a first-class architecture surface.
