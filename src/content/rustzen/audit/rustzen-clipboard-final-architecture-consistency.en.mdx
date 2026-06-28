@@ -1,0 +1,386 @@
+---
+title: Rustzen Clipboard Final Architecture Consistency
+status: final-consistency-pass
+repo: rustzen/rustzen-clipboard
+kind: audit
+---
+
+# Rustzen Clipboard Final Architecture Consistency
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-clipboard`.
+
+This is an incremental final architecture-consistency pass. It does not replace the earlier `rustzen-clipboard-incremental-audit.en.mdx`; it appends the final Rustzen Architecture v1 classification for the repository.
+
+Reviewed files in this pass:
+
+- `README.md`
+- `AGENTS.md`
+- `docs/10-architecture-design.md`
+- `docs/20-project-map.md`
+- `zen-core/Cargo.toml`
+- `zen-core/src/lib.rs`
+- `zen-core/src/config.rs`
+- `zen-core/src/models.rs`
+- `zen-core/src/storage.rs`
+- `zen-core/src/clipboard.rs`
+- `zen-core/src/http.rs`
+- `zen-core/src/server.rs`
+- `zen-gui/package.json`
+- `zen-gui/src/router.tsx`
+- `zen-gui/src/views/clipboard-workspace.tsx`
+- `zen-gui/src/lib/tauri-commands.ts`
+- `zen-gui/src-tauri/Cargo.toml`
+- `zen-gui/src-tauri/src/main.rs`
+
+---
+
+## PASS 1 — Final File-Level Observations
+
+### Product and documentation boundary
+
+Observed:
+
+- `README.md` defines Rustzen Clipboard as a local-first macOS clipboard history app.
+- The product is explicitly GUI-first and does not provide a terminal workflow.
+- Product scope covers text/image capture, local history, search, pin/delete, preview, and restore.
+- Non-goals explicitly exclude CLI, cloud backend, website, default cloud sync, and hidden upload.
+- `docs/10-architecture-design.md` defines the flow as `system clipboard -> zen-core -> local storage -> zen-gui -> explicit restore to system clipboard`.
+- `docs/20-project-map.md` confirms the repo is narrowed to `docs`, `zen-core`, `zen-gui`, `AGENTS.md`, and `README.md`.
+
+Classification:
+
+- Product scope: PASS.
+- Local-first posture: PASS.
+- The repo must be evaluated as a GUI-first local desktop product, not as a CLI product or cloud service.
+
+### `zen-core/Cargo.toml`
+
+Observed:
+
+- `zen-core` depends on clipboard/platform access (`arboard`, `objc2-app-kit`), image normalization (`image`), SQLite (`sqlx`), local HTTP (`axum`, `tower`, `tower-http`), async runtime (`tokio`), tracing, hashing, UUID, and OS directories.
+
+Classification:
+
+- `zen-core` is not a pure domain crate.
+- It is a compact local backend crate containing domain, storage, HTTP, runtime, and platform-adapter concerns.
+- Risk: MEDIUM-HIGH by dependency shape.
+
+### `zen-core/src/lib.rs`
+
+Observed:
+
+- The crate exports `clipboard`, `config`, `error`, `http`, `models`, `server`, and `storage` directly.
+
+Classification:
+
+- Public surface is flat and practical for a small app.
+- Boundary visibility is weak because runtime, adapters, HTTP, and persistence all sit at the crate root.
+
+### `zen-core/src/config.rs`
+
+Observed:
+
+- Fixed backend address is `127.0.0.1:9821`.
+- App storage is rooted under `Rustzen Clipboard`.
+- Image and app-icon directories are created as app-owned storage.
+- `app_owned_image_path` canonicalizes both root and target path before permitting image access.
+
+Classification:
+
+- Local runtime config is clear.
+- Filesystem path policy is security-sensitive and correctly explicit.
+- This file is low-risk compared with the runtime modules.
+
+### `zen-core/src/models.rs`
+
+Observed:
+
+- Defines clipboard kind, API-facing history item, DB-facing entry record, settings, update request, list filters, pin request, settings defaults, normalization rules, and DB-to-API item conversion.
+- Tests cover UTF-8 preview truncation, settings defaults, interval clamping, and ignore-list normalization.
+
+Classification:
+
+- Strong model coverage and meaningful tests.
+- Mixed boundary: domain types, persistence records, API DTOs, settings policy, and presentation conversion are colocated.
+- Risk: MEDIUM.
+
+### `zen-core/src/storage.rs`
+
+Observed:
+
+- `AppStorage` owns SQLite pool creation, migrations, settings defaults, history query filtering/ranking, entry lookup, duplicate upsert, pinning, paste usage, deletion, image-file cleanup, settings loading/updating, ignore-next capture state, retention by age/count, and conversion to history items.
+- Retention deletes DB rows and app-owned image files together.
+- Tests cover duplicate copy counting, pinned ordering, paste usage, settings defaults, clear behavior, and retention behavior.
+
+Classification:
+
+- `storage.rs` is not persistence-only.
+- It is a policy-heavy repository module: persistence + settings + retention + ranking + file lifecycle + ignore-next state.
+- Risk: HIGH.
+
+### `zen-core/src/clipboard.rs`
+
+Observed:
+
+- Owns infinite capture loop, setting reload per tick, blocking clipboard read, text/image normalization, snapshot markers, duplicate-skip policy, ignore-next capture policy, source application resolution, source app ignore rules, pasteboard type ignore rules, macOS pasteboard change count, image PNG normalization, source icon caching through `plutil`/`sips`, sensitivity heuristic, storage writes, retention trigger, and restore-to-system-clipboard behavior.
+- Tests cover ignore-next capture, unchanged clipboard skipping, source app ignore, default confidential pasteboard types, and capture interval behavior.
+
+Classification:
+
+- `clipboard.rs` is a runtime engine, not a narrow clipboard abstraction.
+- It mixes capture, restore, platform adapters, privacy heuristics, storage writes, retention, and icon caching.
+- Risk: HIGH.
+
+### `zen-core/src/http.rs`
+
+Observed:
+
+- Defines local routes for health, history list/detail/image/source-icon, restore, pin, delete, settings, and ignore-next capture.
+- Handlers are mostly thin but call storage and clipboard functions directly.
+- Image and source-icon handlers enforce app-owned canonicalized file boundaries before serving bytes.
+
+Classification:
+
+- Handler structure is acceptable for compact local HTTP.
+- Application-service boundary is absent between HTTP and storage/clipboard workflows.
+- Risk: MEDIUM.
+
+### `zen-core/src/server.rs`
+
+Observed:
+
+- Initializes tracing, creates `AppStorage`, builds the router, spawns the capture loop, binds the local backend, and serves with graceful shutdown.
+- Local origins are explicitly constrained to Tauri/dev origins.
+- Tests cover accepted and rejected origins.
+
+Classification:
+
+- Good local-only origin posture.
+- Runtime bootstrap owns storage construction, capture lifecycle, HTTP composition, CORS, listener binding, tracing, and shutdown.
+- Risk: MEDIUM.
+
+### `zen-gui/package.json`
+
+Observed:
+
+- GUI is a Bun/Vite-plus/Tauri/React/TanStack Router project.
+- Scripts are host-runtime oriented: dev/build/lint/fmt/preview/typecheck/test.
+- Dependencies match a GUI-first desktop product.
+
+Classification:
+
+- Product identity is aligned with the docs.
+- No CLI or cloud behavior is introduced by frontend package shape.
+
+### `zen-gui/src/router.tsx`
+
+Observed:
+
+- Router maps `/` to clipboard workspace, `/settings` to settings, and `/prototype` to clipboard prototype.
+- Settings window route resolution depends on Tauri window label.
+
+Classification:
+
+- Window-aware routing is explicit and compact.
+- Presence of `/prototype` is acceptable only as a visible route; it must not become an implicit product baseline.
+
+### `zen-gui/src/views/clipboard-workspace.tsx`
+
+Observed:
+
+- The workspace owns filter state, query state, source/time filters, selected entry state, loading/error state, action state, paging, history cache hydration, retry behavior, keyboard handling, quick-history opened behavior, no-result action scoring, localStorage persistence, API calls, refresh behavior, restore/paste/pin/delete flows, and accessibility-setting action.
+- It consumes local HTTP API methods for history/settings and Tauri commands for window/paste behavior.
+
+Classification:
+
+- UI logic is product-rich and testable through exported decision helpers.
+- The file is a large view-model boundary, not only a visual component.
+- Risk: MEDIUM-HIGH on frontend density.
+
+### `zen-gui/src/lib/tauri-commands.ts`
+
+Observed:
+
+- Tauri command wrapper is narrow: hide quick history, get current window label, listen to quick-history opened event, open settings, paste history entry, and open accessibility settings.
+- Event unlisten behavior is guarded.
+
+Classification:
+
+- Bridge is thin and acceptable.
+- No major product policy is duplicated in this wrapper.
+
+### `zen-gui/src-tauri/Cargo.toml`
+
+Observed:
+
+- Tauri shell depends on `tauri`, global shortcut, single-instance plugin, and local `zen-core`.
+- macOS-private API and tray icon features are enabled.
+
+Classification:
+
+- Dependency shape matches tray/shortcut desktop shell.
+- The local `zen-core` dependency is expected for this product, but it allows direct storage/core calls from the shell.
+
+### `zen-gui/src-tauri/src/main.rs`
+
+Observed:
+
+- Owns quick-history constants, focus state, window positioning, quick-history window creation/show/hide/toggle, settings window behavior, Tauri commands, paste automation, accessibility settings, macOS `osascript` paste command, plugin setup, tray menu, global shortcut registration, single-instance behavior, backend startup, and run-event handling.
+- `paste_history_entry` creates `AppStorage`, reads entries, calls `restore_entry_to_system_clipboard`, reads settings, hides the window, sleeps, runs paste automation, and records paste usage.
+- Tests cover panel positioning, transition sequencing, focus state, settings focus behavior, quick-history event name, tray icon constraints, and macOS activation policy.
+
+Classification:
+
+- Tauri main is not merely app bootstrap.
+- It is a desktop runtime shell with window lifecycle, global shortcut, tray behavior, backend spawning, and a second product workflow path for paste.
+- Risk: MEDIUM-HIGH.
+
+---
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### Scope consistency
+
+Result: PASS.
+
+- Docs and implementation agree on GUI-first, macOS-first, local-first clipboard history.
+- CLI/cloud/website exclusions are consistent with observed structure.
+
+### Local-first consistency
+
+Result: PASS.
+
+- Runtime is localhost-bound.
+- SQLite and app-owned files are the durable state model.
+- Hidden upload or sync paths were not observed in reviewed code.
+
+### Core/runtime consistency
+
+Result: PARTIAL.
+
+- `zen-core` is the correct product center, but it combines domain, persistence, local HTTP, runtime bootstrap, and platform adapter behavior.
+- This is coherent as a compact local app, but it is not a clean domain-core boundary under Rustzen Architecture v1.
+
+### Workflow entry consistency
+
+Result: PARTIAL.
+
+- Most GUI operations go through local HTTP.
+- Paste automation enters through Tauri commands and directly opens storage/core paths.
+- This creates two workflow surfaces over the same product state: HTTP handlers and Tauri shell command.
+
+### Policy placement consistency
+
+Result: FAIL.
+
+- Retention, ranking, ignore-next capture, duplicate detection, sensitivity heuristics, file cleanup, and source-app behavior are distributed across `storage.rs`, `clipboard.rs`, `models.rs`, and Tauri main.
+- These are product policies, not incidental persistence or adapter details.
+
+---
+
+## PASS 3 — Final Architecture Classification
+
+Final risk: HIGH.
+
+Reasoning:
+
+- Product scope is clean and local-first.
+- Repository sprawl is low.
+- Runtime and workflow concentration is high.
+- The main risk is not that the repo contains too many products; the risk is that one compact product has multiple dense internal engines.
+
+Final heatmap:
+
+| Area | Result | Risk |
+|------|--------|------|
+| Product scope | GUI-first local clipboard app | LOW |
+| Docs | Current scope and removed scope are explicit | LOW |
+| `zen-core` crate shape | Domain + storage + HTTP + runtime + platform adapters | MEDIUM-HIGH |
+| `storage.rs` | DB + settings + retention + ranking + file cleanup + ignore-next state | HIGH |
+| `clipboard.rs` | Capture/restore runtime engine + platform calls + storage writes + retention trigger | HIGH |
+| `http.rs` | Mostly thin local handlers, but no service boundary | MEDIUM |
+| `server.rs` | Compact bootstrap with capture loop and HTTP lifecycle | MEDIUM |
+| `clipboard-workspace.tsx` | Large UI/view-model boundary | MEDIUM-HIGH |
+| `src-tauri/main.rs` | Desktop shell + tray/shortcut/window lifecycle + backend startup + paste workflow | MEDIUM-HIGH |
+| Local privacy posture | No hidden network/cloud path observed | LOW |
+
+---
+
+## Unified Rustzen Architecture v1 Rule Update
+
+### Rule: GUI-first local apps require dual-axis scoring
+
+A GUI-first Rustzen desktop product must be scored on two independent axes:
+
+1. **Product-scope score** — whether the repo has clear product identity, explicit non-goals, and no cloud/CLI/website drift.
+2. **Runtime-engine score** — whether capture, restore, storage, retention, local HTTP, desktop shell, and platform automation remain auditable as separate responsibility groups.
+
+`rustzen-clipboard` passes the product-scope axis but fails the runtime-engine density axis.
+
+### Rule: local-first does not remove workflow boundaries
+
+Local-only execution is a privacy and deployment property. It does not make runtime workflow boundaries optional.
+
+For clipboard-style apps, the following are first-class architecture boundaries:
+
+- clipboard capture loop
+- system clipboard restore
+- platform paste automation
+- source application detection
+- sensitive-content policy
+- retention and ranking policy
+- app-owned file lifecycle
+- local HTTP GUI bridge
+- Tauri desktop shell commands
+
+### Rule: HTTP and Tauri command paths must be scored together
+
+When a repo exposes both local HTTP handlers and Tauri commands, they must be evaluated as one product workflow surface.
+
+A direct Tauri path into storage/core state is not automatically wrong for a desktop app, but it raises the runtime-engine density score because product behavior no longer has a single observable entry surface.
+
+---
+
+## Blog Series Article
+
+### Working title
+
+`Designing a Local-First Clipboard App Without Hiding the Capture Engine`
+
+### Article status
+
+Generated as architecture-derived Rustzen Blog Series content. This article is suitable as a technical/product narrative because the repository has meaningful architecture findings and the content does not depend on speculative future changes.
+
+### Draft
+
+A clipboard app looks small from the outside. It captures text and images, keeps recent history, lets the user search, pin, delete, and restore items, and stays out of the way until a shortcut or tray click opens it.
+
+That small surface is exactly why Rustzen Clipboard is a useful architecture case study. The product scope is intentionally narrow: no CLI, no cloud backend, no website, no default sync, and no hidden upload path. The privacy model is not a marketing layer added later; it is visible in the repository shape and runtime assumptions.
+
+The harder part is not scope control. The harder part is keeping the local runtime understandable.
+
+A clipboard product has several engines hidden behind one simple interaction. Capture is not just reading text. It has to decide whether recording is enabled, whether the pasteboard type should be ignored, whether the content is unchanged, whether a restore operation should be skipped on the next capture, whether the source application should be ignored, and whether the entry is text or image. Image entries also need normalization and app-owned file lifecycle rules.
+
+Storage is not just storage either. In Rustzen Clipboard, local SQLite holds history, settings, pin state, paste usage, duplicate copy counts, retention rules, and ignore-next capture state. That makes the database layer part of the product policy surface. Ranking, retention, cleanup, and privacy-sensitive behavior are not background implementation details; they are the user-facing behavior of the product.
+
+The desktop shell adds another runtime layer. The Tauri side manages tray behavior, global shortcut activation, quick-history window state, settings windows, accessibility settings, backend startup, and paste automation. The paste command is especially important because it restores an item, optionally hides the quick-history window, runs platform paste automation, and records usage. That makes the shell part of the workflow engine, not just a UI launcher.
+
+This is the main Rustzen Architecture v1 lesson from the clipboard audit: local-first does not mean boundary-free. A local app can have no cloud, no sync, and no server dependency, while still needing explicit runtime boundaries. The absence of network complexity removes one class of risk, but it does not remove capture-loop risk, restore-loop risk, file lifecycle risk, or desktop automation risk.
+
+For Rustzen-style products, the right audit question is therefore not only “is this local?” The stricter question is: can the product workflow still be read without guessing where capture, policy, persistence, and desktop automation begin and end?
+
+Rustzen Clipboard passes the product-scope test. It is focused, local, and clear about what it does not do. Its remaining architectural pressure is internal: the capture engine, storage policy, local HTTP bridge, and Tauri shell need to remain visible as separate responsibilities during future review.
+
+That is the standard this repo adds to Rustzen Architecture v1: GUI-first local apps must be scored twice. First by product scope. Then by runtime-engine density.
+
+---
+
+## Final Notes
+
+This pass modified only `rustzen/blog`.
+
+No source repository was modified.
+No PR was created.
+No system upgrade or new abstraction was proposed.
