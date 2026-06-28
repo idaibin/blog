@@ -1,0 +1,248 @@
+---
+title: Rustzen Video Final Architecture Consistency Audit
+status: final-incremental
+repo: rustzen-video
+section: rustzen-audit
+spec: rustzen-architecture-v1
+---
+
+# Incremental Audit: rustzen-video Final Architecture Consistency Pass
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-video`.
+
+This pass is a final architecture-consistency review for the Rustzen media-gateway repository class. It does not modify `rustzen-video`; it only records incremental audit notes and updates the unified Rustzen Architecture v1 audit rules inside the blog audit section.
+
+Reviewed files:
+
+- `README.md`
+- `docs/architecture.md`
+- `src/main.rs`
+- `src/features/video/api.rs`
+- `src/features/video/service.rs`
+- `src/features/video/state.rs`
+- `src/features/video/pipeline.rs`
+- `src/features/video/flv.rs`
+- `src/features/video/ws.rs`
+
+---
+
+## PASS 1 — File-Level Consistency Review
+
+### `README.md`
+
+Observed:
+
+- The repository is explicitly positioned as an RTSP-to-WebRTC gateway.
+- The documented layout is compact: root `main.rs`, `infra`, `features/video`, and `shared`.
+- The README correctly identifies `VideoState`, `pipeline.rs`, `flv.rs`, and `ws.rs` as the main video-runtime modules.
+- Deployment notes cover Docker, offline dependencies, GStreamer plugins, UDP port mapping, STUN, RTSP retry settings, and runtime diagnostics.
+
+Consistency result:
+
+- PASS for product intent and repository map.
+- PARTIAL for documentation hygiene because deployment/debugging notes are dense and environment-specific.
+
+### `docs/architecture.md`
+
+Observed:
+
+- The architecture guide defines a pragmatic Rust/Axum/sqlx/GStreamer/FFmpeg structure.
+- It allows feature-based layout instead of forcing unused DB or middleware modules.
+- It states that `api.rs` should remain handler/router code and that AppState should only hold global resources and feature state.
+- It treats `video` as a flow-oriented feature without a database repository.
+
+Consistency result:
+
+- PASS for matching the current repository shape.
+- PARTIAL for Rustzen Architecture v1 alignment because media-runtime boundaries require stricter review than ordinary `api -> service -> repo` layering.
+
+### `src/main.rs`
+
+Observed:
+
+- `AppState` contains only `config` and `video`, matching the README.
+- Startup initializes GStreamer, validates required plugin factories, loads config, creates `VideoState`, assembles video routes, serves static web files, binds TCP, and starts Axum.
+
+Consistency result:
+
+- PASS for small root state.
+- PARTIAL for bootstrap concentration.
+- The file is acceptable for a focused gateway, but it is not a pure entrypoint because runtime validation and web serving are also located here.
+
+### `src/features/video/api.rs`
+
+Observed:
+
+- The route layer exposes only `/api-rtc/ws`, `/api-rtc/status`, and `/api-rtc/flv`.
+- It delegates status generation to `VideoService`.
+- It does not directly build pipelines or mutate stream state.
+
+Consistency result:
+
+- PASS.
+- The route layer remains thin and consistent with Rustzen Architecture v1 handler expectations.
+
+### `src/features/video/service.rs`
+
+Observed:
+
+- `VideoService` wraps root `AppState`.
+- It projects status from `VideoState`, reads process memory, delegates RTSP resolution, and maps WebSocket-facing errors.
+
+Consistency result:
+
+- MEDIUM localized risk.
+- Service scope is still modest, but it mixes status projection, resolver delegation, and transport error taxonomy.
+- The main consistency issue is dependency shape: service depends on root application state rather than explicit video collaborators.
+
+### `src/features/video/state.rs`
+
+Observed:
+
+- `VideoState` owns stream sources, WebSocket connections, session senders, RTSP metrics, FLV shared entries, FLV build locks, process metric state, and reuse counters.
+- It also owns helper methods for process memory sampling, RTSP success/failure recording, connection snapshots, session sender registration, status counters, and FLV build-lock lifecycle.
+
+Consistency result:
+
+- MEDIUM-HIGH risk.
+- The module is not only state storage; it also contains runtime metrics policy, lifecycle helpers, coordination locks, counters, and process sampling.
+- This confirms the existing audit classification: the repository risk is runtime ownership density, not top-level layout failure.
+
+### `src/features/video/pipeline.rs`
+
+Observed:
+
+- The module owns RTSP retry settings, recoverable-error classification, user-facing error mapping, WebRTC offer creation, GStreamer pipeline construction, bus-watch threads, FLV tag filtering, pipeline shutdown behavior, branch removal, ICE callback wiring, and unit tests.
+
+Consistency result:
+
+- HIGH localized risk.
+- `pipeline.rs` is the runtime engine of the repository.
+- It is coherent as a media-pipeline module, but it combines construction, negotiation, retry, observability, parsing, lifecycle, and shutdown ownership.
+
+### `src/features/video/flv.rs`
+
+Observed:
+
+- The module handles FLV WebSocket upgrade, RTSP input resolution, GStreamer-vs-FFmpeg mode selection, FFmpeg process spawn, stdout/stderr pumping, shared source reuse, build locks, broadcast fanout, reconnect behavior, and client streaming.
+
+Consistency result:
+
+- HIGH localized risk.
+- `flv.rs` is not just a transport handler. It owns process management, source caching, fanout, reconnect policy, and socket delivery.
+
+### `src/features/video/ws.rs`
+
+Observed:
+
+- The module owns WebRTC socket upgrade, connection registration, writer task, read loop, message parsing, session creation, RTSP resolution, pipeline creation, offer delivery, ICE registration, answer handling, explicit disconnect, disconnect-all, and cleanup.
+- Cleanup is careful about lock release before session drop.
+
+Consistency result:
+
+- MEDIUM-HIGH risk.
+- The module has good cleanup discipline, but transport, session lifecycle, stream registration, and pipeline ownership are still tightly coupled.
+
+---
+
+## PASS 2 — Per-Repo Consistency Checks
+
+### Layout vs runtime ownership
+
+Result: PARTIAL.
+
+- The repository layout is clear.
+- Runtime ownership remains distributed across `VideoState`, `pipeline.rs`, `flv.rs`, `ws.rs`, GStreamer elements, FFmpeg child processes, broadcast channels, spawned threads, and WebSocket tasks.
+
+### Handler boundary
+
+Result: PASS.
+
+- `api.rs` is thin.
+- HTTP route definitions do not contain media construction or stream lifecycle logic.
+
+### Service boundary
+
+Result: PARTIAL.
+
+- `VideoService` exists and absorbs status/resolver/error mapping.
+- The most important workflow behavior still lives outside the service boundary.
+
+### State boundary
+
+Result: MEDIUM-HIGH.
+
+- `VideoState` is the central shared runtime registry.
+- The risk comes from lifecycle and metrics behavior being colocated with shared mutable state.
+
+### Runtime-engine boundary
+
+Result: HIGH.
+
+- `pipeline.rs` and `flv.rs` must be treated as first-class runtime engines in audit output.
+- They cannot be evaluated as normal helper modules.
+
+---
+
+## PASS 3 — Unified Rustzen Architecture Rule Update
+
+Final repo classification for this pass:
+
+`rustzen-video` remains **MEDIUM-HIGH risk**.
+
+Architecture rule added to Rustzen Architecture v1 audit section:
+
+> For Rustzen media-gateway repositories, clean repository layout and thin handlers are not sufficient. Any module that owns long-lived media pipelines, external process handles, protocol negotiation, broadcast fanout, reconnect policy, runtime metrics, spawned threads, or drop-based shutdown must be audited as a runtime-engine boundary.
+
+Additional consistency rule:
+
+> A `State` module is not automatically neutral. If it owns lifecycle helpers, locks, runtime counters, metrics mutation, process sampling, or shared source registries, it must be classified as active runtime coordination, not passive data storage.
+
+---
+
+## Consolidated Audit Delta
+
+| Area | Result | Incremental finding |
+|------|--------|---------------------|
+| Product intent | PASS | RTSP-to-WebRTC/FLV gateway identity is clear |
+| Repository layout | PASS | Compact feature layout is consistent with docs |
+| Entry point | PARTIAL | Bootstrap also owns GStreamer validation and static serving |
+| API routes | PASS | Handler layer remains thin |
+| Service layer | PARTIAL | Status, resolver, and WS error taxonomy are mixed |
+| Runtime state | MEDIUM-HIGH | State owns metrics, locks, registries, counters, snapshots |
+| Pipeline engine | HIGH | Media construction, retry, negotiation, bus watch, FLV parsing, shutdown |
+| FLV flow | HIGH | FFmpeg/GStreamer choice, process management, fanout, reconnect, socket streaming |
+| WebRTC flow | MEDIUM-HIGH | Session lifecycle, signaling, stream registration, cleanup |
+| Architecture rule | UPDATED | Media runtime engine boundary added to Rustzen Architecture v1 audit rules |
+
+---
+
+## Blog Series Article
+
+### Designing a Local-First Video Gateway Without Hiding Runtime Ownership
+
+A local-first video gateway can look simple at the repository level. `rustzen-video` has a compact shape: a root application entry, infrastructure modules, shared error handling, and a single video feature. The route layer is also clean. `/api-rtc/ws`, `/api-rtc/status`, and `/api-rtc/flv` are exposed through a thin API module instead of embedding media logic directly into handlers.
+
+That shape is useful, but it does not tell the full architecture story.
+
+Video gateways are runtime-heavy systems. A request does not simply enter a service, read a database row, and return a response. A video gateway creates long-lived media objects. It opens RTSP sources, builds GStreamer pipelines, negotiates WebRTC offers, manages ICE candidates, streams FLV bytes, spawns or guards FFmpeg processes, fans out chunks to clients, reconnects when streams end, and cleans up after clients disappear.
+
+This is why `rustzen-video` is not judged by ordinary `api -> service -> repo` rules alone. Its key architecture boundary is runtime ownership.
+
+The clearest example is `pipeline.rs`. It is not just a helper file. It builds GStreamer graphs, applies RTSP retry policy, watches bus messages, creates SDP offers, filters FLV tags, wires ICE events, and shuts down pipelines through drop behavior. That makes it a runtime engine.
+
+`flv.rs` has a similar shape. It handles WebSocket upgrade, chooses GStreamer or FFmpeg, starts external processes, pumps stdout and stderr, caches shared sources, broadcasts chunks, and reconnects when a stream closes. That is not only transport code. It is stream lifecycle management.
+
+`ws.rs` is also more than signaling glue. It registers connections, creates sessions, resolves RTSP inputs, creates pipelines, sends offers, applies answers, forwards ICE candidates, handles disconnects, and removes stream state. The cleanup discipline is good, but the module still owns transport, orchestration, and lifecycle at the same time.
+
+The lesson for Rustzen Architecture v1 is precise: media systems need a runtime-engine audit category. Thin handlers are necessary, but they are not enough. The audit must ask who owns the pipeline, who stops it, who records failure, who fans out bytes, who reconnects, and who releases resources.
+
+For local-first Rust tools, compactness is still valuable. `rustzen-video` should stay small enough to understand. But compactness must not hide ownership. In media repositories, architecture quality depends less on folder count and more on whether runtime responsibility is visible, bounded, and consistently reviewed.
+
+---
+
+## Write Boundary
+
+No `rustzen-video` source files were modified. No PR was created. This document is an incremental audit-only update under `rustzen/blog`.
