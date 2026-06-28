@@ -1,0 +1,291 @@
+---
+title: Rustzen Analytics Incremental Audit
+status: ongoing
+repo: rustzen/rustzen-analytics
+kind: audit
+---
+
+# Rustzen Analytics Incremental Audit
+
+## Scope
+
+Repository reviewed in this pass: `rustzen/rustzen-analytics`.
+
+Reviewed files:
+
+- `README.md`
+- `Cargo.toml`
+- `apps/server/Cargo.toml`
+- `docs/guides/backend.md`
+- `apps/server/src/main.rs`
+- `apps/server/src/infra/app.rs`
+- `apps/server/src/features/analytics/mod.rs`
+- `apps/server/src/features/analytics/handler.rs`
+- `apps/server/src/features/analytics/service.rs`
+- `apps/server/src/features/analytics/ingest_queue.rs`
+- `apps/server/src/features/analytics/aggregation_worker.rs`
+- `apps/server/src/features/analytics/repo.rs`
+
+---
+
+## PASS 1 — File-Level Inspection
+
+### `README.md`
+
+Observed:
+
+- Product scope is a lightweight, local-first analytics system for small teams and self-hosted usage.
+- Core product paths include project management, event ingestion, page/API/user analytics, dashboard, report center, and system management.
+- Public ingestion contract is `POST /api/analytics/track` with array payloads.
+- Tracker behavior, batching, anonymous fallback, Origin/Referer whitelist, App package whitelist, and `appVersion` rules are documented.
+
+Architecture classification:
+
+- Product/API contract is mature.
+- Scope is broader than a small local utility and closer to a full local-first analytics server.
+- Runtime complexity is expected, but boundaries must be stricter than tool-style repos.
+
+### `Cargo.toml`
+
+Observed:
+
+- Workspace members are `apps/server`, `crates/auth`, `crates/config`, `crates/runtime`, and `crates/storage`.
+- Release profile is compact: size-oriented optimization, thin LTO, single codegen unit, abort panic, and stripped binary.
+
+Architecture classification:
+
+- Workspace structure is stronger than `rustzen-clear`, `rustzen-clipboard`, and `rustzen-zipper`.
+- The repository already follows a multi-crate Rustzen shape.
+
+### `apps/server/Cargo.toml`
+
+Observed:
+
+- Server binary is `rustzen-analytics`.
+- Server depends on Axum, Tokio, SQLx SQLite, config/storage/auth crates, tracing, cron scheduling, password hashing, system info, and ZIP support.
+- `rustzen-core` points to `../../crates/auth`.
+
+Architecture classification:
+
+- Dependency set reflects a full server application.
+- The alias `rustzen-core` for the auth crate weakens naming clarity because the dependency is auth-specific, not core-wide.
+
+### `docs/guides/backend.md`
+
+Observed:
+
+- Backend guide defines clear file responsibilities:
+  - `mod.rs`: route assembly only.
+  - `handler.rs`: request/response only; no SQL.
+  - `service.rs`: orchestration, validation, transactions, and cross-repo coordination.
+  - `repo.rs`: SQL and persistence only; no cross-feature calls.
+  - `types.rs`: rows/entities, then request/response/query/command types.
+- Prohibited items include SQL in handlers, services bypassing repos, repos calling across features, compatibility fallbacks, and speculative abstraction.
+- Analytics ingestion is documented as request-path validation/normalization followed by queued background SQLite writes.
+- Aggregation is documented as running outside the request path and skipping when ingest is busy or recently flushed.
+
+Architecture classification:
+
+- Documentation is strongly aligned with Rustzen v1 layering.
+- This repo has explicit architecture rules before enforcement issues appear in code.
+
+### `apps/server/src/main.rs`
+
+Observed:
+
+- Entrypoint loads `.env`, initializes timezone before Tokio runtime creation, builds a multi-thread runtime, initializes logging, and delegates to `run_server`.
+
+Architecture classification:
+
+- Thin runtime entry.
+- PASS under Rustzen entrypoint rules.
+
+### `apps/server/src/infra/app.rs`
+
+Observed:
+
+- `run_server` creates the SQLite pool, runs migrations, tests the connection, constructs task/deploy services, creates analytics ingest queue and aggregation worker, wires public/protected APIs, syncs permissions, starts background workers, serves uploaded files/static frontend assets, binds the listener, and starts Axum.
+- Protected API includes account, analytics, auth, dashboard, manage, report, and system routes.
+- Public API includes analytics track/script and public auth routes.
+
+Architecture classification:
+
+- Runtime bootstrap is coherent but broad.
+- It owns application lifecycle wiring across DB, workers, permission sync, static assets, middleware, and routes.
+- PARTIAL: acceptable bootstrap module, but it should not accumulate feature coordination beyond startup wiring.
+
+### `apps/server/src/features/analytics/mod.rs`
+
+Observed:
+
+- Analytics feature is split into `aggregation_worker`, `handler`, `ingest_queue`, `ingest_status`, `repo`, `service`, `tracker_script`, and `types`.
+- Protected routes are mapped with explicit permission checks.
+- Public routes expose `/track` and `/tracker.js`, with `TrackIngestQueue` injected as an extension.
+
+Architecture classification:
+
+- Route assembly is mostly aligned with the backend guide.
+- Permission mapping in route assembly is acceptable because it is declarative route metadata.
+
+### `apps/server/src/features/analytics/handler.rs`
+
+Observed:
+
+- Most protected handlers extract request state and delegate to `AnalyticsService`.
+- No direct SQL was observed in handlers.
+- `track_event` extracts request origin, peer IP, prepares track events through service, then enqueues accepted events through `TrackIngestQueue`.
+- `tracker_script` returns JavaScript and logs client/source metadata.
+- Handler tests cover query parsing, API response format, missing project key mapping, and peer-IP behavior.
+
+Architecture classification:
+
+- Mostly PASS under handler-only rules.
+- Minor edge policy exists in public ingestion handlers: Origin/Referer extraction, peer IP derivation, and error mapping.
+- This is acceptable as request-edge normalization as long as persistence and business decisions remain outside handlers.
+
+### `apps/server/src/features/analytics/service.rs`
+
+Observed:
+
+- `AnalyticsService` owns project CRUD, project key policy, report rules, permission checks, event validation, project-key lookup caching, origin/app whitelist validation, app-version rules, event normalization, API/page metric extraction, device-registration validation, overview/dashboard orchestration, event/user/API queries, and runtime overview composition.
+- Service calls repository functions consistently rather than writing SQL directly.
+
+Architecture classification:
+
+- Service follows the documented handler → service → repo direction.
+- PARTIAL: the service is becoming a broad analytics control plane.
+- Risk is not layer violation; risk is service overgrowth inside one feature service.
+
+### `apps/server/src/features/analytics/ingest_queue.rs`
+
+Observed:
+
+- `TrackIngestQueue` owns in-memory pending events, in-flight counts, notify-based wakeups, backpressure, threshold/time-based flushing, requeue-on-error, and global ingest status updates.
+- Flush writes events through `AnalyticsRepository::create_events_batch` and updates push devices through repository calls.
+- Documentation explicitly notes that durable local spool is future work.
+
+Architecture classification:
+
+- Good extraction of ingestion write pressure away from request path.
+- PARTIAL: queue semantics are real workflow behavior, not just infrastructure.
+- Volatile memory queue is acceptable for current scope only because the durability limitation is documented.
+
+### `apps/server/src/features/analytics/aggregation_worker.rs`
+
+Observed:
+
+- Worker owns interval config, ingest-idle coordination, tick loop, aggregation execution, and optional backfill execution by business hour window.
+- It skips work while ingest queue is busy or a flush completed recently.
+- Heavy aggregation logic is delegated into repository functions.
+
+Architecture classification:
+
+- Worker boundary is useful and aligned with request-path isolation.
+- PARTIAL: worker is clean, but aggregation semantics are pushed down into `repo.rs`.
+
+### `apps/server/src/features/analytics/repo.rs`
+
+Observed:
+
+- Repository defines SQL-facing rows, insert models, retention cleanup summaries, aggregation preparation structs, behavior-day rows, static write/aggregation semaphores, retention constants, chunk-size policy, and many analytics query/projection helpers.
+- The file owns persistence access plus aggregation preparation, retention policy, behavior dimensional modeling, write-gate coordination, and business-time/statistics logic.
+
+Architecture classification:
+
+- FAIL under the repository rule from `docs/guides/backend.md`.
+- `repo.rs` is not persistence-only.
+- This is the main architectural pressure point in `rustzen-analytics`.
+
+---
+
+## PASS 2 — Cross-Module Consistency
+
+### Documented layer contract vs implementation
+
+Finding:
+
+- The documented backend contract is strong and mostly followed at handler and route levels.
+- The main mismatch is `analytics/repo.rs`, which exceeds SQL/persistence and embeds aggregation, retention, projection, and concurrency policy.
+
+### Request path vs background path
+
+Finding:
+
+- Public track requests validate and normalize before queueing accepted events.
+- SQLite writes are moved into `TrackIngestQueue`, matching the documented request-path isolation.
+- Aggregation runs in a separate worker and attempts to avoid ingest contention.
+
+### Feature boundary pressure
+
+Finding:
+
+- `analytics/service.rs` and `analytics/repo.rs` are the two broadest modules.
+- Unlike `rustzen-zipper`, this repo does not suffer from a single CLI monolith.
+- Unlike `rustzen-clear`, this repo has better crate and feature structure.
+- The risk comes from feature-layer overgrowth inside an otherwise layered server design.
+
+### Runtime bootstrap
+
+Finding:
+
+- `infra/app.rs` centralizes lifecycle wiring for DB, migrations, task service, deploy service, ingest queue, aggregation worker, permission sync, static assets, middleware, and route tree.
+- This is acceptable as startup composition, but it should remain composition-only.
+
+---
+
+## PASS 3 — Unified Architecture Synthesis
+
+### Confirmed repo status
+
+`rustzen-analytics` remains **MEDIUM risk**.
+
+Reason:
+
+- Workspace layout is strong.
+- Backend rules are documented.
+- Handlers mostly avoid SQL.
+- Ingestion and aggregation are separated from the request path.
+- However, `analytics/repo.rs` and `analytics/service.rs` are becoming large policy-bearing modules.
+
+### Risk concentration
+
+1. `apps/server/src/features/analytics/repo.rs`
+   - SQL + aggregation + retention + behavior modeling + concurrency gates.
+2. `apps/server/src/features/analytics/service.rs`
+   - Project/key/permission/event normalization/dashboard orchestration in one service.
+3. `apps/server/src/infra/app.rs`
+   - Broad runtime bootstrap for DB, workers, services, permissions, assets, and route tree.
+
+### Unified Rustzen rules update
+
+For larger Rustzen server repositories:
+
+- A strong file pattern is not enough if `repo.rs` becomes a policy engine.
+- `repo.rs` must stay persistence-facing; aggregation preparation, retention policy, ranking/projection policy, and concurrency gates are not generic DB access.
+- Queue and worker modules are valid Rustzen boundaries only when durability, backpressure, retry, and failure semantics are explicit.
+- Route assembly may include permission mapping, but handlers must remain request-edge adapters.
+- Runtime bootstrap may wire routes, workers, middleware, and static assets, but must not become a feature coordinator.
+
+### Consolidated rustzen-analytics audit result
+
+| Area | Status | Notes |
+|------|--------|-------|
+| Workspace layout | PASS | Multi-crate structure already exists |
+| Backend docs | PASS | Layer rules are explicit |
+| `main.rs` | PASS | Thin entrypoint |
+| `infra/app.rs` | PARTIAL | Broad runtime bootstrap |
+| `analytics/mod.rs` | PASS | Route and permission assembly only |
+| `analytics/handler.rs` | PASS | No SQL; mostly request/response delegation |
+| `analytics/service.rs` | PARTIAL | Broad analytics orchestration service |
+| `analytics/ingest_queue.rs` | PARTIAL | Good queue extraction; volatile memory durability is documented |
+| `analytics/aggregation_worker.rs` | PARTIAL | Clean worker boundary; heavy semantics live in repo |
+| `analytics/repo.rs` | FAIL | Not persistence-only; owns aggregation, retention, projection, and gates |
+| Heatmap status | MEDIUM | Existing classification confirmed and sharpened |
+
+## Audit Delta
+
+This pass refines `rustzen-analytics` from a generic “report/service overgrowth” issue into a more precise finding:
+
+- The repo already follows Rustzen layering better than earlier tool repos.
+- The main violation is not missing layers; it is overloaded layers.
+- Analytics systems require explicit boundaries for ingestion, aggregation, retention, projection, and raw persistence, even when the runtime remains SQLite-first.
