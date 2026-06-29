@@ -64,7 +64,7 @@ const skillsZh = defineCollection({
 const notes = defineCollection({
   loader: glob({
     base: "./src/content",
-    pattern: "{blog,rustzen-admin}/**/*.en.{md,mdx}",
+    pattern: "{blog,rustzen-admin,rustzen/final}/**/*.en.{md,mdx}",
   }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
@@ -72,7 +72,7 @@ const notes = defineCollection({
 const notesZh = defineCollection({
   loader: glob({
     base: "./src/content",
-    pattern: "{blog,rustzen-admin}/**/*.zh.{md,mdx}",
+    pattern: "{blog,rustzen-admin,rustzen/final}/**/*.zh.{md,mdx}",
   }),
   schema: ({ image }) => z.object(baseSchema(image)),
 });
