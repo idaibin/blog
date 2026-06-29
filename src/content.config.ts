@@ -25,22 +25,6 @@ const signalsZh = defineCollection({
   schema: ({ image }) => z.object(baseSchema(image)),
 });
 
-const workflows = defineCollection({
-  loader: glob({
-    base: "./src/content",
-    pattern: "workflows/**/*.en.{md,mdx}",
-  }),
-  schema: ({ image }) => z.object(baseSchema(image)),
-});
-
-const workflowsZh = defineCollection({
-  loader: glob({
-    base: "./src/content",
-    pattern: "workflows/**/*.zh.{md,mdx}",
-  }),
-  schema: ({ image }) => z.object(baseSchema(image)),
-});
-
 const prompts = defineCollection({
   loader: glob({ base: "./src/content", pattern: "prompts/**/*.en.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
@@ -80,8 +64,6 @@ const notesZh = defineCollection({
 export const collections = {
   signals,
   signalsZh,
-  workflows,
-  workflowsZh,
   prompts,
   promptsZh,
   skills,
