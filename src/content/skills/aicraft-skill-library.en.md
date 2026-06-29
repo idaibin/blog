@@ -20,6 +20,16 @@ Active source directory: `skills/`.
 
 AICraft currently keeps publishable or reusable skills under `skills/<skill-name>/`. Each package owns its own `SKILL.md`, agent metadata, and reference files.
 
+## Individual Articles
+
+This page is the skill library index. The same source assets are also available
+as focused standalone articles:
+
+- [Code Context](/skills/aicraft-code-context/)
+- [Code Planner](/skills/aicraft-code-planner/)
+- [Code Review](/skills/aicraft-code-review/)
+- [Skill Standard](/skills/aicraft-skill-standard/)
+
 ## Skill Package Standard
 
 Source: `skills/skill-standard.md`

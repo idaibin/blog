@@ -25,6 +25,23 @@ AICraft keeps prompts grouped by use case:
 - `agent-systems/`: agent migration and configuration prompts.
 - `rustzen/`: Rustzen-specific backend and architecture prompts.
 
+## Individual Articles
+
+This page is the prompt library index. The same source assets are also available
+as focused standalone articles:
+
+- [General Development Task](/prompts/aicraft-general-development-task/)
+- [Review And Commit](/prompts/aicraft-review-and-commit/)
+- [API Contract Review](/prompts/aicraft-api-contract-review/)
+- [Generate AGENTS.md](/prompts/aicraft-generate-agents-md/)
+- [Blog Restructure Execution](/prompts/aicraft-blog-restructure-execution/)
+- [Generate AI Research Digest](/prompts/aicraft-generate-ai-research-digest/)
+- [Review Chat History](/prompts/aicraft-review-chat-history/)
+- [Search Reusable AI Assets](/prompts/aicraft-search-reusable-ai-assets/)
+- [Agent Migration Prompt](/prompts/aicraft-agent-migration-prompt/)
+- [Rustzen Backend Prompt](/prompts/aicraft-rustzen-backend-prompt/)
+- [Rustzen Architecture Prompt](/prompts/aicraft-rustzen-architecture-prompt/)
+
 ## Prompt Library Rules
 
 The active prompt files follow a few simple rules:
