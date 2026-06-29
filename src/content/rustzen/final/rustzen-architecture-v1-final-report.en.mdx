@@ -1,0 +1,304 @@
+---
+title: Rustzen Architecture v1 Final Report
+description: A compiled architecture report for the Rustzen repository family, derived from code and documentation audits.
+pubDate: 2026-06-29
+tags: ["Rustzen", "Rust", "Architecture", "Audit", "Local-first"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+readingTime: 12
+---
+
+# Rustzen Architecture v1 Final Report
+
+This report is a compiled architecture document, not a direct copy of the incremental audit summaries. The incremental files remain the evidence trail; this article keeps only the final judgment, the architecture rules, and the actionable direction for each repository.
+
+## 1. Boundary Rules
+
+Rustzen Architecture v1 is based on one rule: each layer must own exactly one kind of responsibility.
+
+```text
+CLI / GUI / API
+        ↓
+     Service
+        ↓
+  Core + DB
+        ↓
+     SQLite
+```
+
+The recommended repository structure is:
+
+```text
+apps/
+  cli/       # command entry only
+  server/    # API entry and runtime assembly only
+  gui/       # Tauri or desktop UI shell only
+
+crates/
+  core/      # deterministic business logic
+  service/   # orchestration and workflow coordination
+  db/        # SQL, migrations, repositories, persistence
+  domain/    # types, invariants, value objects
+  utils/     # shared helpers only
+
+infra/
+  config/
+  logging/
+  runtime/
+```
+
+The strict dependency direction is:
+
+```text
+handler -> service -> core/db
+```
+
+The forbidden directions are:
+
+- `handler -> db`
+- `core -> db`
+- `db -> service`
+- `cli/gui/api -> persistence directly`
+
+A module becomes a boundary risk when it owns lifecycle, persistence, orchestration, and domain decisions at the same time. Size alone is not the only signal; responsibility mixing is the primary signal.
+
+## 2. Final Risk Table
+
+| Repository | Final Risk | Final Judgment |
+|---|---:|---|
+| `rustzen-clear` | HIGH | Product scope is clear, but `ZenService`, cleanup scanner logic, and GUI reclaim flow hide too much cleanup-engine behavior. |
+| `rustzen-clipboard` | HIGH | Product boundary is clear, but storage, capture, restore, image handling, and Tauri workflow ownership are too dense. |
+| `rustzen-zipper` | HIGH | `main.rs` acts as a CLI monolith: command parsing, config, archive IO, filtering, checksum, and output are concentrated in one binary entry. |
+| `rustzen-analytics` | MEDIUM-HIGH | Layout and request paths are generally sound, but `repo.rs` and service logic carry analytical runtime policy beyond persistence. |
+| `rustzen-report` | MEDIUM-HIGH | Protected layout is valid, but workflow engine density in job service, scheduler, and executor is high. |
+| `rustzen-video` | MEDIUM-HIGH | API layer is thin, but media runtime ownership across pipeline, FLV, WS, process lifecycle, and reconnect behavior requires a dedicated boundary. |
+| `rustzen-inspect` | MEDIUM | Multi-process shape is appropriate, but task service, agent orchestration, and aggregator code are dense. |
+| `rustzen-admin` | MEDIUM | Workspace layout is mature, but `infra/db.rs`, deploy service, and task runtime concentrate operational behavior. |
+| `rustzen-launcher` | LOW-MEDIUM | Acceptable as a Tauri prototype; risk is mainly unclear runtime ownership and mock/product contract gaps. |
+| `rustzen-core` | EMPTY / NOT ASSESSABLE | Empty repository; cannot be used as a Rustzen Architecture v1 compliance baseline. |
+| `rustzen-lite` | EMPTY / NOT ASSESSABLE | Empty repository; naming alone does not define architecture. |
+| `rustzen-mcp` | EMPTY / NOT ASSESSABLE | Empty repository; protocol role cannot be inferred without implementation or documentation. |
+
+## 3. Specialized Rules
+
+### 3.1 CLI Repositories
+
+Small CLI tools are not automatically low risk. A single `main.rs` becomes high risk when it combines:
+
+- command parsing
+- config resolution
+- workflow execution
+- filesystem traversal
+- archive or IO implementation
+- filtering and ignore rules
+- checksum or stats
+- final report rendering
+
+The standard split is:
+
+```text
+cli -> service -> core/db
+```
+
+For `rustzen-zipper`, the preferred split is:
+
+- `PackService`
+- `UnpackService`
+- `FilterEngine`
+- `ArchiveWriter` / `ArchiveReader`
+- `CliOutput`
+
+### 3.2 GUI-first Local Apps
+
+A GUI-first local app needs two separate scores:
+
+1. product-scope score
+2. runtime-engine score
+
+`rustzen-clear` and `rustzen-clipboard` both have clear product scope. Their risk comes from hidden runtime engines: cleanup execution, scan classification, clipboard capture, restore behavior, image persistence, and GUI command orchestration.
+
+The rule is:
+
+> The GUI may start a workflow, but it must not own the workflow.
+
+### 3.3 Workflow Engine Repositories
+
+Browser-driven or job-driven systems cannot be judged only with `api -> service -> repo` rules. They require a workflow-engine boundary.
+
+A workflow engine boundary exists when a module owns:
+
+- job planning
+- runtime creation
+- template/account/dataset preparation
+- async execution
+- browser/CDP or external runtime calls
+- websocket status events
+- summary persistence
+- completion or rollback logic
+
+This applies primarily to `rustzen-report`.
+
+### 3.4 Media Gateway Repositories
+
+A media gateway needs a runtime-engine boundary separate from normal service code.
+
+A media runtime boundary exists when a module owns:
+
+- long-lived pipelines
+- external process lifecycle
+- stream fanout
+- reconnect policy
+- protocol negotiation
+- websocket session lifecycle
+- drop-based shutdown
+
+This applies primarily to `rustzen-video`.
+
+### 3.5 Empty Repositories
+
+Empty repositories are not low risk. They are `EMPTY / NOT ASSESSABLE`.
+
+A repository cannot become part of the architecture baseline until it has at least one of:
+
+- `README.md`
+- `Cargo.toml`
+- source code
+- protocol contract
+- executable behavior
+- architecture notes
+
+## 4. Repository Judgments
+
+### rustzen-clear
+
+Final judgment: **HIGH**.
+
+`rustzen-clear` has a strong product identity: a local-first developer cleaner. The architecture issue is not product confusion. The issue is that cleanup behavior is too centralized around `ZenService` and related scanner/runtime paths.
+
+Main recommendation:
+
+- split scan, analyze, cleanup, restore into separate services
+- treat cleanup engine as a first-class runtime boundary
+- keep Tauri commands thin and progress-oriented
+
+### rustzen-clipboard
+
+Final judgment: **HIGH**.
+
+`rustzen-clipboard` is product-clear: GUI-first, local-first, no cloud sync, no hidden upload. The risk is runtime density. Storage, clipboard capture, restore, image handling, and Tauri workflow code need clearer ownership.
+
+Main recommendation:
+
+- split `storage.rs` into repository, history, settings, retention, and file lifecycle units
+- isolate capture loop from restore and image processing
+- keep Tauri `main.rs` as runtime assembly only
+
+### rustzen-zipper
+
+Final judgment: **HIGH**.
+
+`rustzen-zipper` is the clearest CLI monolith case. The repository is small, but the binary entry owns too many responsibilities.
+
+Main recommendation:
+
+- keep JS wrapper thin
+- split Rust binary logic into CLI parsing, config, pack/unpack services, archive IO, filter engine, and output rendering
+
+### rustzen-analytics
+
+Final judgment: **MEDIUM-HIGH**.
+
+`rustzen-analytics` is structurally more mature than the tool-style repositories. The risk is not missing layers, but layers that absorb too much analytical policy. The DB/repo layer must not become the analytical runtime.
+
+Main recommendation:
+
+- separate aggregation, retention, projection, and behavior modeling from persistence
+- keep repository modules persistence-focused
+- evaluate analytics repos with both layout score and analytical-runtime density score
+
+### rustzen-report
+
+Final judgment: **MEDIUM-HIGH**.
+
+The protected `zen-server` / `zen-web` layout is acceptable. The problem is workflow-engine density: job service, scheduler, and executor own many runtime responsibilities.
+
+Main recommendation:
+
+- keep protected layout
+- separate job planning, scheduler dispatch, executor runtime, browser adapter, websocket eventing, and persistence callback
+
+### rustzen-video
+
+Final judgment: **MEDIUM-HIGH**.
+
+The API side is not the main issue. The issue is media runtime ownership: pipeline, FLV handling, websocket session lifecycle, process management, fanout, and reconnect logic need stronger boundaries.
+
+Main recommendation:
+
+- introduce explicit runtime-engine boundaries for pipeline, streaming, websocket signaling, and process lifecycle
+- do not evaluate video gateway modules as normal CRUD services
+
+### rustzen-inspect
+
+Final judgment: **MEDIUM**.
+
+The multi-process shape is valid. The architecture should remain a protected exception rather than being forced into a generic web layout. The density is inside task execution, agent orchestration, and aggregation.
+
+Main recommendation:
+
+- separate scheduler, task run lock, task persistence, and async execution
+- isolate aggregator math and persistence from collection/orchestration
+
+### rustzen-admin
+
+Final judgment: **MEDIUM**.
+
+The workspace layout is relatively mature. The issue is operational density: infrastructure bootstrap, deploy lifecycle, task runtime, legacy DB/file migration, restart, rollback, and symlink behavior should not collapse into a few operational modules.
+
+Main recommendation:
+
+- split DB bootstrap, migrations, deploy binary migration, and deploy row migration
+- treat deploy service as an operational runtime boundary
+
+### rustzen-launcher
+
+Final judgment: **LOW-MEDIUM**.
+
+The current prototype status is acceptable. It should not be treated as a release baseline or reusable template yet.
+
+Main recommendation:
+
+- keep root `src-tauri` as a prototype exception
+- define runtime ownership before graduation
+- replace mock search with real command/data contracts before architecture promotion
+
+### Empty repositories
+
+`rustzen-core`, `rustzen-lite`, and `rustzen-mcp` are not assessable. They should not influence the v1 architecture baseline until they contain implementation or documentation.
+
+## 5. Final Rustzen v1 Standard
+
+The strongest current Rustzen shape is:
+
+```text
+apps/*      = product/runtime entry
+service/*   = workflow orchestration
+core/*      = deterministic business logic
+db/*        = persistence and migrations only
+infra/*     = config, logging, runtime setup
+```
+
+The most important rule is not folder naming. The important rule is responsibility ownership.
+
+A repository is aligned with Rustzen Architecture v1 when:
+
+- runtime entry is thin
+- workflows are explicit
+- storage is persistence-only
+- domain logic is outside DB modules
+- long-lived engines are named and isolated
+- exceptions are documented, not accidental
+
+## 6. Appendix Policy
+
+Incremental audit files remain under `src/content/rustzen/audit/` as the evidence trail. This final report does not duplicate every line-level finding. It compiles the stable conclusions and points future review back to the audit trail when detailed evidence is needed.
