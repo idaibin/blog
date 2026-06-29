@@ -117,3 +117,20 @@ Then confirm every `references/*.md` file is linked from `SKILL.md`, `references
 - **Pass:** all required structure, metadata, safety, references, and validation checks are satisfied.
 - **Needs attention:** usable, but has wording drift, stale examples, weak triggers, missing references, or incomplete validation guidance.
 - **Fail:** missing `SKILL.md`, unsafe write behavior, required external dependency, broad staging by default, direct remote overwrite, or misleading trigger metadata.
+
+## Download And Install
+
+GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+
+Install or upgrade the published AICraft Codex skills from GitHub:
+
+```bash
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo rustzen/aicraft \
+  --path skills/code-context \
+  --path skills/code-planner \
+  --path skills/code-review \
+  --path skills/code-security
+```
+
+The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository. `skill-standard.md` is a packaging standard, not an installable skill package.

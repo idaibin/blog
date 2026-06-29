@@ -62,3 +62,20 @@ python3 scripts/sync-skills.py --validate-only --check-target
 - `references/upstream-sources.md`
 - `references/upgrade-workflow.md`
 - `references/eval-cases.md`
+
+## Download And Install
+
+GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+
+Install or upgrade the published AICraft Codex skills from GitHub:
+
+```bash
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo rustzen/aicraft \
+  --path skills/code-context \
+  --path skills/code-planner \
+  --path skills/code-review \
+  --path skills/code-security
+```
+
+The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository.

@@ -5,7 +5,7 @@ pubDate: 2026-06-29
 tags: ["aicraft", "skills", "agent", "code-context", "code-review"]
 audience: ["developer", "ai-practitioner"]
 featured: true
-readingTime: 7
+readingTime: 8
 ---
 
 AICraft skills package stable AI workflows into reusable capability modules. A prompt captures task language. A skill captures a repeatable execution workflow with triggers, rules, references, validation, and output contracts.
@@ -28,6 +28,7 @@ as focused standalone articles:
 - [Code Context](/skills/aicraft-code-context/)
 - [Code Planner](/skills/aicraft-code-planner/)
 - [Code Review](/skills/aicraft-code-review/)
+- [Code Security](/skills/aicraft-code-security/)
 - [Skill Standard](/skills/aicraft-skill-standard/)
 
 ## Skill Package Standard
@@ -159,6 +160,30 @@ Output contract:
 
 Start with local change scope, ownership classification, and main risks. Include review findings before the commit plan. For each commit group, include purpose, exact files or hunk-level staging approach, validation status, risks, and a concise Conventional Commit message.
 
+### Code Security
+
+Source: `skills/code-security/SKILL.md`
+
+Use when reviewing code, API, auth, permission, config, dependency, upload, logging, token, session, CORS, CSRF, or release changes for security risks.
+
+Core capability:
+
+- Review a known code or configuration surface for concrete security risk.
+- Check auth, authorization, input/output validation, sensitive-data exposure, browser/API protections, config defaults, dependency risk, and abuse paths.
+- Complement `code-review` instead of replacing API contract mapping, dirty-tree ownership, staging, or commit planning.
+- Report only findings grounded in code, config, docs, runtime evidence, or clearly marked assumptions.
+
+Modes:
+
+- **Security review:** inspect a code, API, config, dependency, or release change for security risks.
+- **Full-stack API security:** review an already-mapped frontend/backend API chain.
+- **Release check:** do a lightweight pre-release pass over security-sensitive changes.
+- **Upgrade mode:** compare only remote `skills/code-security/` against local files.
+
+Output contract:
+
+Start with security findings ordered by severity. If no blocking findings are found, say that clearly and list residual `Not verified` areas.
+
 ## Skill Maintenance Flow
 
 When maintaining these packages, update the relevant `references/eval-cases.md`, `references/usage.md`, and `agents/openai.yaml` files whenever triggers, modes, rules, or output contracts change.
@@ -178,6 +203,23 @@ rg -n "^name:|^description: Use when" skills/<skill-name>/SKILL.md
 rg -n "[ \t]+$" skills/<skill-name>
 git diff --check -- skills/<skill-name>
 ```
+
+## Download And Install
+
+GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+
+Install or upgrade the published AICraft Codex skills from GitHub:
+
+```bash
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo rustzen/aicraft \
+  --path skills/code-context \
+  --path skills/code-planner \
+  --path skills/code-review \
+  --path skills/code-security
+```
+
+The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository.
 
 ## Relationship With Prompts
 
