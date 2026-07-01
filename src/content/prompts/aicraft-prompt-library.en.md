@@ -10,7 +10,7 @@ readingTime: 8
 
 AICraft is the working library for reusable AI assets used across Rustzen work. Its prompt library is not a collection of one-off chat snippets. It is a set of durable task templates with clear scenarios, language rules, execution boundaries, validation expectations, and output contracts.
 
-This blog copy exists so `rustzen.dev/prompts` can show the actual active prompt system instead of pointing readers away to another repository.
+This blog copy exists so `idaibin.dev/prompts` can show the actual active prompt system instead of pointing readers away to another repository.
 
 ## Source
 

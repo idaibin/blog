@@ -10,7 +10,7 @@ readingTime: 8
 
 AICraft skills package stable AI workflows into reusable capability modules. A prompt captures task language. A skill captures a repeatable execution workflow with triggers, rules, references, validation, and output contracts.
 
-This blog copy exists so `rustzen.dev/skills` can show the actual active AICraft skill system instead of a relocation notice.
+This blog copy exists so `idaibin.dev/skills` can show the actual active AICraft skill system instead of a relocation notice.
 
 ## Source
 
