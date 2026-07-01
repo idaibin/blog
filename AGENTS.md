@@ -1,7 +1,9 @@
 # AGENTS.md
 
 ## 仓库用途
-`rustzen.dev` 的博客仓库，基于 Astro + MDX + Tailwind CSS 4 构建。内容以 AI 信号、工作流、Prompt、Skills、Rust、React、全栈开发和 Rustzen Admin 为核心，支持中英双语静态站点。
+`idaibin/blog` 是个人博客仓库，基于 Astro + MDX + Tailwind CSS 4 构建。内容以 AI 信号、工作流、Prompt、Skills、Rust、React、全栈开发、产品思考和个人方法论为核心，支持中英双语静态站点。
+
+Rustzen 官方官网、产品页、下载页和控制台入口不放在本仓库；相关代码迁移到 `rustzen/rustzen-hub`。
 
 ## 目录结构
 - `src/pages/`：文件式路由入口，包含首页、中文首页、动态 section 列表页、详情页和分页页。

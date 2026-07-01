@@ -1,7 +1,7 @@
-# rustzen.dev Blog
+# idaibin Blog
 
-`rustzen.dev` is a bilingual static blog built with Astro, MDX, and Tailwind CSS 4.
-It focuses on AI signals, workflows, prompts, skills, long-form notes, Rust, React, full-stack engineering, and Rustzen Admin.
+`idaibin/blog` is a bilingual personal static blog built with Astro, MDX, and Tailwind CSS 4.
+It focuses on AI signals, workflows, prompts, skills, long-form notes, Rust, React, full-stack engineering, and product-building records.
 
 ## Features
 
@@ -60,9 +60,9 @@ All commands are run from the project root.
 | `pnpm preview` | Preview the production build locally |
 | `pnpm astro check` | Run Astro type and content checks |
 
-## Rustzen Admin
+## Rustzen Notes
 
-Rustzen Admin is the main application theme referenced by this blog.
+Rustzen product and architecture notes can still appear as personal writing, but official Rustzen website and product pages belong in `rustzen/rustzen-hub`.
 
 - Backend: Rust, Axum, SQLx, JWT, RBAC
 - Frontend: React, Vite, Zustand, Tailwind
