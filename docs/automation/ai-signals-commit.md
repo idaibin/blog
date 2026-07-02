@@ -1,25 +1,75 @@
 # AI Signals Commit Automation
 
-This document is the single source of truth for the `AI Signals Commit` scheduled task.
+## Authority
 
-The ChatGPT automation prompt should only fetch this file from GitHub and execute the rules below. Do not duplicate these rules in the automation prompt.
+This task follows:
 
-## Target repository
+```text
+idaibin/aicraft/docs/standards/cron-automation.md
+idaibin/aicraft/docs/standards/github-branching.md
+idaibin/aicraft/docs/standards/ai-content-quality.md
+idaibin/blog/docs/repo-scope.md
+```
 
-- Repository: `idaibin/blog` / Rustzen blog
+This file only defines repository-specific rules for the `AI Signals Commit` scheduled task.
+
+The ChatGPT scheduled task prompt should only bootstrap the run by reading the documents above and this file. Do not duplicate these rules inside the ChatGPT task prompt.
+
+## Target Repository
+
+- Repository: `idaibin/blog`
 - Production branch: `main`
-- Generated content directory: `src/content/signals/`
-- Task timezone: East 8 / UTC+08:00 / `Asia/Shanghai`
-- Pull requests: do not create PRs for scheduled runs
-- Final target: all generated content must be merged into `main`
+- Task name: `ai-signals-commit`
+- Schedule: daily, 08:00
+- Timezone: `UTC+08:00 / Asia/Shanghai`
+- Pull requests: No
+- Scheduled production write: allowed only through the safe cron-branch flow defined in AICraft standards
 
-## Task objective
+## Objective
 
 Search for the latest AI news, product releases, research, GitHub projects, and emerging AI concepts from the previous day through the current run time.
 
-Produce a daily AI signals update for the Rustzen blog when at least 3 meaningful source-backed items are available.
+Produce a daily AI Signals update when at least 3 meaningful source-backed items are available.
 
-## Source priority
+## Allowed Paths
+
+```text
+src/content/signals/*.mdx
+```
+
+Automation rule updates may modify these paths only when the user explicitly asks to update task rules:
+
+```text
+docs/automation/ai-signals-commit.md
+docs/repo-scope.md
+README.md
+```
+
+## Disallowed Paths
+
+Unless the user explicitly asks for a broader blog change, this task must not modify:
+
+```text
+src/components/**
+src/pages/**
+src/layouts/**
+src/content/prompts/**
+src/content/skills/**
+src/content/workflows/**
+```
+
+`src/content/prompts/**`, `src/content/skills/**`, and `src/content/workflows/**` may contain published explanatory content, but they are not the authority source for reusable AI assets. Source assets belong in `idaibin/aicraft`.
+
+## Output Files
+
+For the current run date in `UTC+08:00 / Asia/Shanghai`, create or update both files:
+
+```text
+src/content/signals/YYYY-MM-DD.zh.mdx
+src/content/signals/YYYY-MM-DD.en.mdx
+```
+
+## Source Priority
 
 Prioritize source-backed signals from:
 
@@ -37,55 +87,7 @@ Clearly distinguish:
 
 Do not present speculation as confirmed news.
 
-## Timezone rules
-
-All task-level dates and generated file dates must use East 8 / UTC+08:00 / `Asia/Shanghai`.
-
-Rules:
-
-- The run date must be calculated in UTC+08:00.
-- Branch timestamps in `YYYYMMDD-HHMM` must be generated in UTC+08:00.
-- `pubDate` must use the UTC+08:00 run date.
-- If a full timestamp is written in content, use an explicit UTC+08:00 offset, for example `2026-07-02T08:54:00+08:00`.
-- Do not directly display or store a UTC timestamp as local task time without converting it to UTC+08:00.
-- Avoid the abbreviation `CST` because it is ambiguous.
-
-## Git strategy
-
-Use a temporary cron branch for each scheduled run, then merge the final result into `main` without creating a PR.
-
-1. Read the latest `main` before starting.
-2. Create a temporary branch from the latest `main`.
-3. The temporary branch name must use this unified cron format:
-
-```text
-cron/<task-name>-YYYYMMDD-HHMM
-```
-
-Example:
-
-```text
-cron/ai-signals-commit-20260702-0854
-```
-
-4. `YYYYMMDD-HHMM` must be generated in East 8 / UTC+08:00 / `Asia/Shanghai`.
-5. Write all generated MDX files only to the temporary cron branch during the run.
-6. The temporary branch may contain one or more intermediate commits.
-7. After validation, merge the final result into `main` as a single final commit.
-8. Do not create a pull request.
-9. Before updating `main`, reread the latest `main`. If `main` has changed, rebuild the final tree on top of the latest `main`.
-10. If the safe temporary-branch-to-main flow cannot be completed, stop and report the blocker instead of writing partial updates to `main`.
-
-## Output files
-
-For the current run date, create or update both files:
-
-- `src/content/signals/YYYY-MM-DD.zh.mdx`
-- `src/content/signals/YYYY-MM-DD.en.mdx`
-
-Use the run date in East 8 / UTC+08:00 / `Asia/Shanghai` unless the user explicitly changes the task timezone.
-
-## Frontmatter format
+## Frontmatter Format
 
 Use this frontmatter style:
 
@@ -104,8 +106,9 @@ Rules:
 - `description` must be one short sentence.
 - Do not use wording like `信息流`, `feed`, `覆盖时间`, or `coverage window` in the description.
 - `tags` should be compact. Add only useful topical tags.
+- `pubDate` must use the run date in `UTC+08:00 / Asia/Shanghai`.
 
-## Body format
+## Body Format
 
 Do not add a coverage window line.
 
@@ -119,7 +122,7 @@ Do not add section headings such as:
 - `Observations`
 - `Promotion Candidates`
 
-Each item must follow this pattern:
+Each Chinese item must follow this pattern:
 
 ```mdx
 ### <a href="https://example.com/source" target="_blank" rel="noopener noreferrer">Title ↗</a>
@@ -131,7 +134,7 @@ One short paragraph describing what happened.
 **值得关注**：One short Chinese sentence explaining why it matters.
 ```
 
-For English:
+Each English item must follow this pattern:
 
 ```mdx
 ### <a href="https://example.com/source" target="_blank" rel="noopener noreferrer">Title ↗</a>
@@ -149,7 +152,7 @@ Separate items with:
 ---
 ```
 
-## Link rules
+## Link Rules
 
 For every item:
 
@@ -160,7 +163,7 @@ For every item:
 - The link must include `rel="noopener noreferrer"`.
 - Do not use bare Markdown links as the item heading.
 
-## Quality threshold
+## Quality Threshold
 
 If fewer than 3 meaningful source-backed items are found:
 
@@ -169,7 +172,7 @@ If fewer than 3 meaningful source-backed items are found:
 - Report that there were not enough meaningful updates.
 - List the sources checked.
 
-## Validation before commit
+## Validation Before Commit
 
 Before committing, verify:
 
@@ -179,8 +182,9 @@ Before committing, verify:
 - Source links use the required HTML anchor style.
 - Both Chinese and English files exist and are aligned.
 - Claims are source-backed and not overstated.
+- Dates use `UTC+08:00 / Asia/Shanghai`.
 
-## Commit rule
+## Commit Message
 
 When a post is generated, the final `main` commit must use this message format:
 
