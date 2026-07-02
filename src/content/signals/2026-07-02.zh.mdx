@@ -1,0 +1,56 @@
+---
+title: 2026-07-02 AI Signals
+description: 面向开发者的每日 AI 高信号摘要。
+pubDate: 2026-07-02
+tags: ["AI", "Signals", "Agents", "Research"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+---
+
+### <a href="https://www.reuters.com/business/meta-sell-excess-ai-computing-capacity-via-cloud-business-bloomberg-news-reports-2026-07-01/" target="_blank" rel="noopener noreferrer">Meta reportedly explores selling excess AI compute as cloud capacity ↗</a>
+
+Reuters · 2026-07-01 · reported industry move / AI infrastructure
+
+Reuters 转述 Bloomberg 报道称，Meta 正在开发一项云业务，用于出售多余的 AI 计算能力；该计划仍在开发中，Meta 拒绝置评，Reuters 也说明未能独立验证该报道。
+
+**值得关注**：这说明大厂 AI 基础设施投入正在从“内部训练资源”转向可能外部变现的算力平台，开发者未来可能面对更多模型与算力入口。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.32007" target="_blank" rel="noopener noreferrer">AxDafny brings verifier-guided repair to agentic Dafny code generation ↗</a>
+
+arXiv · 2026-06-30 · research / verified code generation
+
+论文提出 AxDafny，让模型生成 Dafny 可执行代码和验证所需的证明工件，并通过 verifier-guided repair 迭代补全实现、不变量、断言和终止参数；作者还发布了 LCB-Pro-Dafny 评测集。
+
+**值得关注**：对 AI coding agent 来说，形式化验证可以把“测试通过”推进到“规格可验证”，尤其适合安全敏感或基础库代码。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.32004" target="_blank" rel="noopener noreferrer">PolicyGuard turns organizational policies into inspectable compliance engines ↗</a>
+
+arXiv · 2026-06-30 · research / policy compliance
+
+PolicyGuard 把组织内部政策转换为类型化关系逻辑规则和原子级抽取问题，由 LLM 基于检索证据回答局部问题，再交给符号评估器判断文档是否不合规；论文用公司 NDA 审查场景进行了实例化。
+
+**值得关注**：这代表一种更可维护的企业 AI 路线：让模型做局部解释与证据抽取，把最终规则判断交给可测试的显式逻辑。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.31564" target="_blank" rel="noopener noreferrer">ACE adds reversible context management across LLM agents ↗</a>
+
+arXiv · 2026-06-30 · research / agent context
+
+ACE 提出一个 plug-and-play 的 Adaptive Context Elasticizer，在每个决策步骤动态选择历史信息以原文、摘要或丢弃形式进入上下文，并保留原始消息与压缩抽象，避免传统截断和摘要的不可恢复问题。
+
+**值得关注**：长任务 Agent 的核心瓶颈不只是上下文窗口大小，而是如何在成本、延迟和可恢复记忆之间做可控编排。
+
+---
+
+### <a href="https://arxiv.org/abs/2606.31174" target="_blank" rel="noopener noreferrer">ClawArena-Team measures whether one LLM can manage subagents ↗</a>
+
+arXiv · 2026-06-30 · research / subagent orchestration
+
+ClawArena-Team 评测一个主模型在多轮、多模态、多目录任务中创建、授权和调度子 Agent 的能力，并用 execution-based scoring 衡量正确性、最小权限和模态路由，而不是依赖 LLM judge。
+
+**值得关注**：随着 Agent 从单体执行变成“主控模型 + 子 Agent 团队”，权限授予、任务分派和结果汇总会成为比单步推理更重要的工程指标。
