@@ -1,15 +1,34 @@
 # idaibin Blog
 
 `idaibin/blog` is a bilingual personal static blog built with Astro, MDX, and Tailwind CSS 4.
-It focuses on AI signals, workflows, prompts, skills, long-form notes, Rust, React, full-stack engineering, and product-building records.
+
+It is a content publishing and knowledge archive site for AI Signals, long-form notes, Rust, React, full-stack engineering, product-building records, and Rustzen writing.
+
+Reusable AI prompts, skills, workflow templates, and shared automation standards are not owned here. Their authority source is `idaibin/aicraft`.
 
 ## Features
 
 - English and Chinese content with shared slugs and `.en` / `.zh` suffixes
-- AI-focused sections for signals, workflows, prompts, and skills
-- Long-form notes for blog posts and Rustzen Admin writing
+- AI Signals and long-form content publishing
+- Published explanations of workflows, prompts, and skills
+- Long-form notes for blog posts and Rustzen writing
 - Sitemap, SEO, and Vercel analytics support
 - Content-driven structure with Astro content collections
+
+## Repository Scope
+
+```text
+blog = long-form content publishing and knowledge archive
+aicraft = reusable AI capability and automation standards source
+feeds-hub = short-cycle information feed automation example
+```
+
+See:
+
+```text
+docs/repo-scope.md
+docs/automation/ai-signals-commit.md
+```
 
 ## Project Structure
 
@@ -46,6 +65,8 @@ The actual content collections are:
 - `skills` / `skillsZh`
 - `notes` / `notesZh`
 
+`prompts`, `skills`, and `workflows` are published content collections, not the source of reusable AI assets. Source assets belong in `idaibin/aicraft`.
+
 `notes` is the combined collection for `blog` and `rustzen-admin`.
 
 ## Commands
@@ -73,14 +94,16 @@ Rustzen product and architecture notes can still appear as personal writing, but
 If you want to understand the repo quickly, read these files in order:
 
 1. `AGENTS.md`
-2. `package.json`
-3. `astro.config.mjs`
-4. `src/content.config.ts`
-5. `src/site.ts`
-6. `src/utils.ts`
-7. `src/layouts/BaseLayout.astro`
-8. `src/layouts/BlogPost.astro`
-9. `src/pages/`
+2. `docs/repo-scope.md`
+3. `docs/automation/ai-signals-commit.md`
+4. `package.json`
+5. `astro.config.mjs`
+6. `src/content.config.ts`
+7. `src/site.ts`
+8. `src/utils.ts`
+9. `src/layouts/BaseLayout.astro`
+10. `src/layouts/BlogPost.astro`
+11. `src/pages/`
 
 ## Notes
 
