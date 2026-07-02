@@ -9,6 +9,7 @@ The ChatGPT automation prompt should only fetch this file from GitHub and execut
 - Repository: `idaibin/blog` / Rustzen blog
 - Production branch: `main`
 - Generated content directory: `src/content/signals/`
+- Task timezone: East 8 / UTC+08:00 / `Asia/Shanghai`
 - Pull requests: do not create PRs for scheduled runs
 - Final target: all generated content must be merged into `main`
 
@@ -36,13 +37,26 @@ Clearly distinguish:
 
 Do not present speculation as confirmed news.
 
+## Timezone rules
+
+All task-level dates and generated file dates must use East 8 / UTC+08:00 / `Asia/Shanghai`.
+
+Rules:
+
+- The run date must be calculated in UTC+08:00.
+- Branch timestamps in `YYYYMMDD-HHMM` must be generated in UTC+08:00.
+- `pubDate` must use the UTC+08:00 run date.
+- If a full timestamp is written in content, use an explicit UTC+08:00 offset, for example `2026-07-02T08:54:00+08:00`.
+- Do not directly display or store a UTC timestamp as local task time without converting it to UTC+08:00.
+- Avoid the abbreviation `CST` because it is ambiguous.
+
 ## Git strategy
 
 Use a temporary cron branch for each scheduled run, then merge the final result into `main` without creating a PR.
 
 1. Read the latest `main` before starting.
 2. Create a temporary branch from the latest `main`.
-3. The temporary branch name must use this format:
+3. The temporary branch name must use this unified cron format:
 
 ```text
 cron/<task-name>-YYYYMMDD-HHMM
@@ -51,10 +65,10 @@ cron/<task-name>-YYYYMMDD-HHMM
 Example:
 
 ```text
-cron/ai-signals-commit-20260702-0940
+cron/ai-signals-commit-20260702-0854
 ```
 
-4. Use Asia/Shanghai time for `YYYYMMDD-HHMM` unless the user explicitly changes the task timezone.
+4. `YYYYMMDD-HHMM` must be generated in East 8 / UTC+08:00 / `Asia/Shanghai`.
 5. Write all generated MDX files only to the temporary cron branch during the run.
 6. The temporary branch may contain one or more intermediate commits.
 7. After validation, merge the final result into `main` as a single final commit.
@@ -69,7 +83,7 @@ For the current run date, create or update both files:
 - `src/content/signals/YYYY-MM-DD.zh.mdx`
 - `src/content/signals/YYYY-MM-DD.en.mdx`
 
-Use the run date in Asia/Shanghai timezone unless the execution environment explicitly requires another timezone.
+Use the run date in East 8 / UTC+08:00 / `Asia/Shanghai` unless the user explicitly changes the task timezone.
 
 ## Frontmatter format
 
