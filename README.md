@@ -2,15 +2,15 @@
 
 `idaibin/blog` is a bilingual personal static blog built with Astro, MDX, and Tailwind CSS 4.
 
-It is a content publishing and knowledge archive site for AI Signals, long-form notes, Rust, React, full-stack engineering, product-building records, and Rustzen writing.
+It is a content publishing and knowledge archive site for long-form notes, Rust, React, full-stack engineering, product-building records, prompts, skills, and Rustzen writing.
 
 Reusable AI prompts, skills, workflow templates, and shared automation standards are not owned here. Their authority source is `idaibin/aicraft`.
 
 ## Features
 
 - English and Chinese content with shared slugs and `.en` / `.zh` suffixes
-- AI Signals and long-form content publishing
-- Published explanations of workflows, prompts, and skills
+- Long-form content publishing
+- Published explanations of prompts and skills
 - Long-form notes for blog posts and Rustzen writing
 - Sitemap, SEO, and Vercel analytics support
 - Content-driven structure with Astro content collections
@@ -27,7 +27,7 @@ See:
 
 ```text
 docs/repo-scope.md
-docs/automation/ai-signals-commit.md
+docs/automation/
 ```
 
 ## Project Structure
@@ -40,10 +40,8 @@ docs/automation/ai-signals-commit.md
 │   ├── content/
 │   │   ├── blog/
 │   │   ├── prompts/
-│   │   ├── rustzen-admin/
-│   │   ├── signals/
+│   │   ├── rustzen/
 │   │   ├── skills/
-│   │   └── workflows/
 │   ├── layouts/
 │   ├── pages/
 │   ├── site.ts
@@ -59,15 +57,13 @@ docs/automation/ai-signals-commit.md
 
 The actual content collections are:
 
-- `signals` / `signalsZh`
-- `workflows` / `workflowsZh`
 - `prompts` / `promptsZh`
 - `skills` / `skillsZh`
 - `notes` / `notesZh`
 
-`prompts`, `skills`, and `workflows` are published content collections, not the source of reusable AI assets. Source assets belong in `idaibin/aicraft`.
+`prompts` and `skills` are published content collections, not the source of reusable AI assets. Source assets belong in `idaibin/aicraft`.
 
-`notes` is the combined collection for `blog` and `rustzen-admin`.
+`notes` is the combined collection for `blog` and `rustzen`.
 
 ## Commands
 
@@ -95,15 +91,14 @@ If you want to understand the repo quickly, read these files in order:
 
 1. `AGENTS.md`
 2. `docs/repo-scope.md`
-3. `docs/automation/ai-signals-commit.md`
-4. `package.json`
-5. `astro.config.mjs`
-6. `src/content.config.ts`
-7. `src/site.ts`
-8. `src/utils.ts`
-9. `src/layouts/BaseLayout.astro`
-10. `src/layouts/BlogPost.astro`
-11. `src/pages/`
+3. `package.json`
+4. `astro.config.mjs`
+5. `src/content.config.ts`
+6. `src/site.ts`
+7. `src/utils.ts`
+8. `src/layouts/BaseLayout.astro`
+9. `src/layouts/BlogPost.astro`
+10. `src/pages/`
 
 ## Notes
 

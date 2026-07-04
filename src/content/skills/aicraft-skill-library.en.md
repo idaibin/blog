@@ -1,6 +1,6 @@
 ---
 title: "AICraft Skill Library"
-description: "Reusable agent-style skills from AICraft, migrated into the Rustzen blog as a durable skills index."
+description: "Reusable agent-style skills from AICraft, published as a durable skills index."
 pubDate: 2026-06-29
 tags: ["aicraft", "skills", "agent", "code-context", "code-review"]
 audience: ["developer", "ai-practitioner"]
@@ -14,7 +14,7 @@ This blog copy exists so `idaibin.dev/skills` can show the actual active AICraft
 
 ## Source
 
-Current source repository: `rustzen/aicraft`.
+Current source repository: `idaibin/aicraft`.
 
 Active source directory: `skills/`.
 
@@ -29,11 +29,13 @@ as focused standalone articles:
 - [Code Planner](/skills/aicraft-code-planner/)
 - [Code Review](/skills/aicraft-code-review/)
 - [Code Security](/skills/aicraft-code-security/)
+- [Ops Browser](/skills/aicraft-ops-browser/)
+- [Ops Client](/skills/aicraft-ops-client/)
 - [Skill Standard](/skills/aicraft-skill-standard/)
 
 ## Skill Package Standard
 
-Source: `skills/skill-standard.md`
+Source: `docs/skills/skill-standard.md`
 
 AICraft skill packages follow this shape:
 
@@ -74,6 +76,15 @@ Every repository-facing skill must:
 Commit-related skills additionally avoid broad staging such as `git add .` unless the user explicitly approves that exact scope.
 
 ## Current Skills
+
+Installable skill package names:
+
+- `code-context`
+- `code-planner`
+- `code-review`
+- `code-security`
+- `ops-browser`
+- `ops-client`
 
 ### Code Context
 
@@ -184,6 +195,45 @@ Output contract:
 
 Start with security findings ordered by severity. If no blocking findings are found, say that clearly and list residual `Not verified` areas.
 
+### Ops Browser
+
+Source: `skills/ops-browser/SKILL.md`
+
+Use when operating or verifying browser pages: screenshots, data extraction, local web app testing, form/upload/download workflows, console/network/storage checks, or login/session-sensitive browser evidence.
+
+Core capability:
+
+- Operate browser pages as stateful user sessions.
+- Reuse matching open tabs when doing so will not disturb unrelated work.
+- Prefer browser APIs, DOM inspection, selectors, and deterministic actions.
+- Collect evidence from UI state, DOM, console, network, storage/auth state, screenshots, downloads, route changes, or submitted payloads.
+
+Modes:
+
+- **Inspect/Verify:** confirm the page, account, and environment; collect visual or DOM/network evidence.
+- **Form/Upload:** map fields by label, name, role, or test id; confirm file paths and final state before submission.
+- **Debug:** reproduce or inspect the issue with minimal page-state disruption.
+
+### Ops Client
+
+Source: `skills/ops-client/SKILL.md`
+
+Use when operating or verifying a specified real desktop client window, proving Tauri/Electron/native runtime source, reviewing launch commands, capturing CGWindowID evidence, or improving AI-operable client controls.
+
+Core capability:
+
+- Verify real desktop client windows instead of browser previews.
+- Confirm repository ownership, startup command, process, PID, visible window, and requested evidence.
+- Capture real windows by `CGWindowID` and inspect screenshots before claiming visual evidence.
+- Prefer semantic Accessibility controls and stable UI labels over coordinate clicks.
+
+Modes:
+
+- **Launch Review:** identify the repository-owned client app and startup command.
+- **Window Evidence:** prove process, runtime, window identity, and screenshot source.
+- **Interaction:** use Accessibility/control-tree paths before coordinate clicks.
+- **AI-Operable UI:** improve DOM and Accessibility surfaces so agents can identify controls reliably.
+
 ## Skill Maintenance Flow
 
 When maintaining these packages, update the relevant `references/eval-cases.md`, `references/usage.md`, and `agents/openai.yaml` files whenever triggers, modes, rules, or output contracts change.
@@ -191,8 +241,8 @@ When maintaining these packages, update the relevant `references/eval-cases.md`,
 Validation commands from AICraft:
 
 ```bash
-python3 scripts/sync-skills.py --validate-only
-python3 scripts/sync-skills.py --validate-only --check-target
+python3 scripts/validate-skills.py
+python3 scripts/validate-skills.py --skill code-planner
 ```
 
 Useful package inspection commands:
@@ -206,20 +256,35 @@ git diff --check -- skills/<skill-name>
 
 ## Download And Install
 
-GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+GitHub: [idaibin/aicraft](https://github.com/idaibin/aicraft)
 
-Install or upgrade the published AICraft Codex skills from GitHub:
+Install or upgrade all published AICraft Codex skills with the standard skills.sh CLI flow:
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo rustzen/aicraft \
-  --path skills/code-context \
-  --path skills/code-planner \
-  --path skills/code-review \
-  --path skills/code-security
+npx skills add https://github.com/idaibin/aicraft
+npx skills update
 ```
 
-The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository.
+List available skills without installing:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft --list
+```
+
+Install selected skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft \
+  --skill code-context code-planner code-review code-security ops-browser ops-client
+```
+
+Update only selected skills:
+
+```bash
+npx skills update ops-browser ops-client
+```
+
+After installing or upgrading, restart any long-running agent app so updated skill metadata and descriptions are loaded.
 
 ## Relationship With Prompts
 

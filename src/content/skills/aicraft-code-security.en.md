@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/skills/code-security/SKILL.md`
+Source: `idaibin/aicraft/skills/code-security/SKILL.md`
 
 Use this skill when reviewing code, API, auth, permission, config, dependency, upload, logging, token, session, CORS, CSRF, or release changes for security risks.
 
@@ -58,17 +58,26 @@ Each finding should include severity, file/path or endpoint evidence, impact, re
 
 ## Download And Install
 
-GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+GitHub: [idaibin/aicraft](https://github.com/idaibin/aicraft)
 
-Install or upgrade the published AICraft Codex skills from GitHub:
+Install or upgrade the published AICraft Codex skills with the standard skills.sh CLI flow:
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo rustzen/aicraft \
-  --path skills/code-context \
-  --path skills/code-planner \
-  --path skills/code-review \
-  --path skills/code-security
+npx skills add https://github.com/idaibin/aicraft
+npx skills update
 ```
 
-The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository.
+Install selected skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft \
+  --skill code-context code-planner code-review code-security ops-browser ops-client
+```
+
+List available skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft --list
+```
+
+After installing or upgrading, restart any long-running agent app so updated skill metadata is loaded.

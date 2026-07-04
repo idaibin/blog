@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/prompts/development/general-development-task.md`
+Source: `idaibin/aicraft/prompts/development/general-development-task.md`
 
 Use this prompt when a coding task needs a controlled implementation flow instead of an open-ended request.
 

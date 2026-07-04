@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/prompts/development/api-contract-review.md`
+Source: `idaibin/aicraft/prompts/development/api-contract-review.md`
 
 Use this prompt when backend and frontend API changes need exact chain validation.
 

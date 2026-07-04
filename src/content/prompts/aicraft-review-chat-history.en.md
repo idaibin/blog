@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 3
 ---
 
-Source: `rustzen/aicraft/prompts/automation/review-chat-history.md`
+Source: `idaibin/aicraft/prompts/automation/review-chat-history.md`
 
 Use this prompt to review available conversation history and extract concrete progress, decisions, and next actions.
 

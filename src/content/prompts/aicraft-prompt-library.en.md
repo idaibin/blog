@@ -14,7 +14,7 @@ This blog copy exists so `idaibin.dev/prompts` can show the actual active prompt
 
 ## Source
 
-Current source repository: `rustzen/aicraft`.
+Current source repository: `idaibin/aicraft`.
 
 Active source directory: `prompts/`.
 
@@ -161,8 +161,6 @@ Use this prompt when turning a blog or personal site into an AI-centered content
 
 Target information architecture:
 
-- `Signals`: high-value AI updates and trend notes.
-- `Workflows`: practical AI and engineering workflows.
 - `Prompts`: reusable task prompts.
 - `Skills`: reusable capability modules and agent-style workflows.
 - `Notes`: Rustzen, architecture, engineering experience, and long-term notes.

@@ -4,12 +4,11 @@
 
 `idaibin/blog` is a long-form content publishing and knowledge archive site.
 
-It publishes organized articles, AI Signals, product notes, engineering notes, Rustzen writing, and public-facing explanations of AI workflows.
+It publishes organized articles, product notes, engineering notes, Rustzen writing, and public-facing explanations of AI workflows.
 
 ## Owns
 
 - Long-form blog content.
-- AI Signals articles.
 - Product and engineering notes.
 - Public content pages and site presentation.
 - Repository-specific content schemas, routes, and frontmatter.
@@ -44,21 +43,11 @@ Blog automation task specs live under:
 docs/automation/
 ```
 
-The current scheduled task is:
-
-```text
-docs/automation/ai-signals-commit.md
-```
-
-The ChatGPT scheduled task should read AICraft standards first, then this repository scope, then the concrete task spec.
+There is no active daily signal publishing task in this repository.
 
 ## Allowed Paths
 
-The `AI Signals Commit` task may modify only:
-
-```text
-src/content/signals/*.mdx
-```
+Blog automation tasks must define their own allowed paths before writing.
 
 It may modify automation documentation only when the user explicitly asks to update rules:
 
@@ -68,4 +57,4 @@ docs/repo-scope.md
 README.md
 ```
 
-It must not modify reusable AI source assets. Those belong in `idaibin/aicraft`.
+Automation must not modify reusable AI source assets. Those belong in `idaibin/aicraft`.

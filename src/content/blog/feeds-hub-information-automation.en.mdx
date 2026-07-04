@@ -1,0 +1,74 @@
+---
+title: "Feeds Hub: Turning Information Streams Into Executable AI Automation"
+description: Why I built Feeds Hub, and how it connects search, filtering, summaries, cover images, Markdown output, and static publishing into a repeatable workflow.
+pubDate: 2026-07-03
+tags: ["Feeds Hub", "AI Automation", "Information Flow", "Astro", "AICraft"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+---
+
+I built Feeds Hub because the information I track every day is scattered across too many places: AI, financial markets, open source, Rust, startups, product design, and global news.
+
+Reading news is not the hard part. Turning scattered updates into personal judgment is the hard part.
+
+Feeds Hub is not meant to be a fixed content site. It is a repeatable information-processing workflow: search, filtering, source judgment, summaries, Markdown writing, cover generation, and static publishing.
+
+Project repo: [`idaibin/feeds-hub`](https://github.com/idaibin/feeds-hub)
+
+---
+
+## Thinking Process
+
+At first, I thought the main problem was daily content updates. Later I realized the real problem was editorial judgment.
+
+A useful feed automation run has to answer several questions:
+
+- Is there anything worth writing about today?
+- Is the source reliable enough?
+- Is the fact fresh enough?
+- Is this a real update or repeated noise?
+- Will the entry still be readable later?
+- Is the cover image clear enough for card-based display?
+
+That is why Feeds Hub does not focus on RSS ingestion alone. It focuses on rules an AI agent must read before execution: topic rules, source rules, content format, poster prompts, quality checks, and repository boundaries.
+
+---
+
+## Execution Model
+
+Feeds Hub separates repository ownership clearly:
+
+- `aicraft` stores reusable prompts, skills, workflows, and automation standards
+- `feeds-hub` stores the feed site, topic rules, source rules, and generated entries
+- `blog` stores long-form reflections and project memory
+
+This keeps short-cycle feed entries away from reusable AI assets, and keeps long-form reflection out of the feed repository.
+
+A normal update behaves like a small editorial pipeline:
+
+1. Read automation rules
+2. Search recent information by topic
+3. Judge whether each item is worth writing based on source level and freshness
+4. Skip topics without enough signal
+5. Write valuable items as structured Markdown
+6. Generate or update the cover image
+7. Run content checks and build checks
+8. Commit to the selected content or production branch
+
+---
+
+## Result
+
+The most useful result is not the page itself. Feeds Hub proved a practical point:
+
+> AI can do more than write articles. It can run part of an editorial workflow.
+
+It turns “reading a lot of updates” into “saving a small number of high-signal entries.”
+
+For me, it produced three concrete outcomes:
+
+- It proved that ChatGPT scheduled tasks can operate a real content repository
+- It forced the source, topic, article-format, and poster rules to become explicit documents
+- It lets the blog focus on long-term reflection instead of short-cycle feed entries
+
+Feeds Hub is not the end state. It is a reference pattern for any topic that needs repeated tracking.

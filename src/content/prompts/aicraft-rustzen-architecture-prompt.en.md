@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/prompts/rustzen/rustzen-architect-system-prompt.md`
+Source: `idaibin/aicraft/prompts/rustzen/rustzen-architect-system-prompt.md`
 
 Use this prompt when reviewing architecture decisions, planning structural changes, or implementing architecture-sensitive work in `rustzen-admin` or closely related Rustzen projects.
 

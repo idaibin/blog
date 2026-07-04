@@ -1,0 +1,93 @@
+---
+title: AICraft：把 Prompt 和 Skills 从一次性对话变成可复用资产
+description: 记录我为什么把 AI 工作规范拆到 AICraft，并让 blog、feeds-hub 和 Rustzen 项目按同一套边界消费这些能力。
+pubDate: 2026-07-03
+tags: ["AICraft", "Prompt", "Skills", "AI 工作流", "工程规范"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+---
+
+最近做 Rustzen、Feeds Hub 和个人 blog 时，我反复遇到同一个问题：很多 AI 指令并不是一次性的。
+
+比如：
+
+- 开始代码任务前要先读仓库规则
+- 不能直接改 main
+- 修改前要确认分支、路径、命令和任务范围
+- 内容更新要先读取主题、来源和质量规范
+- 完成后要按固定格式汇报改动、验证和风险
+
+这些要求如果每次都重新在聊天里说一遍，很容易漏掉。于是我把它们从对话中拆出来，沉淀到 `AICraft`。
+
+项目地址：[`idaibin/aicraft`](https://github.com/idaibin/aicraft)
+
+---
+
+## 为什么需要 AICraft
+
+一开始我只是写 Prompt。后来发现 Prompt 适合表达一次任务，但不适合承载长期执行规范。
+
+长期工作里更需要几类资产：
+
+- `prompts/`：可复制、可修改的任务模板
+- `skills/`：稳定的多步骤执行能力
+- `docs/standards/`：通用自动化、分支和内容质量规则
+- `docs/templates/`：可复用任务文档模板
+- `docs/task-registry.md`：下游仓库定时任务索引
+
+这样做以后，AI 不再只依赖当前聊天上下文，而是可以先读取固定资产，再进入具体仓库执行。
+
+---
+
+## 边界拆分
+
+AICraft 的边界很重要。
+
+它不保存生成后的博客文章，也不保存 Feeds Hub 的具体信息流内容，更不保存 Rustzen 产品代码。它只保存可复用能力和执行标准。
+
+当前关系可以理解为：
+
+```text
+aicraft = 规范 / 模板 / 方法论 / 可复用能力
+blog = 长文内容发布和经验复盘
+feeds-hub = 信息流自动化案例
+rustzen = 产品和工程实现
+```
+
+这个拆分解决了一个问题：通用能力不会被具体业务内容污染，具体仓库也能保留自己的任务规则。
+
+---
+
+## Prompt 和 Skill 的区别
+
+我现在更倾向于这样理解：
+
+- Prompt 适合表达“这次任务怎么做”
+- Skill 适合表达“这类任务长期都怎么做”
+
+比如生成一篇文章，可以是 Prompt。
+
+但做代码任务前读取 AGENTS、保护未提交改动、限制修改范围、执行验证、报告风险，这更像 Skill。
+
+当任务反复出现，且需要工具、顺序、约束和验证时，就应该从 Prompt 逐步升级为 Skill。
+
+---
+
+## 结果效果
+
+AICraft 带来的直接效果是减少重复解释。
+
+以前我需要在不同仓库里反复说明：先读什么、不能改什么、分支怎么命名、失败后怎么汇报。
+
+现在这些规则可以集中维护，然后让 blog、feeds-hub 和 Rustzen 仓库消费。
+
+更重要的是，它让 AI 协作从“聊天技巧”变成了“工程资产”。
+
+这也是我后续继续整理 Skills 的原因：不是为了收集提示词，而是为了让 AI 在真实项目里更稳定地执行。
+
+现在可安装的 Codex Skills 使用标准 skills.sh CLI：
+
+```bash
+npx skills add https://github.com/idaibin/aicraft
+npx skills update
+```

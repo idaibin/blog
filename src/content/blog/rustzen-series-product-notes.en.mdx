@@ -1,0 +1,81 @@
+---
+title: "Rustzen Series Notes: From Tool Repositories to a Product Portfolio"
+description: "Notes on recent Rustzen work across rustzen-admin, Zen Clear, rustzen-zipper, and rustzen-clipboard: build usable products first, then extract engineering boundaries."
+pubDate: 2026-07-03
+tags: ["Rustzen", "Rust", "Product Design", "Developer Tools", "Local-first"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+---
+
+Recent Rustzen work is no longer just about one repository. It is becoming a small product portfolio.
+
+The projects look different on the surface:
+
+- `rustzen-admin` is an engineering reference for Rust + React admin and console systems
+- `rustzen-clear` / Zen Clear is a macOS disk analysis and cleanup tool for developers
+- `rustzen-zipper` is a release packaging and zip archive tool
+- `rustzen-clipboard` is an exploration of a local-first clipboard utility
+
+But they share one judgment: developer tools should be lightweight, explicit, explainable, publishable, and suitable for AI-assisted engineering.
+
+---
+
+## Lesson 1: Narrow the Scenario First
+
+I used to expand tool ideas too early: platform, multi-client, permission system, plugin model, cloud service.
+
+Now I start with a smaller question: what is the core pain this tool solves?
+
+For Zen Clear, the core is not just “clean my Mac.” The core is “help developers understand which projects, tools, and caches are taking disk space.”
+
+That differs from generic cleanup tools. Generic tools often focus on system junk or visual file size. Zen Clear focuses on developer context: what produced the data, whether it can be rebuilt, and what cleanup would affect.
+
+---
+
+## Lesson 2: Boundaries Matter More Than Feature Count
+
+The most important Rustzen task right now is boundary control, not feature expansion.
+
+I now separate:
+
+- what belongs to open-source engineering references
+- what belongs to commercial products
+- what belongs to blog writing
+- what belongs to AICraft standards
+- what belongs to Feeds Hub entries
+
+After this separation, each repository is easier to explain: what it owns, what it does not own, what it consumes, and what result it exposes.
+
+---
+
+## Lesson 3: AI Development Needs In-Repo Rules
+
+Rustzen projects use AI heavily, but temporary chat instructions are not enough.
+
+Each repository needs explicit rules:
+
+- current path and branch rules
+- AGENTS.md or execution guidance
+- valid commands
+- forbidden edit scope
+- validation commands
+- allowed fix scope after failure
+- final report format
+
+Those rules are engineering assets. They affect AI output quality and long-term maintenance cost.
+
+---
+
+## Result
+
+Rustzen now has three layers for me:
+
+1. Product layer: concrete tools for developers
+2. Engineering layer: Rust, React, SQLite-first, single binaries, clear documentation
+3. Method layer: AI working rules, branch strategy, writing, and automation
+
+That is more useful than building only an admin template.
+
+`rustzen-admin` gave me the engineering base. Zen Clear narrowed the product target to developer disk usage. `rustzen-zipper` handles release packaging. `rustzen-clipboard` continues the local-first desktop-tool direction.
+
+Together, they validate one direction: Rustzen should become a set of small, explicit developer tools, not a complex platform from day one.

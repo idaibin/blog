@@ -1,0 +1,91 @@
+---
+title: "AICraft: Turning Prompts and Skills Into Reusable AI Assets"
+description: Why I separated AI working standards into AICraft, and how blog, feeds-hub, and Rustzen projects consume the same execution boundaries.
+pubDate: 2026-07-03
+tags: ["AICraft", "Prompt", "Skills", "AI Workflow", "Engineering Standards"]
+audience: ["developer", "ai-practitioner"]
+featured: true
+---
+
+While working on Rustzen, Feeds Hub, and this personal blog, I kept running into the same problem: many AI instructions are not one-off messages.
+
+Examples:
+
+- Read repository rules before starting code work
+- Do not modify `main` directly
+- Confirm branch, paths, commands, and task scope before editing
+- Read topic, source, and quality rules before content updates
+- Report changed files, validation status, and risk in a fixed format
+
+Repeating these rules in every conversation is fragile. So I started extracting them from chat and storing them in `AICraft`.
+
+Project repo: [`idaibin/aicraft`](https://github.com/idaibin/aicraft)
+
+---
+
+## Why AICraft Exists
+
+At first, I only wrote prompts. Later I realized prompts are good for single tasks, but weak as long-term operating rules.
+
+Long-running AI workflows need several types of assets:
+
+- `prompts/`: reusable task templates
+- `skills/`: stable multi-step capabilities
+- `docs/standards/`: shared rules for automation, branching, and content quality
+- `docs/templates/`: reusable task-document templates
+- `docs/task-registry.md`: an index of downstream scheduled tasks
+
+With this structure, an AI assistant does not have to rely only on the current chat. It can read stable source assets first, then execute inside the target repository.
+
+---
+
+## Boundary Design
+
+AICraft should not own generated blog posts, concrete Feeds Hub entries, or Rustzen product code. It owns reusable capability and execution standards.
+
+The current model is:
+
+```text
+aicraft = standards, templates, methods, reusable capabilities
+blog = long-form content and reflection
+feeds-hub = information-feed automation example
+rustzen = product and engineering implementation
+```
+
+This separation keeps reusable AI assets clean, while each downstream repository keeps its own task-specific rules.
+
+---
+
+## Prompt vs Skill
+
+I now describe the difference this way:
+
+- A prompt explains how to do this task
+- A skill explains how this class of tasks should be executed repeatedly
+
+Writing one article can be a prompt.
+
+But reading AGENTS, preserving unrelated local changes, keeping edits scoped, running validation, and reporting risk is closer to a skill.
+
+When a task repeats and needs tools, order, constraints, and verification, it should move from prompt to skill.
+
+---
+
+## Result
+
+AICraft reduces repeated explanation.
+
+Previously, I had to restate the same repository rules again and again: what to read first, what not to touch, how to name branches, and how to report failures.
+
+Now those rules can be maintained once, then consumed by blog, feeds-hub, and Rustzen repositories.
+
+More importantly, it turns AI collaboration from a chat habit into an engineering asset.
+
+That is why I continue organizing skills: not to collect prompts, but to make AI execution more stable in real projects.
+
+Installable Codex skills now use the standard skills.sh CLI flow:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft
+npx skills update
+```

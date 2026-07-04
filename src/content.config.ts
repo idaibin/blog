@@ -16,15 +16,6 @@ const baseSchema = (image: any) => ({
   readingTime: z.number().optional(),
 });
 
-const signals = defineCollection({
-  loader: glob({ base: "./src/content", pattern: "signals/**/*.en.{md,mdx}" }),
-  schema: ({ image }) => z.object(baseSchema(image)),
-});
-const signalsZh = defineCollection({
-  loader: glob({ base: "./src/content", pattern: "signals/**/*.zh.{md,mdx}" }),
-  schema: ({ image }) => z.object(baseSchema(image)),
-});
-
 const prompts = defineCollection({
   loader: glob({ base: "./src/content", pattern: "prompts/**/*.en.{md,mdx}" }),
   schema: ({ image }) => z.object(baseSchema(image)),
@@ -62,8 +53,6 @@ const notesZh = defineCollection({
 });
 
 export const collections = {
-  signals,
-  signalsZh,
   prompts,
   promptsZh,
   skills,

@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 6
 ---
 
-Source: `rustzen/aicraft/prompts/rustzen/rust-backend-ai-prompt.md`
+Source: `idaibin/aicraft/prompts/rustzen/rust-backend-ai-prompt.md`
 
 Use this prompt when implementing, reviewing, or planning Rust backend work for `rustzen-admin` or a closely related Rustzen backend.
 

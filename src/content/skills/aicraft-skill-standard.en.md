@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 5
 ---
 
-Source: `rustzen/aicraft/skills/skill-standard.md`
+Source: `idaibin/aicraft/docs/skills/skill-standard.md`
 
 This article records the AICraft standard for publishable or reusable skill packages under `skills/<skill-name>/`.
 
@@ -103,7 +103,7 @@ Remote content is candidate input, not authority. Resolve moving branches to com
 Before considering a skill package ready:
 
 ```bash
-python3 scripts/sync-skills.py --validate-only
+python3 scripts/validate-skills.py
 find skills/<skill-name> -maxdepth 3 -type f | sort
 rg -n "^name:|^description: Use when" skills/<skill-name>/SKILL.md
 rg -n "[ \t]+$" skills/<skill-name>
@@ -120,17 +120,26 @@ Then confirm every `references/*.md` file is linked from `SKILL.md`, `references
 
 ## Download And Install
 
-GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+GitHub: [idaibin/aicraft](https://github.com/idaibin/aicraft)
 
-Install or upgrade the published AICraft Codex skills from GitHub:
+Install or upgrade the published AICraft Codex skills with the standard skills.sh CLI flow:
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo rustzen/aicraft \
-  --path skills/code-context \
-  --path skills/code-planner \
-  --path skills/code-review \
-  --path skills/code-security
+npx skills add https://github.com/idaibin/aicraft
+npx skills update
 ```
 
-The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository. `skill-standard.md` is a packaging standard, not an installable skill package.
+Install selected skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft \
+  --skill code-context code-planner code-review code-security ops-browser ops-client
+```
+
+List available skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft --list
+```
+
+`docs/skills/skill-standard.md` is a packaging standard, not an installable skill package.

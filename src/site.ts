@@ -1,23 +1,21 @@
 export const locales = ['en', 'zh'] as const;
 export type Locale = (typeof locales)[number];
 
-export const sections = ['signals', 'prompts', 'skills', 'notes'] as const;
+export const sections = ['prompts', 'skills', 'notes'] as const;
 export type SectionKey = (typeof sections)[number];
 
-export const navigationSections: SectionKey[] = ['signals', 'prompts', 'skills', 'notes'];
+export const navigationSections: SectionKey[] = ['prompts', 'skills', 'notes'];
 
 export const audienceKeys = ['beginner', 'developer', 'ai-practitioner'] as const;
 export type AudienceKey = (typeof audienceKeys)[number];
 
 export const collectionMap = {
   en: {
-    signals: 'signals',
     prompts: 'prompts',
     skills: 'skills',
     notes: 'notes',
   },
   zh: {
-    signals: 'signalsZh',
     prompts: 'promptsZh',
     skills: 'skillsZh',
     notes: 'notesZh',
@@ -26,16 +24,6 @@ export const collectionMap = {
 
 export const sectionMeta = {
   en: {
-    signals: {
-      title: 'Signals',
-      description:
-        'High-signal AI updates, signal notes, tool changes, and trend judgments.',
-      intro:
-        'Signals filters the AI noise into actionable updates for curious readers, engineers, and practitioners.',
-      summary:
-        'What changed, why it matters, who should care, and whether it is worth trying.',
-      action: 'Read signals',
-    },
     prompts: {
       title: 'Prompts',
       description:
@@ -82,13 +70,6 @@ export const sectionMeta = {
     },
   },
   zh: {
-    signals: {
-      title: 'Signals',
-      description: 'AI 更新、信号笔记、工具变化与趋势判断。',
-      intro: 'Signals 负责把 AI 噪音过滤成可执行的高价值信号。',
-      summary: '发生了什么、为什么重要、谁应该关注、是否值得试。',
-      action: '查看信号',
-    },
     prompts: {
       title: 'Prompts',
       description: '按任务组织、可复制、可修改的 Prompt 模板。',
@@ -127,7 +108,6 @@ export const sectionMeta = {
 } as const;
 
 export const homeSections: SectionKey[] = [
-  'signals',
   'prompts',
   'skills',
   'notes',

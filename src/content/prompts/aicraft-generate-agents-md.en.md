@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 5
 ---
 
-Source: `rustzen/aicraft/prompts/development/generate-agents-md.md`
+Source: `idaibin/aicraft/prompts/development/generate-agents-md.md`
 
 Use this prompt for repository onboarding and project documentation bootstrapping. It is read-only: understand the project and draft documentation without writing files.
 

@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/skills/code-review/SKILL.md`
+Source: `idaibin/aicraft/skills/code-review/SKILL.md`
 
 Use this skill when reviewing existing local git changes before commit, classifying dirty-tree ownership, checking changed code/docs/API contract chains, splitting semantic commit groups, drafting exact path-limited staging commands and Conventional Commit messages, or upgrading the skill.
 
@@ -52,8 +52,7 @@ Start with local change scope, ownership classification, and main risks. Include
 When maintaining this package, update `references/eval-cases.md`, `references/usage.md`, and `agents/openai.yaml` with trigger, ownership, staging, commit, contract-review, or upgrade changes. In AICraft, run:
 
 ```bash
-python3 scripts/sync-skills.py --validate-only
-python3 scripts/sync-skills.py --validate-only --check-target
+python3 scripts/validate-skills.py --skill code-review
 ```
 
 ## References
@@ -67,17 +66,26 @@ python3 scripts/sync-skills.py --validate-only --check-target
 
 ## Download And Install
 
-GitHub: [rustzen/aicraft](https://github.com/rustzen/aicraft)
+GitHub: [idaibin/aicraft](https://github.com/idaibin/aicraft)
 
-Install or upgrade the published AICraft Codex skills from GitHub:
+Install or upgrade the published AICraft Codex skills with the standard skills.sh CLI flow:
 
 ```bash
-python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
-  --repo rustzen/aicraft \
-  --path skills/code-context \
-  --path skills/code-planner \
-  --path skills/code-review \
-  --path skills/code-security
+npx skills add https://github.com/idaibin/aicraft
+npx skills update
 ```
 
-The public GitHub repository is `rustzen/aicraft`. Older `idaibin/aicraft` links currently resolve to the same repository.
+Install selected skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft \
+  --skill code-context code-planner code-review code-security ops-browser ops-client
+```
+
+List available skills:
+
+```bash
+npx skills add https://github.com/idaibin/aicraft --list
+```
+
+After installing or upgrading, restart any long-running agent app so updated skill metadata is loaded.

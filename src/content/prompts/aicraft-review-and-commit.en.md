@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 5
 ---
 
-Source: `rustzen/aicraft/prompts/development/review-and-commit.md`
+Source: `idaibin/aicraft/prompts/development/review-and-commit.md`
 
 Use this prompt when current repository changes must be reviewed before committing. It focuses on deliverability, scope control, preserved details, and safe commits.
 

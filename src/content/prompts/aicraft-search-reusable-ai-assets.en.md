@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 3
 ---
 
-Source: `rustzen/aicraft/prompts/automation/search-reusable-ai-assets.md`
+Source: `idaibin/aicraft/prompts/automation/search-reusable-ai-assets.md`
 
 Use this prompt to search for reusable AI assets that can become blog prompt entries, skills, workflows, or references.
 

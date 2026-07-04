@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/prompts/automation/generate-ai-research-digest.md`
+Source: `idaibin/aicraft/prompts/automation/generate-ai-research-digest.md`
 
 Use this prompt to generate a concise, technical daily AI engineering digest.
 

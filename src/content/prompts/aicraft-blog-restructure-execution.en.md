@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 4
 ---
 
-Source: `rustzen/aicraft/prompts/automation/blog-restructure-prompt.md`
+Source: `idaibin/aicraft/prompts/automation/blog-restructure-prompt.md`
 
 Use this prompt when turning a blog or personal site into an AI-centered content system.
 
@@ -38,8 +38,6 @@ If any input is missing, inspect the repository when available. If it is not ava
 
 Restructure the site from a generic personal blog into an AI-centered content system that organizes:
 
-- `Signals`: high-value AI updates, trends, and release signals
-- `Workflows`: practical AI usage and engineering workflows
 - `Prompts`: reusable task prompts
 - `Skills`: reusable capability modules and agent-style workflows
 - `Notes`: Rustzen, architecture, engineering experience, and long-term notes
@@ -59,8 +57,6 @@ Restructure the site from a generic personal blog into an AI-centered content sy
 Top-level navigation:
 
 - Home
-- Signals
-- Workflows
 - Prompts
 - Skills
 - Notes
@@ -68,19 +64,13 @@ Top-level navigation:
 Recommended routes:
 
 - `/`
-- `/signals`
-- `/signals/[slug]`
-- `/workflows`
-- `/workflows/[slug]`
 - `/prompts`
 - `/prompts/[slug]`
 - `/skills`
 - `/skills/[slug]`
 - `/notes`
 - `/notes/[slug]`
-- `/feeds`
 - `/rss.xml`
-- `/signals/rss.xml`
 
 ## Implementation Checklist
 

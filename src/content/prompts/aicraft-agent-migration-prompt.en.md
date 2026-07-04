@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 3
 ---
 
-Source: `rustzen/aicraft/prompts/agent-systems/agent-migration-prompt.md`
+Source: `idaibin/aicraft/prompts/agent-systems/agent-migration-prompt.md`
 
 Use this prompt when rebuilding an existing AI agent in another account, builder, workspace, or platform.
 
