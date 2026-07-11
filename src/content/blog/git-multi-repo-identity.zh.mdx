@@ -1,59 +1,30 @@
 ---
-title: "Git 多仓库用户身份自动切换与隐私保护指南"
-description: "现代开发者必备技能：使用 Git includeIf 功能实现多仓库身份自动切换，支持 HTTPS/SSH 协议，保护个人隐私，告别手动配置的烦恼。从 GitHub 个人项目到公司内网仓库，一套配置解决所有身份管理问题。"
+title: "用 Git includeIf 自动切换多仓库提交身份"
+description: "我同时维护 GitHub 公共仓库和公司内网仓库，用 includeIf 按远程地址加载不同的 user.name 和 user.email，并用 show-origin 检查实际生效配置。"
 pubDate: "2025-10-09"
 tags: ["Git", "配置管理", "多仓库", "开发者工具", "身份管理"]
 author: "idaibin"
 ---
 
-在日常开发中，很多开发者会同时操作多个 Git 仓库，例如：
+> 更新（2026-07-11）：修正 `includeIf` 条件关键字为 `hasconfig:remote.*.url`，并补充 HTTPS/SSH 匹配、配置来源检查和适用边界。
 
-- GitHub 个人项目
-- 公司内网 GitLab 或自建 Git 服务器
+我同时维护 GitHub 公共仓库和公司内网仓库，两边使用的提交姓名和邮箱不同。每个仓库手动执行 `git config user.email ...` 可以解决，但新 clone 一个仓库后很容易忘，提交记录也可能因此混用身份。
 
-不同仓库可能需要使用不同的提交身份（user.name / user.email）。此外，为了保护个人隐私，提交到公共仓库时可能希望隐藏真实邮箱。本文将系统讲解如何利用 Git 的 includeIf 功能，实现自动切换用户身份，并支持 HTTPS/SSH，同时隐藏邮箱信息。
+Git 的 `includeIf` 可以按远程 URL 条件加载不同的配置文件。下面这套配置同时覆盖 HTTPS 和 SSH；示例来自 macOS 上的 Git 2.49.0。
 
----
+## 配置关系
 
-## 1. 背景与目标
+```text
+~/.gitconfig
+├── 匹配 GitHub remote -> ~/.gitconfig-github
+└── 匹配公司 remote   -> ~/.gitconfig-work
+```
 
-我们希望实现以下目标：
+全局文件保留默认身份，子配置只覆盖 `user.name` 和 `user.email`。这里使用的条件关键字必须写成 `hasconfig:remote.*.url`。`remote.*.url` 会检查仓库里配置的远程地址，不只检查名为 `origin` 的 remote。
 
-1. **自动切换身份**：根据远程仓库自动选择对应 user.name 和 user.email
-2. **支持多协议**：HTTPS 与 SSH 均可使用
-3. **隐私保护**：公共仓库使用 GitHub noreply 邮箱
-4. **多仓库统一管理**：无需在每个仓库单独修改配置
-
----
-
-## 2. Git 版本要求
-
-本文使用 Git 2.49.0（macOS）进行示例。
-
----
-
-## 3. 配置思路
-
-Git 提供了 includeIf 功能，可以根据条件自动包含其他配置文件。
-
-**核心思想**：
-
-- 在全局 Git 配置中设置默认身份
-- 根据远程仓库 URL 匹配不同的子配置文件
-- 子配置文件中设置不同的用户名和邮箱
-- 对公共仓库使用 GitHub 提供的 noreply 邮箱，保护隐私
-
----
-
-## 4. 配置示例
-
-### 4.1 全局配置文件 ~/.gitconfig
+## 1. 全局配置 `~/.gitconfig`
 
 ```ini
-# ----------------------------
-# Global defaults
-# ----------------------------
-
 [user]
 name = example
 email = example@dev.com
@@ -64,50 +35,26 @@ defaultBranch = main
 [credential]
 helper = osxkeychain
 
-# ----------------------------
-# Git LFS support
-# ----------------------------
+# GitHub: HTTPS
+[includeIf "hasconfig:remote.*.url:https://github.com/**"]
+path = ~/.gitconfig-github
 
-[filter "lfs"]
-clean = git-lfs clean -- %f
-smudge = git-lfs smudge -- %f
-process = git-lfs filter-process
-required = true
+# GitHub: SSH
+[includeIf "hasconfig:remote.*.url:git@github.com:**/**"]
+path = ~/.gitconfig-github
 
-# ----------------------------
-# IncludeIf: GitHub
-# ----------------------------
+# 公司内网 GitLab: HTTPS
+[includeIf "hasconfig:remote.*.url:https://work-ip-address/**"]
+path = ~/.gitconfig-work
 
-# HTTPS
-[includeIf "hasconfig:remote.origin.url:https://github.com/**"]
-path = /Users/example/.gitconfig-github
-
-# SSH
-[includeIf "hasconfig:remote.origin.url:git@github.com:**/**"]
-path = /Users/example/.gitconfig-github
-
-# ----------------------------
-# IncludeIf: 公司内网 GitLab
-# ----------------------------
-
-# HTTPS
-[includeIf "hasconfig:remote.origin.url:https://work-ip-address/**"]
-path = /Users/example/.gitconfig-work
-
-# SSH
-[includeIf "hasconfig:remote.origin.url:git@work-ip-address:**/**"]
-path = /Users/example/.gitconfig-work
+# 公司内网 GitLab: SSH
+[includeIf "hasconfig:remote.*.url:git@work-ip-address:**/**"]
+path = ~/.gitconfig-work
 ```
 
-**注意**：
+`includeIf` 的路径支持 `~` 展开，也可以使用绝对路径。条件里的 URL 必须和仓库实际配置的 remote 形式一致，因此 HTTPS 和 SSH 要分别写。
 
-- `**` 匹配 repo 名及后续路径
-- SSH 与 HTTPS 必须分开写，因为 URL 字符串不同
-- 子配置文件路径建议使用绝对路径，避免 `~` 展开失败
-
----
-
-### 4.2 GitHub 子配置文件 ~/.gitconfig-github
+## 2. GitHub 身份 `~/.gitconfig-github`
 
 ```ini
 [user]
@@ -115,12 +62,9 @@ name = Example
 email = example@users.noreply.github.com
 ```
 
-- 使用 GitHub 提供的 noreply 邮箱
-- 提交到公共仓库时，不会泄露真实邮箱
+公共仓库可以使用 GitHub 提供的 noreply 邮箱，避免把私人邮箱写入新的 commit 元数据。
 
----
-
-### 4.3 公司内网子配置文件 ~/.gitconfig-work
+## 3. 公司身份 `~/.gitconfig-work`
 
 ```ini
 [user]
@@ -128,64 +72,38 @@ name = Work
 email = work@company.com
 ```
 
-- 使用公司邮箱，保证内部仓库身份一致
+## 4. 检查当前仓库实际用了哪份配置
 
----
-
-## 5. 配置验证
-
-1. **删除本地仓库的覆盖配置**：
-
-```bash
-git config --unset user.name
-git config --unset user.email
-```
-
-2. **测试当前仓库身份**：
+先查看远程地址：
 
 ```bash
 git remote -v
-git config --show-origin user.name
-git config --show-origin user.email
 ```
 
-- 输出应显示对应子配置文件路径
-- GitHub 仓库 → `~/.gitconfig-github`
-- 公司内网仓库 → `~/.gitconfig-work`
-
----
-
-## 6. 额外提示
-
-### 6.1 HTTPS 与 SSH
-
-- 每种协议必须单独写 includeIf 条件
-- 例如 GitHub clone HTTPS 与 SSH，分别匹配：
+再检查姓名和邮箱的来源：
 
 ```bash
-https://github.com/** # HTTPS
-git@github.com:**/** # SSH
+git config --show-origin --get user.name
+git config --show-origin --get user.email
 ```
 
-### 6.2 隐藏用户信息
+在 GitHub 仓库中，输出应指向 `~/.gitconfig-github`；在公司仓库中，应指向 `~/.gitconfig-work`。
 
-- 提交到公共仓库建议使用 GitHub noreply 邮箱
-- 保留真实用户名显示，保护个人邮箱
+如果当前仓库已经写过本地身份，它的 `.git/config` 会覆盖全局和 include 文件。确认不再需要本地覆盖后，可以删除：
 
-### 6.3 历史提交隐私
+```bash
+git config --local --unset-all user.name
+git config --local --unset-all user.email
+```
 
-- 已经提交的历史记录不会自动修改
-- 若需要修改历史邮箱，需要手动处理，可以使用 `git filter-repo` 或 `git filter-branch`
+某个键不存在时，`--unset-all` 会返回非零状态；这不代表 include 配置本身有问题。
 
----
+## 这套方式的边界
 
-## 7. 总结
+- 它依赖仓库已经配置了能匹配条件的 remote URL。
+- HTTPS 和 SSH 是不同字符串，需要分别匹配。
+- include 进来的文件不能再声明 remote URL。
+- 它只影响后续 commit 使用的身份，不会修改历史提交。
+- 修改历史邮箱属于重写 Git 历史，需要单独评估协作和远端影响。
 
-通过 Git 的 includeIf 功能，我们可以：
-
-- **自动切换身份**：不同远程仓库使用不同用户名和邮箱
-- **支持 HTTPS/SSH**：无论 clone 哪种协议，都能自动匹配
-- **保护隐私**：公共仓库使用 GitHub noreply 邮箱
-- **多仓库统一管理**：无需每个仓库手动配置
-
-这套配置尤其适合个人开发者、开源贡献者，同时管理公司内网仓库和 GitHub 公共仓库的场景。
+我现在更愿意用 `--show-origin` 验证结果，而不是只看 `git config user.email` 的最终值。前者能直接告诉我身份来自本地仓库、全局文件，还是某个 `includeIf` 子配置，排错时更省事。
