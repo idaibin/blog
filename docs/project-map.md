@@ -1,22 +1,22 @@
 # docs/project-map.md
 
 ## 技术栈
-- Astro 5
+- Astro 7
 - MDX
 - Tailwind CSS 4
 - Vite
 - TypeScript
-- pnpm
+- npm
 - Sitemap
 - Vercel Analytics / Speed Insights
 - sharp
 
 ## 安装 / 启动 / 测试 / 构建命令
-- 安装：`pnpm install`
-- 启动开发：`pnpm dev`
-- 本地预览：`pnpm preview`
-- 构建：`pnpm build`
-- Typecheck：`pnpm astro check`
+- 安装：`npm install`
+- 启动开发：`npm run dev`
+- 本地预览：`npm run preview`
+- 构建：`npm run build`
+- Typecheck：`npm run astro -- check`
 - Lint：未发现
 - Test：未发现
 - Start：未发现

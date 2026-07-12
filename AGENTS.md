@@ -31,8 +31,8 @@ Rustzen 官方官网、产品页、下载页和控制台入口不放在本仓库
 - 内容 schema 以 `src/content.config.ts` 为准，不要随手扩字段。
 
 ## 改动后必须执行的检查命令
-- `pnpm build`
-- `pnpm astro check`
+- `npm run build`
+- `npm run astro -- check`
 
 ## 完成任务后的汇报格式
 - 改动文件：

@@ -49,7 +49,7 @@ docs/automation/
 │   └── utils.ts
 ├── astro.config.mjs
 ├── package.json
-├── pnpm-lock.yaml
+├── package-lock.json
 └── tsconfig.json
 ```
 
@@ -71,11 +71,11 @@ All commands are run from the project root.
 
 | Command | Action |
 | --- | --- |
-| `pnpm install` | Install dependencies |
-| `pnpm dev` | Start the local Astro dev server |
-| `pnpm build` | Build the production site into `./dist/` |
-| `pnpm preview` | Preview the production build locally |
-| `pnpm astro check` | Run Astro type and content checks |
+| `npm install` | Install dependencies |
+| `npm run dev` | Start the local Astro dev server |
+| `npm run build` | Build the production site into `./dist/` |
+| `npm run preview` | Preview the production build locally |
+| `npm run astro -- check` | Run Astro type and content checks |
 
 ## Rustzen Notes
 
