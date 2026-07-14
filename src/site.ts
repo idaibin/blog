@@ -4,7 +4,7 @@ export type Locale = (typeof locales)[number];
 export const sections = ['prompts', 'skills', 'notes'] as const;
 export type SectionKey = (typeof sections)[number];
 
-export const navigationSections: SectionKey[] = ['prompts', 'skills', 'notes'];
+export const navigationSections: SectionKey[] = ['notes', 'skills', 'prompts'];
 
 export const audienceKeys = ['beginner', 'developer', 'ai-practitioner'] as const;
 export type AudienceKey = (typeof audienceKeys)[number];
