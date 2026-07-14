@@ -1,0 +1,62 @@
+---
+title: "How rustzen-admin Changed in a Year: From a Basic Admin App to a Deployable Project Template"
+description: "A one-year retrospective on rustzen-admin: permissions, storage, repository structure, deployment, frontend changes, and the production problems shaping what comes next."
+pubDate: 2026-07-14
+tags: ["Rust", "Axum", "React", "rustzen-admin"]
+audience: ["developer"]
+featured: false
+---
+
+In June 2025, I published a Chinese post on Juejin about [why I chose Rust for a full-stack admin system](https://juejin.cn/post/7521160007854768163). At the time, I had just moved from Tauri into Rust backend development. I was learning with AI as I built, and `rustzen-admin` already had the basics: login, users, roles, and permissions.
+
+A year later, the meaningful changes are not just a longer feature list. The project has moved from a frontend and backend that can run together toward a project template that also accounts for permissions, storage, runtime directories, deployment, and delivery. Many of the important decisions were not part of the first design. They became clear through continued development, refactoring, and actual use.
+
+## Where rustzen-admin is now
+
+[`rustzen-admin`](https://github.com/idaibin/rustzen-admin), which I maintain, is an open-source web admin system template built with Rust. The backend uses Axum, the frontend uses React, and SQLite is the default database. Backend and frontend applications, shared Rust crates, database migrations, and deployment files live in one monorepo.
+
+The project now includes user, role, menu, and dictionary management; authentication; API and button-level permissions; operation and login logs; a dashboard; scheduled tasks; file uploads; and release package management for both the server and frontend. Database files, uploads, and logs are derived from a shared runtime root. The repository also contains the service installation, directory initialization, and release checks needed for delivery.
+
+Together, these features form a complete admin workflow. But having the features does not mean the boundaries are stable. Much of the work over the past year has been about one question: as the project grows, how do I stop permissions, data, and deployment conventions from becoming fragmented again?
+
+## Converging on permission and storage boundaries
+
+The early work focused on the basic modules: login, users, roles, menus, dictionaries, and logs. As the feature set grew, hiding menus and buttons in the frontend was no longer a sufficient permission model. The backend now declares and enforces the required capabilities for an endpoint, while the frontend uses the current user's permissions to decide what to show. Both sides use the same explicit permission codes.
+
+The system ships with three built-in roles: `owner`, `admin`, and `viewer`. `owner` is the only role with every capability, and only an `owner` can assign that role to someone else. `admin` can manage users, run tasks, and export logs, but has read-only access to deployment management. `viewer` keeps only read access such as lists, dashboards, and deployment versions. Built-in roles are synchronized and protected by the backend, while custom roles can still be extended by selecting explicit permissions.
+
+The design is intentionally simple. The important part is making the default boundary clear: who controls the whole system, who handles day-to-day administration, and who can only inspect it. For a project template, an extensible permission boundary matters more than the number of menus included by default.
+
+Storage involved a similar tradeoff. The project started with PostgreSQL and later moved to a SQLite-first default. That reduces the cost of local setup and small deployments, but it also moves responsibilities that once belonged to an external database back into the application. The database location, migration process, and cleanup of runtime data all need explicit project-level conventions.
+
+## A directory structure only matters if runtime and deployment follow it
+
+As the project grew, I started reconsidering what its directory structure should communicate. When backend code, frontend code, shared capabilities, and deployment files are mixed together, each change crosses several entry points and ownership becomes unclear. The current structure separates them by responsibility: `apps/` contains applications, `crates/` contains shared capabilities, `deploy/` owns deployment assets, and `docs/` keeps engineering documentation.
+
+The point was not to make the repository look tidier. API paths, frontend requests, database migrations, build commands, runtime directories, and documentation all had to follow the new boundaries. Development, build, startup, and deployment paths then had to be verified again. The database, logs, uploads, and release artifacts also gained a consistent runtime location.
+
+Deployment changed as well. I tried embedding the frontend's static files in the server binary, then moved back to managing server and frontend artifacts separately. Release packages now record version, architecture, file size, and checksum information, and they can be uploaded and switched from the admin interface. The repository also includes a systemd service, runtime directory initialization, and release-size checks. Deployment is no longer an instruction that lives outside the repository; it is part of the project that needs ongoing maintenance.
+
+## The frontend rebuild is still in progress
+
+The frontend work has shifted from simply getting pages on screen to defining a structure that can keep growing. After moving routing to TanStack Router, I reorganized the login and authentication entry points. The management pages are being rebuilt with shadcn, moving repeated layouts, tables, pagination, forms, and confirmation interactions into shared components.
+
+This is not just a component-style replacement. I want to make the boundaries between routing, permissions, and shared UI clearer so that each business page does not maintain another copy of the same code. The next step is to finish the existing management pages and use that structure when adding new modules.
+
+Looking back, I now prefer one clear default path: an Axum backend, a React admin frontend, SQLite as the default database, a shared runtime root, and release artifacts that can be installed and switched. The project is best suited to single-machine or small-scale deployments. More complex database clusters, full container orchestration, or multi-tenant requirements still need design work for their specific context.
+
+## What comes next
+
+The near-term plan has three parts:
+
+1. Finish the current frontend rebuild and unify page structure and shared components.
+2. Add explicit retention and cleanup policies for logs, uploads, scheduled tasks, and deployment versions.
+3. Validate new capabilities such as server monitoring and analytics, then integrate the parts that fit the admin system.
+
+These priorities also come from systems I have run before. I deployed related monitoring and analytics systems across roughly 100 servers. Three problems kept appearing in operation: temporary data and repeated parsing during collection and aggregation, together with periods of high process memory usage; raw metrics and events that kept growing without clear storage limits; and inaccurate node data when container environments exposed overlay filesystems, temporary or duplicate mount points, and virtual network interfaces.
+
+The next round of work will focus on reducing temporary collections and repeated parsing during collection and aggregation, then observing how those changes affect memory use. Metrics, events, and runtime logs need explicit retention windows and batched cleanup, together with SQLite space reclamation. Node collection also needs to filter Docker and Kubernetes mounts and virtual interfaces, then deduplicate mount points so disk and network data are more accurate. I will validate these changes under real workloads before moving the parts that fit into `rustzen-admin`.
+
+A year ago, I was mostly asking whether AI could help me build a complete admin system in Rust. Now, AI handles more of the implementation and verification, while I spend more time deciding what to build, why it belongs, and where the project boundary should stop.
+
+That collaboration has increased implementation speed and expanded the range of problems I can take on, but it creates a different challenge: expressing goals, constraints, and acceptance criteria clearly enough that the resulting code remains maintainable, behavior can be verified, and performance is supported by data. My next step is to make that collaboration more consistent. I remain responsible for direction, tradeoffs, and the final judgment; AI takes on more implementation, testing, and performance verification. The goal is to move faster while continuing to narrow the architecture and engineering boundaries of `rustzen-admin`.
