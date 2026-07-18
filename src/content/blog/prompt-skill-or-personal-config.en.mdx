@@ -1,0 +1,78 @@
+---
+title: "Should an AI Instruction Become a Prompt, a Skill, or Personal Configuration?"
+description: "Use scope, triggering, authority, and validation cost to place AI working rules on the right surface without maintaining the same behavior several times."
+pubDate: 2026-07-18
+tags: ["Prompt", "Agent Skills", "AGENTS.md", "AI workflow"]
+audience: ["developer", "ai-practitioner"]
+readingTime: 6
+---
+
+After using AI coding tools for a while, it is easy to accumulate a large set of instructions that mean “always work this way from now on.” The hard part is not writing them down. It is deciding where they belong.
+
+The same requirement can stay in the current conversation, become a reusable prompt, enter `AGENTS.md`, or grow into a Skill. All four influence the agent, but their scope and maintenance cost are different.
+
+## Start with scope
+
+I use this routing order:
+
+```text
+Only affects the current task          -> current conversation
+Needs copyable, editable input         -> Prompt
+Must remain active for a class of work -> personal or repository AGENTS.md
+Owns a process, references, and proof  -> Skill
+```
+
+A one-off publication date, file list, or exact repair instruction does not need to leave the current conversation. Once preserved as a durable asset, it usually becomes stale quickly.
+
+A Prompt is useful when the task has inputs that must be filled in again. A scheduled topic digest changes its focus topics, evidence window, and output language while keeping the same research and deduplication rules. It needs to be copied and edited, but it does not need to be installed as a continuously routed capability.
+
+`AGENTS.md` owns default behavior. Protecting unrelated changes, defining acceptance criteria for complex work, and refusing to claim a confirmed root cause without evidence should not require manual pasting every time. The global file owns cross-repository preferences; the repository file owns project structure, commands, and delivery boundaries.
+
+A Skill needs a stronger reason to exist. It should have clear trigger and non-trigger conditions, an authority boundary, a workflow, an output contract, and references or validation methods that cannot be expressed as a few configuration lines.
+
+## Five questions
+
+When a new rule appears, I ask:
+
+1. **Should it apply automatically, or does the user need to fill in inputs?**
+   Automatic behavior points toward configuration. Repeatedly edited input points toward a Prompt.
+
+2. **Is it true for only one repository?**
+   Build commands, directories, and domain facts belong in the repository's `AGENTS.md`, not global configuration.
+
+3. **Does it own a distinct authority boundary?**
+   Review, implementation, and Git delivery have different permissions and should not be merged merely to reduce the catalog count.
+
+4. **Does it require its own references, scripts, or specialized validation?**
+   A few behavior rules rarely justify a Skill package.
+
+5. **Does an existing capability already cover it?**
+   Codex already plans and searches code. A new asset should add explicit acceptance standards, not restate default model behavior.
+
+## Reducing duplication matters more than naming
+
+The direct cost of misclassification is drift. If the same Git rule appears in global configuration, repository documentation, a review prompt, and a delivery Skill, a later change can easily update only one copy.
+
+I assign one authority to each stable rule:
+
+```text
+Personal execution preferences -> ~/.codex/AGENTS.md
+Project facts                  -> repository AGENTS.md
+Copyable tasks                 -> blog / Prompts
+Specialist capabilities        -> idaibin/skills
+Lessons and decisions          -> blog / Notes
+```
+
+Other surfaces may link to the authority or summarize it, but they should not reproduce the full instruction block.
+
+## When deletion is the right choice
+
+Even a once-useful Prompt or Skill may no longer deserve a current entry. I prefer merging or deleting it when:
+
+- it differs from default model behavior only in wording;
+- another entry has the same trigger and outcome;
+- it depends on a repository, path, or tool that no longer exists;
+- it served a one-off event or completed phase;
+- users must understand an entire framework before one capability can run.
+
+Git history is enough to preserve the past. The current catalog should describe how I recommend working today, not display every idea that once existed.

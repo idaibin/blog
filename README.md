@@ -4,7 +4,7 @@
 
 It is a content publishing and knowledge archive site for long-form notes, Rust, React, full-stack engineering, product-building records, prompts, skills, and Rustzen writing.
 
-Reusable AI prompts, skills, workflow templates, and shared automation standards are not owned here. Their authority source is `idaibin/aicraft`.
+This repository owns the public, copy-ready Prompt collection and long-form writing. Installable Skill packages are maintained separately in [`idaibin/skills`](https://github.com/idaibin/skills).
 
 ## Features
 
@@ -18,9 +18,9 @@ Reusable AI prompts, skills, workflow templates, and shared automation standards
 ## Repository Scope
 
 ```text
-blog = long-form content publishing and knowledge archive
-aicraft = reusable AI capability and automation standards source
-feeds-hub = short-cycle information feed automation example
+blog = public Prompts, long-form writing, and knowledge archive
+idaibin/skills = independently installable Agent Skills
+feeds-hub = short-cycle information feed implementation
 ```
 
 See:
@@ -61,7 +61,9 @@ The actual content collections are:
 - `skills` / `skillsZh`
 - `notes` / `notesZh`
 
-`prompts` and `skills` are published content collections, not the source of reusable AI assets. Source assets belong in `idaibin/aicraft`.
+`prompts` is the source for the blog's small public collection of copy-ready prompts and persistent AI configuration examples.
+
+`skills` publishes one catalog guide. The source packages, evaluation cases, and installation metadata belong in `idaibin/skills`; the blog does not mirror every package body.
 
 `notes` is the combined collection for `blog` and `rustzen`.
 

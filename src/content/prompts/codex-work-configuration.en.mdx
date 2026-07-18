@@ -1,0 +1,103 @@
+---
+title: "My Codex Work Configuration: Keeping Stable Preferences in AGENTS.md"
+description: "How I compressed planning, diagnosis, collaboration boundaries, and Git safety rules into a maintainable global AGENTS.md."
+pubDate: 2026-07-18
+tags: ["Codex", "AGENTS.md", "Prompt", "configuration"]
+audience: ["developer", "ai-practitioner"]
+readingTime: 7
+---
+
+I previously maintained Planning and Diagnosis as separate Skills. After using them for a while, I found that they behaved more like default execution discipline than specialized capabilities that needed to be installed and triggered independently.
+
+Planning defines how a complex task should be divided and accepted. Diagnosis defines how failures should be investigated, how hypotheses should be tested, and when a root cause can be considered confirmed. Neither depends on a particular technology stack, script, or reference package. Instead of adding two more Skills for the agent to route, I moved their essential rules into my global `AGENTS.md`.
+
+I now separate configuration into three layers:
+
+```text
+Global AGENTS.md     = stable personal preferences and safety boundaries
+Repository AGENTS.md = project structure, commands, and delivery rules
+Skill                = a specialized capability with its own process or evidence
+```
+
+The goal is not to accumulate instructions. It is to state each rule once and keep it with the layer that owns it.
+
+## What belongs in the global file
+
+My global configuration only keeps rules that remain useful across repositories:
+
+- keep ordinary answers concise and report long-task progress only when state changes;
+- limit edits to the requested task and protect unrelated local changes;
+- define scope, dependencies, steps, and acceptance criteria for complex work;
+- distinguish symptoms, correlated behavior, and root causes during diagnosis;
+- parallelize only genuinely independent work;
+- avoid modifying `main` or creating pull requests by default;
+- require explicit authorization for publishing, production actions, and external writes.
+
+Repository layout, build commands, domain structure, and specialized validation do not belong in the global file. They change more often and only become true inside a particular project, so the repository's own `AGENTS.md` should own them.
+
+## Planning and Diagnosis can stay compact
+
+The point of Planning is not to produce a long planning document. It is to make complex work executable. Each task item should identify what it owns, what it must not change, what it depends on, how it will be validated, and what evidence proves completion. Small tasks can proceed directly.
+
+Diagnosis is not a fixed command sequence either. It defines the standard of proof: record the observed and expected behavior, establish the smallest practical reproduction, form falsifiable hypotheses from code, logs, and runtime evidence, and change as few variables as possible. When evidence is incomplete, uncertainty must remain visible. Permanent remediation begins only after the root cause is supported, followed by a rerun of the original failing path.
+
+Codex can already plan and search code. That default capability does not define my acceptance criteria. The global rules do not try to teach the model how to think; they state which process and completion evidence I am willing to accept.
+
+## The compact version I use
+
+This is the core structure I currently use. Machine paths and tool choices are environment-specific and should be replaced when reused elsewhere.
+
+```markdown
+# Personal Work Preferences
+
+## Communication
+
+- Answer ordinary questions directly, keeping only necessary facts, decisions, results, and next steps.
+- When a long session approaches its context boundary, recommend a new task and provide a copyable handoff.
+
+## Scope And Environment
+
+- When no repository is specified, use the configured default workspace and read its entry document and effective `AGENTS.md` first.
+- For repository, build, test, or commit work, confirm the path, Git state, and minimum necessary context; prefer `rg` and named files.
+- Keep edits within the requested task, protect unrelated local changes, and follow existing structure, toolchains, and interface contracts.
+- Use the built-in Browser for browser work and Volta for the Node toolchain.
+
+## Execution Discipline
+
+### Planning
+
+- Use the built-in Plan for complex tasks and define scope, excluded scope, dependencies, execution order, acceptance criteria, validation commands, and completion evidence.
+- Execute simple tasks directly without creating a formal plan.
+
+### Diagnosis
+
+- Record observed and expected behavior, establish the smallest practical reproduction, and collect code, log, and runtime evidence.
+- Form falsifiable hypotheses, change as few variables as possible, and distinguish symptoms, correlations, and root causes.
+- Mark conclusions as unconfirmed when evidence is insufficient. Apply permanent remediation only after confirming the cause, then rerun the original failing path.
+
+## Collaboration And Review
+
+- For high-risk or cross-module work, follow analysis → execution → review/validation → commit decision. Do not create subagents for ordinary tasks.
+- Parallelize only independent, non-overlapping work or fully read-only tasks. The primary agent owns the final judgment and delivery.
+- Reviews list issues, impact, and file locations first. If there are no findings, state testing gaps and residual risk.
+
+## Git And External Actions
+
+- Do not modify `main` or create pull requests by default. Use repository-approved task branches and inspect `git diff --cached` before committing only related files.
+- Publish, run security scans, perform external writes, or operate production only when explicitly requested.
+
+Explicit instructions in the current conversation take precedence. More specific repository or subdirectory `AGENTS.md` files govern their own scope.
+```
+
+## How I handle additional preferences
+
+I do not add a new section every time a new requirement appears. I first decide which layer owns it:
+
+- a stable behavior that applies across repositories belongs in the global `AGENTS.md`;
+- a project-specific fact or command belongs in that repository's `AGENTS.md`;
+- a capability that needs its own references, scripts, output contract, or specialized validation may become a Skill;
+- a one-off requirement stays in the current conversation.
+
+When a global rule accumulates exceptions, explanations, and multiple reference chains, it probably belongs somewhere else. The global file should remain quick to load, but it should not become short by deleting authorization boundaries, Git safety, dirty-worktree protection, or evidence standards.
+
+For me, a good personal configuration does not describe every possible working method. It preserves the small set of boundaries that are easy to forget and costly to violate.

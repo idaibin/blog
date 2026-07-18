@@ -1,0 +1,57 @@
+---
+title: "Frontend–Backend API Contract Review Prompt"
+description: "Trace backend routes, request parameters, response shapes, frontend clients, types, and page usage to find contract mismatches with file-level evidence."
+pubDate: 2026-07-18
+tags: ["Prompt", "API", "frontend", "code review"]
+audience: ["developer", "ai-practitioner"]
+readingTime: 5
+---
+
+Use this prompt when a frontend and backend must agree on a real API contract. It reviews the complete call chain instead of assuming that matching function names mean the integration works.
+
+## When to use it
+
+- Backend endpoints and frontend pages changed together.
+- A page request fails even though the API names look correct.
+- A change needs contract verification before delivery.
+- Old fields, mocks, or temporary compatibility code may remain.
+
+## Copy-ready prompt
+
+```text
+Perform a read-only review of the frontend–backend API contracts in the current scope. Do not modify code first, and do not infer alignment from file names or API function names.
+
+Read the effective AGENTS.md, relevant API documentation, and related source files, then confirm the Git working-tree state. Trace each endpoint through this complete chain:
+
+1. backend route and real URL
+2. HTTP method
+3. path, query, and body parameters
+4. required fields, defaults, and data transformations
+5. response code, message/msg, data, pagination, and error fields
+6. backend error codes and handling
+7. frontend client path, method, and parameter mapping
+8. TypeScript types
+9. page reads, submissions, and pre-submit transformations
+10. loading, empty, error, and null states
+11. stale endpoints, fields, mocks, temporary compatibility, and dead code
+
+Every finding must include:
+
+- severity
+- backend file and location
+- frontend file and location
+- exact mismatch
+- real impact
+- smallest reasonable correction
+
+Finish with:
+
+| Endpoint | Backend | Frontend client | Page usage | Issue | Verification |
+| --- | --- | --- | --- | --- | --- |
+
+When evidence is incomplete, mark the item Not verified and state what is missing. Do not treat static inspection as runtime success, and do not claim that an endpoint works without request, log, test, or rendered-page evidence.
+```
+
+## Remediation boundary
+
+If remediation is requested later, change only confirmed contract defects. Run the repository-supported typecheck, tests, build, API request, or page verification, then separate verified paths from remaining risk.

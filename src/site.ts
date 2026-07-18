@@ -27,9 +27,9 @@ export const sectionMeta = {
     prompts: {
       title: 'Prompts',
       description:
-        'Reusable prompt templates organized by task, output format, and audience.',
+        'Copy-ready prompts and persistent AI configuration examples organized by task.',
       intro:
-        'Prompts stores copy-ready templates that can be edited, reused, and expanded.',
+        'Prompts stores a small set of templates and configurations that can be copied and adapted.',
       summary:
         'Short, structured, and practical prompt assets.',
       action: 'Copy prompt',
@@ -37,9 +37,9 @@ export const sectionMeta = {
     skills: {
       title: 'Skills',
       description:
-        'Agent-style skills, system instructions, and multi-step capability modules.',
+        'A published guide to the independently installable packages in idaibin/skills.',
       intro:
-        'Skills captures the larger operating blocks behind prompts and workflows.',
+        'Skills explains the current catalog without mirroring every package body.',
       summary:
         'Tool-aware, constraint-aware, and designed for repeatable execution.',
       action: 'Inspect skill',
@@ -72,15 +72,15 @@ export const sectionMeta = {
   zh: {
     prompts: {
       title: 'Prompts',
-      description: '按任务组织、可复制、可修改的 Prompt 模板。',
-      intro: 'Prompts 存放可以直接拿来用的提示词资产。',
+      description: '按任务组织、可复制和修改的 Prompt 与持久 AI 配置示例。',
+      intro: 'Prompts 只保留少量可以直接使用和调整的提示词与配置。',
       summary: '短、结构化、可复用的 Prompt 模板库。',
       action: '复制 Prompt',
     },
     skills: {
       title: 'Skills',
-      description: 'Agent 风格技能、系统提示与多步骤能力模块。',
-      intro: 'Skills 记录比 Prompt 更完整的能力封装。',
+      description: '介绍 idaibin/skills 中可以独立安装的 Agent Skills。',
+      intro: 'Skills 只解释当前 Catalog，不复制每个 Skill 包的完整正文。',
       summary: '懂工具、懂约束、适合反复执行。',
       action: '查看 Skill',
     },

@@ -1,0 +1,64 @@
+---
+title: "Scheduled Topic Digest Prompt"
+description: "Use configurable topics, evidence windows, and source rules to produce recurring, deduplicated, action-oriented research digests."
+pubDate: 2026-07-18
+tags: ["Prompt", "scheduled task", "research", "digest"]
+audience: ["developer", "ai-practitioner"]
+readingTime: 6
+---
+
+This prompt consolidates the previous daily AI digest, research search, and reusable-asset discovery workflows into one configurable task. Topics may change while the verification, deduplication, and evidence rules remain stable.
+
+## Configuration
+
+```text
+Focus topics: [products, repositories, companies, technologies, or questions]
+Intended use: [news monitoring / engineering decisions / asset discovery / other]
+Schedule: [default: daily at 09:00]
+Timezone: [default: Asia/Shanghai]
+Lookback window: [default: 72 hours]
+Maximum items: [default: 8]
+Existing local inventory: [optional index, repository, or directory]
+Output language: [default: user's language]
+```
+
+## Copy-ready prompt
+
+```text
+Search current primary sources according to the configuration above and produce a scheduled topic digest.
+
+Select only developments that can affect the intended use. Prefer official documentation, changelogs, papers, technical reports, original repositories, and maintainers' engineering posts. Use reputable secondary reporting only when no primary source exists or independent context is necessary.
+
+Rules:
+
+1. Open and verify every selected source; do not rely on search-result snippets.
+2. Prefer the actual event or release date over the article publication date when both are available.
+3. Deduplicate by event, release, repository, and normalized URL, retaining the most direct primary source.
+4. Exclude marketing-only announcements, reposts, generic summaries without engineering impact, and rumors without clear labeling.
+5. Distinguish confirmed releases, research results, previews, inference, and speculation.
+6. When a local inventory is provided, inspect it before recommending a new asset, extension, or no action.
+7. If there is no reliable update, return No significant update instead of padding the digest.
+8. If current information cannot be accessed or verified, stop and state the limitation.
+
+Start with the covered date range, configured topics, source scope, and limitations.
+
+For each item, provide:
+
+- title, type, status, and event date
+- primary source name and direct URL
+- concise factual summary
+- relevance to the intended use
+- recommended action, or No action
+
+Finish with:
+
+1. Key conclusions: up to three cross-item judgments
+2. Worth validating: concrete claims, tools, or decisions that need further testing
+3. Reusable assets: candidates for a prompt, skill, workflow, or reference; otherwise No action
+
+Do not invent citations, dates, benchmarks, availability, local overlap, or verification results. Do not reproduce large portions of source material.
+```
+
+## Why there is only one version
+
+A daily AI digest and reusable-asset search rely on the same research and selection process. Keeping topic and intended use as configuration is easier to maintain than preserving several prompts that differ only by subject.

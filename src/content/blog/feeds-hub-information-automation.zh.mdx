@@ -2,7 +2,7 @@
 title: Feeds Hub：我想自动化的不是写新闻，而是筛选信息
 description: 记录我如何把 Feeds Hub 从“自动生成内容”收窄为一套可验证的信息编辑流程，以及为什么来源判断比更新频率更重要。
 pubDate: 2026-07-03
-tags: ["Feeds Hub", "AI 自动化", "信息流", "Astro", "AICraft"]
+tags: ["Feeds Hub", "AI 自动化", "信息流", "Astro", "Agent Skills"]
 audience: ["developer", "ai-practitioner"]
 featured: true
 ---
@@ -48,12 +48,12 @@ discover
 ## 规则和内容放在哪里
 
 ```text
-aicraft = 通用 Skill、Prompt 和执行标准
+idaibin/skills = 可独立安装的通用能力
 feeds-hub = 主题规则、来源规则、信息流内容和站点实现
-blog = 长期复盘和开发经验
+blog = 公开 Prompt、长期复盘和开发经验
 ```
 
-我不把具体 Feed 放进 AICraft，也不把通用写作规范复制到每个内容仓库。通用能力集中维护，具体内容保留在产生它的项目里，边界才不会随着自动化次数增加而变乱。
+我不把具体 Feed 放进 Skills Catalog，也不把个人或仓库规则复制进每个 Prompt。通用能力集中在 `idaibin/skills`，公开 Prompt 和长期经验留在 blog，具体信息流内容保留在产生它的项目里。
 
 ## AI 能处理哪一段
 

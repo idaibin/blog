@@ -1,0 +1,68 @@
+---
+title: "From AICraft to idaibin/skills: Why I Removed Part of My AI Asset Library"
+description: "How AICraft changed from a mixed repository of prompts, standards, and Skills into a catalog of independently installable Agent Skills."
+pubDate: 2026-07-18
+tags: ["Agent Skills", "Prompt", "Codex", "AI workflow"]
+audience: ["developer", "ai-practitioner"]
+readingTime: 7
+featured: true
+---
+
+I created AICraft because I kept repeating the same instructions across projects and conversations: read the repository rules, confirm the scope, protect unrelated local changes, avoid editing `main` directly, and finish with validation and a clear risk report.
+
+Putting those instructions in Git helped. The problem came later. AICraft began to own prompts, shared standards, automation templates, evaluation infrastructure, and a growing number of Skills. It gradually changed from a collection of reusable capabilities into a framework whose internal routing and shared rules had to be understood first.
+
+That shape did not fit how Agent Skills are installed. A user who installs one Skill needs a bounded package that works on its own, not an introduction to the entire repository.
+
+## More entries did not mean more capability
+
+Planning and Diagnosis initially looked like reasonable standalone Skills. In practice, they behaved more like default execution discipline.
+
+Complex work already needs scope, dependencies, and acceptance criteria. A concrete failure already needs reproduction, evidence, falsifiable hypotheses, and a confirmed cause before permanent remediation. These rules do not depend on a technology stack or require a dedicated script or reference package. Turning them into Skills added another routing decision without adding a distinct capability.
+
+The same happened with prompts. General development, `AGENTS.md` generation, and review-and-commit prompts overlapped heavily with Codex defaults, personal configuration, and repository instructions. Keeping them did not add a new workflow; it created several similar entry points.
+
+I adopted a stricter rule: a capability becomes a Skill only when it owns a distinct trigger, authority boundary, reference set, workflow, or specialized validation method.
+
+## Ownership after the refactor
+
+The resulting structure is simpler:
+
+```text
+~/.codex/AGENTS.md = stable personal preferences across repositories
+Repository AGENTS.md = project structure, commands, and delivery rules
+blog / Prompts = readable, copyable prompts and configurations
+idaibin/skills = independently installable specialist capabilities
+blog / Notes = design decisions, implementation history, and lessons
+```
+
+Prompts no longer live in the Skills repository. The blog owns a small public set whose responsibilities remain clear and whose text is meant to be copied or adapted.
+
+The Skills repository is now [`idaibin/skills`](https://github.com/idaibin/skills). Each package may depend on its own `SKILL.md`, `references/`, `assets/`, and `scripts/`. Repository-level documentation, contracts, and evaluation tooling support maintainers; they are not hidden runtime dependencies after installation.
+
+## What remained
+
+The public prompt set now covers four responsibilities:
+
+- Codex work configuration;
+- frontend–backend API contract review;
+- conversation and lesson review;
+- configurable scheduled topic digests.
+
+The Skills catalog keeps distinct capabilities such as repository mapping, domain modeling, frontend and Rust implementation, specialist audits, review, delivery, and browser or desktop-client verification. They may be composed, but they do not impose a required sequence.
+
+Some assets now exist only in Git history. One-off event posters, product icon prompts tied to local paths, and generic workflows superseded by other capabilities no longer need public entry points. Historical existence is not a reason to occupy the current catalog forever.
+
+## Deletion is maintenance
+
+I used to focus on how to preserve repeated instructions. I now ask a different question first: who should own this rule, and does it still need an independent surface?
+
+When the same behavior appears in personal configuration, a prompt, a Skill, and repository documentation, every change risks drift. Moving the rule to the correct layer is often more useful than adding another instruction.
+
+The current Skills are installed through the standard skills.sh flow:
+
+```bash
+npx skills@latest add idaibin/skills
+```
+
+The refactor did not erase the value of AICraft. It separated the pieces that had proved useful: specialist capabilities moved into Skills, public prompts and lessons moved into the blog, and stable execution preferences moved into personal configuration. The asset set became smaller, but each remaining part is easier to explain and maintain.
