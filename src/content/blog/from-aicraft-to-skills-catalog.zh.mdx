@@ -8,6 +8,8 @@ readingTime: 7
 featured: true
 ---
 
+> 更新（2026-07-21）：补充当前 15 个 Skills 的职责边界，以及 UI 设计、领域建模、Review、Delivery 和外部研究的最新归属。
+
 最初建立 AICraft，是因为我在不同项目和对话里反复强调同一批要求：先读仓库规则、确认修改范围、保护未提交内容、不要直接改 `main`，最后运行验证并说明风险。
 
 把这些要求写进 Git 是有效的。问题出在后面：AICraft 同时开始保存 Prompt、共享标准、自动化模板、评测基础设施和越来越多的 Skills。它逐渐从“可以复用的能力集合”变成了一个需要理解内部路由和共享规则的框架。
@@ -50,6 +52,10 @@ Prompt 最终只保留四类：
 - 可配置的定时主题摘要。
 
 Skills 保留的是仓库理解、领域建模、前端和 Rust 实现、专项审计、Review、Delivery、浏览器与客户端验证等明确能力。它们可以组合，但没有强制顺序。
+
+当前目录保留 15 个公开能力包，但边界比数量更重要。`ui-design` 默认只为一个页面或流程提供 Feature UI 方案；只有共享 token、组件语义、variant 或整体视觉语言发生变化时，才进入 Design System profile。`domain-modeling` 默认处理跨功能共享的业务术语、规则和边界场景，生命周期与 bounded context 只在复杂度确实需要时启用。`product-spec` 描述用户可见行为和验收，不拥有 API；需要长期导航时，由 `repo-map` 记录真实 authority、消费者和验证入口。
+
+Review 与交付也被拆开。`repo-review` 只读当前 Worktree/index、固定 SHA/range 或已校验的 review package；`repo-delivery` 才执行分别授权的 commit、push、sync、squash、cleanup 或冲突处理。本地 commit 按一个意图一组，commit 授权不会自动推导出 push。外部 ChatGPT review 与一手来源研究统一由 `chatgpt-review` 管理，外部建议仍要回到对应 basis 本地核实。
 
 一些内容则只保留在 Git 历史里。一次性赛事海报、依赖本机路径的产品图标 Prompt、已经被其他能力覆盖的通用工作流，都不再作为公开入口。历史存在过，不代表它们需要永远占据当前目录。
 

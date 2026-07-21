@@ -8,6 +8,8 @@ readingTime: 7
 featured: true
 ---
 
+> Update (2026-07-21): Added the current ownership boundaries for the 15 Skills, including UI design, domain modeling, review, delivery, and external research.
+
 I created AICraft because I kept repeating the same instructions across projects and conversations: read the repository rules, confirm the scope, protect unrelated local changes, avoid editing `main` directly, and finish with validation and a clear risk report.
 
 Putting those instructions in Git helped. The problem came later. AICraft began to own prompts, shared standards, automation templates, evaluation infrastructure, and a growing number of Skills. It gradually changed from a collection of reusable capabilities into a framework whose internal routing and shared rules had to be understood first.
@@ -50,6 +52,10 @@ The public prompt set now covers four responsibilities:
 - configurable scheduled topic digests.
 
 The Skills catalog keeps distinct capabilities such as repository mapping, domain modeling, frontend and Rust implementation, specialist audits, review, delivery, and browser or desktop-client verification. They may be composed, but they do not impose a required sequence.
+
+The catalog currently keeps 15 public packages, but ownership matters more than the count. `ui-design` defaults to Feature UI for one page or flow; shared tokens, component semantics, variants, or an overall visual language activate its conditional Design System profile. `domain-modeling` defaults to durable shared business terms, rules, and boundary scenarios, while lifecycle and bounded-context work are loaded only when complexity requires them. `product-spec` describes user-visible behavior and acceptance, not APIs; when durable navigation is useful, `repo-map` records the real authority, consumers, and validation entry points.
+
+Review and delivery are separate as well. `repo-review` reads the current Worktree/index, a fixed SHA/range, or a verified review package. `repo-delivery` performs separately authorized commit, push, sync, squash, cleanup, or conflict-resolution operations. One local commit carries one intent, and commit authorization never implies push. External ChatGPT review and primary-source research share the `chatgpt-review` package, and their recommendations still have to be verified against the corresponding local basis.
 
 Some assets now exist only in Git history. One-off event posters, product icon prompts tied to local paths, and generic workflows superseded by other capabilities no longer need public entry points. Historical existence is not a reason to occupy the current catalog forever.
 

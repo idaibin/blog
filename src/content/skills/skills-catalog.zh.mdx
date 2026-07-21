@@ -7,6 +7,8 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 6
 ---
 
+> 更新（2026-07-21）：同步当前 15 个 Skills 的名称与职责边界，补充 `product-spec`、`ui-design`、新的实现 Skill 命名，以及 Review、Delivery 和外部研究的授权范围。
+
 [`idaibin/skills`](https://github.com/idaibin/skills) 是一组面向真实软件工程任务的独立 Agent Skills。它不再承担 Prompt 仓库、共享规则中心或强制工作流框架的职责。
 
 每个 Skill 都有自己的触发条件、工作流程、授权边界、输出合同、参考资料和评估案例。一个 Skill 可以单独安装；多个 Skill 可以在任务跨越不同责任时组合，但不会形成必须从头走到尾的状态机。
@@ -18,17 +20,23 @@ readingTime: 6
 | Skill | 适用场景 |
 | --- | --- |
 | `repo-map` | 核对仓库边界、命令、任务路径和可复用实现的真实归属 |
-| `domain-modeling` | 业务语言、身份、生命周期、不变量和限界上下文仍不清晰 |
-| `repo-review` | 审查本地修改或固定提交、范围、PR、Release 和审查包 |
-| `repo-delivery` | 对已审查修改进行暂存、提交、推送、同步或分支清理 |
+| `domain-modeling` | 解决跨功能共享的业务术语或规则冲突；生命周期和限界上下文按复杂度启用 |
+| `repo-review` | 只读审查当前 Worktree/index、固定 SHA/range 或已校验的 review package |
+| `repo-delivery` | 分别执行已授权的暂存、提交、推送、同步、squash、冲突处理或清理 |
 
-### 设计与实现
+### 产品与设计
 
 | Skill | 适用场景 |
 | --- | --- |
-| `design-system` | 创建、提取、维护或评估仓库自己的设计系统 |
-| `implement-frontend` | 实现并验证前端功能、页面、组件或设计系统契约 |
-| `implement-rust` | 实现或重构 Rust 功能，并提供所有权与行为证据 |
+| `product-spec` | 把用户可见行为、规则、状态和验收整理成可实施的产品规格，不定义 API |
+| `ui-design` | 默认设计一个页面或流程的 Feature UI；共享 token、组件语义或整体视觉语言变化时才进入 Design System profile |
+
+### 实现
+
+| Skill | 适用场景 |
+| --- | --- |
+| `dev-frontend` | 在现有技术栈和 UI 约束下实现并验证前端修改 |
+| `dev-rust` | 在真实 Rust 工具链和风险边界下实现或重构功能 |
 
 ### 专项审计与运行验证
 
@@ -37,14 +45,14 @@ readingTime: 6
 | `audit-frontend` | 对已知前端范围进行架构、可访问性、状态、性能或设计审计 |
 | `audit-rust` | 对 Rust 所有权、并发、SQLite、unsafe/FFI、性能或内存进行审计 |
 | `audit-security` | 对已知安全敏感代码或配置范围进行只读评估 |
-| `ops-browser` | 用截图、Console、Network、表单或下载证据操作和验证页面 |
+| `ops-browser` | 在核实目标、身份和授权后操作浏览器，并保留前后状态证据 |
 | `ops-client` | 验证 Tauri、Electron 或原生桌面客户端的真实进程与窗口 |
 
 ### 扩展能力
 
 | Skill | 适用场景 |
 | --- | --- |
-| `chatgpt-review` | 准备本地审查包，或执行经过明确授权的外部 ChatGPT 审查 |
+| `chatgpt-review` | 准备本地请求包，或协调经过明确授权的 ChatGPT 审查与条件式一手来源研究 |
 | `human-writing` | 在保留事实、来源、语气和披露边界的前提下起草或修改内容 |
 
 Planning 和 Diagnosis 不再作为独立 Skill。复杂任务使用宿主 Agent 的计划能力和当前生效的仓库规则；具体故障则遵循个人或仓库中的证据驱动诊断要求。只有需要独立资料、执行流程或专项验证的能力才保留为 Skill。

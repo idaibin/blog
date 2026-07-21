@@ -7,6 +7,8 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 6
 ---
 
+> Update (2026-07-21): Synchronized the current names and ownership boundaries for all 15 Skills, including `product-spec`, `ui-design`, the renamed implementation Skills, and the authorization boundaries for review, delivery, and external research.
+
 [`idaibin/skills`](https://github.com/idaibin/skills) is a collection of independent Agent Skills for real software engineering tasks. It no longer acts as a prompt repository, shared-rules center, or mandatory workflow framework.
 
 Each Skill owns its trigger, workflow, authority boundary, output contract, references, and evaluation cases. A Skill can be installed on its own. Several Skills may be composed when a task crosses owners, but they do not form a required end-to-end state machine.
@@ -18,17 +20,23 @@ Each Skill owns its trigger, workflow, authority boundary, output contract, refe
 | Skill | Use when |
 | --- | --- |
 | `repo-map` | Repository boundaries, commands, task routes, or reusable owners need a verified map |
-| `domain-modeling` | Business language, identities, lifecycle, invariants, or bounded contexts remain unresolved |
-| `repo-review` | Local changes or a fixed commit, range, pull request, release, or review package need read-only review |
-| `repo-delivery` | Reviewed changes need authorized staging, commit, push, synchronization, or branch cleanup |
+| `domain-modeling` | Shared cross-functional business terms or rules conflict; lifecycle and bounded contexts are conditional depth |
+| `repo-review` | The current Worktree/index, a fixed SHA/range, or a verified review package needs read-only review |
+| `repo-delivery` | A separately authorized staging, commit, push, sync, squash, conflict-resolution, or cleanup action is required |
 
-### Design and implementation
+### Product and design
 
 | Skill | Use when |
 | --- | --- |
-| `design-system` | A repository-owned design system must be created, extracted, maintained, or evaluated |
-| `implement-frontend` | A frontend feature, page, component, or design-system contract must be implemented and verified |
-| `implement-rust` | A Rust feature or refactor must be implemented with ownership and behavior evidence |
+| `product-spec` | User-visible behavior, rules, states, and acceptance need an implementation-ready product specification without API design |
+| `ui-design` | One page or flow needs Feature UI by default; shared tokens, component semantics, or visual language activate the conditional Design System profile |
+
+### Implementation
+
+| Skill | Use when |
+| --- | --- |
+| `dev-frontend` | A frontend change must be implemented and verified within the existing stack and UI constraints |
+| `dev-rust` | A Rust change or refactor must be implemented against the real toolchain and applicable risk boundaries |
 
 ### Specialist audit and runtime verification
 
@@ -37,14 +45,14 @@ Each Skill owns its trigger, workflow, authority boundary, output contract, refe
 | `audit-frontend` | A known frontend surface needs architecture, accessibility, state, performance, or design review |
 | `audit-rust` | Rust ownership, concurrency, SQLite, unsafe/FFI, performance, or memory needs bounded review |
 | `audit-security` | A known security-sensitive code or configuration surface needs a read-only assessment |
-| `ops-browser` | A page must be operated or verified with screenshot, console, network, form, or download evidence |
+| `ops-browser` | A browser target must be operated after target, identity, and authorization checks with before/after evidence |
 | `ops-client` | A Tauri, Electron, or native desktop client must be verified against its real process and window |
 
 ### Extensions
 
 | Skill | Use when |
 | --- | --- |
-| `chatgpt-review` | A local review package or explicitly authorized external ChatGPT review is required |
+| `chatgpt-review` | A local request package or explicitly authorized ChatGPT review or conditional primary-source research collaboration is required |
 | `human-writing` | Source-grounded prose must be drafted or revised while preserving facts, attribution, voice, and disclosures |
 
 Planning and Diagnosis are no longer standalone Skills. Complex work uses the host agent's planning capability and effective repository rules. Concrete failures follow the evidence-driven diagnosis requirements in personal or repository instructions. A capability remains a Skill only when it needs its own references, workflow, or specialized validation.
