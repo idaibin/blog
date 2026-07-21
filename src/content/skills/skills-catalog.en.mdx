@@ -7,7 +7,7 @@ audience: ["developer", "ai-practitioner"]
 readingTime: 6
 ---
 
-> Update (2026-07-21): Synchronized the current names and ownership boundaries for all 15 Skills, including `product-spec`, `ui-design`, the renamed implementation Skills, and the authorization boundaries for review, delivery, and external research.
+> Update (2026-07-21): Synchronized the current names and ownership boundaries for all 15 Skills, including `product-spec`, `ui-design`, the implementation Skills, and the authorization boundaries for review, delivery, and external research.
 
 [`idaibin/skills`](https://github.com/idaibin/skills) is a collection of independent Agent Skills for real software engineering tasks. It no longer acts as a prompt repository, shared-rules center, or mandatory workflow framework.
 
@@ -22,7 +22,7 @@ Each Skill owns its trigger, workflow, authority boundary, output contract, refe
 | `repo-map` | Repository boundaries, commands, task routes, or reusable owners need a verified map |
 | `domain-modeling` | Shared cross-functional business terms or rules conflict; lifecycle and bounded contexts are conditional depth |
 | `repo-review` | The current Worktree/index, a fixed SHA/range, or a verified review package needs read-only review |
-| `repo-delivery` | A separately authorized staging, commit, push, sync, squash, conflict-resolution, or cleanup action is required |
+| `repo-delivery` | Reviewed changes need categorized commits by default, an explicit single commit, push/sync, evidence-based branch integration, or cleanup |
 
 ### Product and design
 
@@ -52,7 +52,7 @@ Each Skill owns its trigger, workflow, authority boundary, output contract, refe
 
 | Skill | Use when |
 | --- | --- |
-| `chatgpt-review` | A local request package or explicitly authorized ChatGPT review or conditional primary-source research collaboration is required |
+| `ask-chatgpt` | Codex needs to ask ChatGPT for an explicitly authorized independent review, research result, visual exploration, or decision challenge |
 | `human-writing` | Source-grounded prose must be drafted or revised while preserving facts, attribution, voice, and disclosures |
 
 Planning and Diagnosis are no longer standalone Skills. Complex work uses the host agent's planning capability and effective repository rules. Concrete failures follow the evidence-driven diagnosis requirements in personal or repository instructions. A capability remains a Skill only when it needs its own references, workflow, or specialized validation.

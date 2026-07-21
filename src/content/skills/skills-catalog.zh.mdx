@@ -22,7 +22,7 @@ readingTime: 6
 | `repo-map` | 核对仓库边界、命令、任务路径和可复用实现的真实归属 |
 | `domain-modeling` | 解决跨功能共享的业务术语或规则冲突；生命周期和限界上下文按复杂度启用 |
 | `repo-review` | 只读审查当前 Worktree/index、固定 SHA/range 或已校验的 review package |
-| `repo-delivery` | 分别执行已授权的暂存、提交、推送、同步、squash、冲突处理或清理 |
+| `repo-delivery` | 默认按语义分类提交；也处理明确要求的单提交、推送/同步、基于证据的分支整合与清理 |
 
 ### 产品与设计
 
@@ -52,7 +52,7 @@ readingTime: 6
 
 | Skill | 适用场景 |
 | --- | --- |
-| `chatgpt-review` | 准备本地请求包，或协调经过明确授权的 ChatGPT 审查与条件式一手来源研究 |
+| `ask-chatgpt` | Codex 需要向 ChatGPT 发起经过明确授权的独立审查、研究、视觉探索或决策挑战 |
 | `human-writing` | 在保留事实、来源、语气和披露边界的前提下起草或修改内容 |
 
 Planning 和 Diagnosis 不再作为独立 Skill。复杂任务使用宿主 Agent 的计划能力和当前生效的仓库规则；具体故障则遵循个人或仓库中的证据驱动诊断要求。只有需要独立资料、执行流程或专项验证的能力才保留为 Skill。
