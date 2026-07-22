@@ -1,22 +1,23 @@
 ---
-title: "My Codex Work Configuration: Keeping Stable Preferences in AGENTS.md"
-description: "How I compressed planning, diagnosis, collaboration boundaries, and Git safety rules into a maintainable global AGENTS.md."
+title: "My Codex Work Configuration: Unifying Rules, Skills, and Task Artifacts"
+description: "How I maintain global rules, repository instructions, Skills, task artifacts, and public configuration without duplication or drift."
 pubDate: 2026-07-18
 tags: ["Codex", "AGENTS.md", "Prompt", "configuration"]
 audience: ["developer", "ai-practitioner"]
-readingTime: 7
+readingTime: 9
 ---
 
 I previously maintained Planning and Diagnosis as separate Skills. After using them for a while, I found that they behaved more like default execution discipline than specialized capabilities that needed to be installed and triggered independently.
 
 Planning defines how a complex task should be divided and accepted. Diagnosis defines how failures should be investigated, how hypotheses should be tested, and when a root cause can be considered confirmed. Neither depends on a particular technology stack, script, or reference package. Instead of adding two more Skills for the agent to route, I moved their essential rules into my global `AGENTS.md`.
 
-I now separate configuration into three layers:
+I now separate my working configuration into four layers:
 
 ```text
-Global AGENTS.md     = stable personal preferences and safety boundaries
-Repository AGENTS.md = project structure, commands, and delivery rules
-Skill                = a specialized capability with its own process or evidence
+Global AGENTS.md       = stable personal preferences and safety boundaries
+Repository AGENTS.md   = project structure, commands, and delivery rules
+Skill                  = a specialized capability with its own process or evidence
+docs/ and .codex/      = durable documentation and local task artifacts
 ```
 
 The goal is not to accumulate instructions. It is to state each rule once and keep it with the layer that owns it.
@@ -81,6 +82,12 @@ This is the core structure I currently use. Machine paths and tool choices are e
 - Parallelize only independent, non-overlapping work or fully read-only tasks. The primary agent owns the final judgment and delivery.
 - Reviews list issues, impact, and file locations first. If there are no findings, state testing gaps and residual risk.
 
+## Task Artifacts
+
+- When a repository has no task-artifact convention, use `.codex/` at its root for local task material.
+- Put cross-task handoffs in `.codex/handoffs/`, reviews and external responses in `.codex/reviews/`, design QA, screenshots, logs, and evaluations in `.codex/artifacts/`, and disposable intermediates in `.codex/tmp/`.
+- Use `<YYYY-MM-DD>-<scope>-<purpose>` for task IDs. Keep these directories untracked by default. Promote material to `docs/` only when it is approved, sanitized, durable, and worth maintaining.
+
 ## Git And External Actions
 
 - Do not modify `main` or create pull requests by default. Use repository-approved task branches and inspect `git diff --cached` before committing only related files.
@@ -89,6 +96,16 @@ This is the core structure I currently use. Machine paths and tool choices are e
 Explicit instructions in the current conversation take precedence. More specific repository or subdirectory `AGENTS.md` files govern their own scope.
 ```
 
+## How local configuration reaches the public article
+
+My complete preferences, real paths, providers, permissions, and trusted-project details remain local. `~/.codex/AGENTS.md` and structured configuration determine runtime behavior, while local documentation explains the complete design. The Blog publishes only the current sanitized, reusable version; it is not the runtime authority.
+
+I do not synchronize every local adjustment to the Blog. I update the article only when a public principle, example, or explanation changes materially. The public copy is selected from the local source, stripped or generalized of machine-specific details, and then used to overwrite the current Chinese and English articles. I review the public diff, scan for sensitive information, and validate the site before deciding whether to commit and push.
+
+The Blog does not keep a separate directory of workflow versions. The article always presents the current version, while Git history retains earlier revisions. The direction remains one-way: local rules may produce public prose, but public prose never overwrites local configuration.
+
+There is also no need for a separate public workflow repository today. That boundary should change only if the public configuration becomes an independent product with downloads, installation, compatibility promises, issues, or releases.
+
 ## How I handle additional preferences
 
 I do not add a new section every time a new requirement appears. I first decide which layer owns it:
@@ -96,6 +113,7 @@ I do not add a new section every time a new requirement appears. I first decide 
 - a stable behavior that applies across repositories belongs in the global `AGENTS.md`;
 - a project-specific fact or command belongs in that repository's `AGENTS.md`;
 - a capability that needs its own references, scripts, output contract, or specialized validation may become a Skill;
+- approved, sanitized, durable explanations belong in `docs/`, while task-process material remains in `.codex/`;
 - a one-off requirement stays in the current conversation.
 
 When a global rule accumulates exceptions, explanations, and multiple reference chains, it probably belongs somewhere else. The global file should remain quick to load, but it should not become short by deleting authorization boundaries, Git safety, dirty-worktree protection, or evidence standards.
