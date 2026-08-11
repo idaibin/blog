@@ -1,6 +1,8 @@
 # idaibin Blog
 
 `idaibin/blog` is a bilingual personal static blog built with Astro, MDX, and Tailwind CSS 4.
+Its approved target is a static public knowledge projection of `idaibin/ai-handbook`;
+that target is documented but not implemented.
 
 It is a content publishing and knowledge archive site for long-form notes, Rust, React, full-stack engineering, product-building records, prompts, skills, and Rustzen writing.
 
@@ -21,12 +23,14 @@ This repository owns the public, copy-ready Prompt collection and long-form writ
 blog = public Prompts, long-form writing, and knowledge archive
 idaibin/skills = independently installable Agent Skills
 feeds-hub = short-cycle information feed implementation
+ai-handbook = canonical knowledge/evidence owner and future public artifact producer
 ```
 
 See:
 
 ```text
 docs/repo-scope.md
+docs/knowledge-projection.md
 docs/automation/
 ```
 
@@ -66,6 +70,10 @@ The actual content collections are:
 `skills` publishes one catalog guide. The source packages, evaluation cases, and installation metadata belong in `idaibin/skills`; the blog does not mirror every package body.
 
 `notes` is the combined collection for `blog` and `rustzen`.
+
+The planned migration will move stable public knowledge to typed Concept, Practice,
+Workflow, Tool, Skill, Project, and referenced Source routes. Current collections and
+URLs remain authoritative until the documented canary and redirect gates pass.
 
 ## Commands
 

@@ -2,7 +2,9 @@
 
 ## Role
 
-`idaibin/blog` is a long-form content publishing and knowledge archive site.
+`idaibin/blog` is currently a long-form content publishing and knowledge archive site.
+Its approved target is the bilingual static public projection of knowledge promoted by
+`idaibin/ai-handbook`; the target is not implemented yet.
 
 It publishes organized articles, product notes, engineering notes, Rustzen writing, copy-ready Prompts, and public-facing explanations of AI workflows.
 
@@ -14,6 +16,7 @@ It publishes organized articles, product notes, engineering notes, Rustzen writi
 - Public content pages and site presentation.
 - Repository-specific content schemas, routes, and frontmatter.
 - Blog-specific automation task specs under `docs/automation/`.
+- Target public routes, presentation, redirects, static navigation, and editorial overlays.
 
 ## Does Not Own
 
@@ -21,6 +24,8 @@ It publishes organized articles, product notes, engineering notes, Rustzen writi
 - Machine-level or repository-level runtime configuration.
 - Shared execution rules owned by personal or repository `AGENTS.md` files.
 - Short-cycle information feed entries.
+- Evidence/promotion/freshness authority owned by `idaibin/ai-handbook`.
+- Runtime reads from Handbook, feeds-hub, or their databases.
 
 Installable Skill packages belong in `idaibin/skills`. Effective personal and repository behavior remains owned by the applicable `AGENTS.md`; blog Prompt pages are public, copyable versions rather than runtime configuration.
 
@@ -28,6 +33,11 @@ Installable Skill packages belong in `idaibin/skills`. Effective personal and re
 
 - Current Skill names and installation commands from `idaibin/skills`.
 - Effective personal and repository instructions from the applicable `AGENTS.md` chain.
+- After the canary implementation exists, a pinned `public-knowledge/v1` artifact from `idaibin/ai-handbook`.
+
+The approved target contract and migration boundary are documented in
+[`knowledge-projection.md`](knowledge-projection.md). Until its canary exists, current
+`src/content/` collections remain the live source and must not be bulk-migrated or deleted.
 
 ## Automation Rules
 

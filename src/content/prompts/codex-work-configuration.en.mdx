@@ -44,56 +44,64 @@ Diagnosis is not a fixed command sequence either. It defines the standard of pro
 
 Codex can already plan and search code. That default capability does not define my acceptance criteria. The global rules do not try to teach the model how to think; they state which process and completion evidence I am willing to accept.
 
+## Model routing belongs in structured configuration
+
+`AGENTS.md` defines behavioral boundaries; it should not also own model selection. The model, reasoning effort, Plan mode, and default subagent belong in `~/.codex/config.toml`, while each specialized role keeps its model and permissions in its own Agent configuration. This separation prevents runtime settings and natural-language rules from contradicting each other when a model changes.
+
+My current routing is:
+
+| Purpose | Model and reasoning | Why |
+| --- | --- | --- |
+| Primary agent | Sol Medium | Owns requirement judgment, coordination, acceptance, and final delivery |
+| Built-in Plan mode | Sol High | Handles complex planning decisions that can change implementation direction |
+| Default subagent and Worker | Terra Medium | Implements well-bounded everyday work |
+| Explorer | Terra Medium | Traces broader call chains and execution paths rather than doing mechanical search alone |
+| Reviewer | Sol High | Independently checks correctness, regressions, and validation gaps |
+| Planner | Sol Medium | Handles ambiguous, architectural, or cross-module planning |
+| Batch Worker | Luna High | Handles explicit, repeatable, independently verifiable batch work after a same-session canary |
+| Conditional Luna Explorer / Worker | Luna High | Handles specialist work only after the exact role passes a same-session canary |
+
+This is not a simple high, medium, and low ranking of the models. Model capability and reasoning effort are separate dimensions, and there is no reliable cross-model equivalence. My actual configuration uses Sol for the primary agent, planning, and independent review; Terra for the default subagent, Worker, and Explorer; and Luna only for high-effort batch work or conditional specialist work after a same-session canary. Representative tasks should decide the final configuration rather than assumptions that different models or reasoning levels are interchangeable.
+
+The runtime defaults are conservative as well: ordinary tool calls require on-request approval, the default sandbox allows writes within the current workspace, and Explorer, Planner, and Reviewer use read-only sandboxes. Worker and conditional batch roles are the ones allowed to write. Concurrent threads are capped at three, and role TOML files remain defaults rather than a way to expand the current session's authority.
+
 ## The compact version I use
 
 This is the core structure I currently use. Machine paths and tool choices are environment-specific and should be replaced when reused elsewhere.
 
 ```markdown
-# Personal Work Preferences
+# Personal Work Rules
+
+## Scope And Precedence
+
+- Explicit instructions in the current conversation take precedence; a nearer `AGENTS.md` or `AGENTS.override.md` overrides the global file.
+- Keep only stable cross-repository preferences and safety boundaries in the global file. Put project commands, architecture, validation, and delivery contracts in project documentation; put structured model, reasoning, and sandbox settings in `~/.codex/config.toml`.
 
 ## Communication
 
-- Answer ordinary questions directly, keeping only necessary facts, decisions, results, and next steps.
-- When a long session approaches its context boundary, recommend a new task and provide a copyable handoff.
+- Keep ordinary answers direct and concise, retaining only necessary facts, judgments, results, risks, and next steps. Update long tasks only when their state materially changes.
+- Analysis, decisions, research, and reviews do not assume the user's premise is correct. Check issues that would change the conclusion, distinguish verified facts, evidence-based inferences, and unverified items, and do not disagree for its own sake.
+- Reviews list issues, impact, and locations first. When there are no findings, state validation gaps and residual risk.
 
-## Scope And Environment
+## Workspace And Changes
 
-- When no repository is specified, use the configured default workspace and read its entry document and effective `AGENTS.md` first.
-- For repository, build, test, or commit work, confirm the path, Git state, and minimum necessary context; prefer `rg` and named files.
-- Keep edits within the requested task, protect unrelated local changes, and follow existing structure, toolchains, and interface contracts.
-- Use the built-in Browser for browser work and Volta for the Node toolchain.
+- When no directory is specified, use the configured default workspace and read its entry document and effective `AGENTS.md`.
+- Before repository work, confirm the real cwd, Git root, branch, status, effective instructions, and minimum necessary context; prefer `rg` and named files.
+- Keep changes within the current task, protect unrelated uncommitted work, and preserve existing structure, toolchains, and contracts. Complete unblocked work before requesting authorization.
 
-## Execution Discipline
+## Planning, Execution And Verification
 
-### Planning
-
-- Use the built-in Plan for complex tasks and define scope, excluded scope, dependencies, execution order, acceptance criteria, validation commands, and completion evidence.
-- Execute simple tasks directly without creating a formal plan.
-
-### Diagnosis
-
-- Record observed and expected behavior, establish the smallest practical reproduction, and collect code, log, and runtime evidence.
-- Form falsifiable hypotheses, change as few variables as possible, and distinguish symptoms, correlations, and root causes.
-- Mark conclusions as unconfirmed when evidence is insufficient. Apply permanent remediation only after confirming the cause, then rerun the original failing path.
-
-## Collaboration And Review
-
-- For high-risk or cross-module work, follow analysis → execution → review/validation → commit decision. Do not create subagents for ordinary tasks.
-- Parallelize only independent, non-overlapping work or fully read-only tasks. The primary agent owns the final judgment and delivery.
-- Reviews list issues, impact, and file locations first. If there are no findings, state testing gaps and residual risk.
-
-## Task Artifacts
-
-- When a repository has no task-artifact convention, use `.codex/` at its root for local task material.
-- Put cross-task handoffs in `.codex/handoffs/`, reviews and external responses in `.codex/reviews/`, design QA, screenshots, logs, and evaluations in `.codex/artifacts/`, and disposable intermediates in `.codex/tmp/`.
-- Use `<YYYY-MM-DD>-<scope>-<purpose>` for task IDs. Keep these directories untracked by default. Promote material to `docs/` only when it is approved, sanitized, durable, and worth maintaining.
+- Complete simple linear tasks directly. For large or ambiguous work, resolve decisions that can change direction, then proceed through the smallest end-to-end verifiable slices.
+- Delegate only independently acceptable work with a clear benefit. Use one suitable role by default, and parallelize only independent, unordered, non-overlapping tasks.
+- For failures, record actual and expected behavior and establish the smallest reproduction. If a reproduction cannot be established, state the evidence gap and do not apply a permanent fix. After confirming the root cause, make the change and rerun the original path.
+- Builds, static checks, and source scans prove only their covered scope; they do not replace runtime, browser, device, or production validation.
+- When task artifacts are needed and the repository has no convention, use the Git-ignored `.codex/handoffs/`, `.codex/reviews/`, `.codex/artifacts/`, and `.codex/tmp/` directories.
 
 ## Git And External Actions
 
-- Do not modify `main` or create pull requests by default. Use repository-approved task branches and inspect `git diff --cached` before committing only related files.
-- Publish, run security scans, perform external writes, or operate production only when explicitly requested.
-
-Explicit instructions in the current conversation take precedence. More specific repository or subdirectory `AGENTS.md` files govern their own scope.
+- Do not modify `main`, create pull requests, or push by default. Use repository-approved task branches.
+- Stage only related files and inspect `git diff --cached` before committing. Preserve unrelated work and do not run destructive Git operations without explicit authorization.
+- Use the host's built-in browser by default. External browsers, publishing, production operations, messages, comments, authorization, and other external writes require an explicit request.
 ```
 
 ## How local configuration reaches the public article
