@@ -31,6 +31,7 @@ See:
 ```text
 docs/repo-scope.md
 docs/knowledge-projection.md
+docs/ui/site-ui.md
 docs/automation/
 ```
 
