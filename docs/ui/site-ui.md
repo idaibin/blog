@@ -9,12 +9,13 @@ remain in the repository scope and knowledge-projection documents.
 
 ## Owners
 
-- `BaseLayout.astro` owns the document shell, page width, global background, navigation
-  composition, and the primary page scroll.
-- Page roots own task composition and section rhythm. Shared components own only their
-  internal spacing; pages must not repeat the shell inset.
-- `src/styles.css` owns semantic color variables, global typography, shared focus, and
-  reduced-motion behavior. Exact values stay in source rather than being copied here.
+- `BaseLayout.astro` owns the document shell, page width, global background, body
+  typography, navigation composition, primary page scroll, and shared `.page-section`
+  spacing.
+- Page roots own task composition and local section rhythm. Shared components own only
+  their internal spacing; pages must not repeat the shell inset.
+- `src/styles.css` owns semantic color variables, shared focus, and reduced-motion
+  behavior. Exact values stay in source rather than being copied here.
 - `PageHeader`, `FeedList`, `Pagination`, `LanguageSwitcher`, and `SocialLinks` remain
   responsibility-named shared compositions. Routes retain their existing stable slugs
   when visible labels change.
